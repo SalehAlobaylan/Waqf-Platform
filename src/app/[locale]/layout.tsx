@@ -3,6 +3,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing, type Locale } from "@/lib/i18n/routing";
+import { AuthProvider } from "@/components/providers/AuthProvider";
 import "@/app/globals.css";
 
 export const metadata: Metadata = {
@@ -66,12 +67,15 @@ export default async function LocaleLayout({ children, params }: Props) {
                 />
             </head>
             <body className="min-h-screen antialiased flex flex-col">
-                <NextIntlClientProvider messages={messages}>
-                    <div className="flex flex-col min-h-screen">
-                        {children}
-                    </div>
-                </NextIntlClientProvider>
+                <AuthProvider>
+                    <NextIntlClientProvider messages={messages}>
+                        <div className="flex flex-col min-h-screen">
+                            {children}
+                        </div>
+                    </NextIntlClientProvider>
+                </AuthProvider>
             </body>
         </html>
     );
 }
+
