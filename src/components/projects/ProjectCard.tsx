@@ -18,7 +18,7 @@ interface ProjectCardProps {
         skills: Array<{
             skill: {
                 name: string;
-                nameAr: string;
+                nameAr: string | null;
             };
             isRequired: boolean;
         }>;
@@ -83,11 +83,11 @@ export function ProjectCard({ project, locale = "en" }: ProjectCardProps) {
                     <span
                         key={index}
                         className={`px-2.5 py-1 text-xs rounded-lg ${ps.isRequired
-                                ? "bg-primary-50 text-primary-700 border border-primary-200"
-                                : "bg-secondary-50 text-secondary-600"
+                            ? "bg-primary-50 text-primary-700 border border-primary-200"
+                            : "bg-secondary-50 text-secondary-600"
                             }`}
                     >
-                        {locale === "ar" ? ps.skill.nameAr : ps.skill.name}
+                        {locale === "ar" ? (ps.skill.nameAr || ps.skill.name) : ps.skill.name}
                     </span>
                 ))}
                 {remainingCount > 0 && (

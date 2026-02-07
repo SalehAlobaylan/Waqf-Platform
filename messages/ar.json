@@ -76,5 +76,36 @@
         "termsOfService": "شروط الاستخدام",
         "and": "و",
         "privacyPolicy": "سياسة الخصوصية"
+    },
+    "search": {
+        "placeholder": "ابحث عن مشاريع...",
+        "searchPlaceholder": "ابحث عن مشاريع إسلامية للمساهمة فيها...",
+        "searching": "جاري البحث...",
+        "result": "نتيجة",
+        "results": "نتائج",
+        "for": "عن",
+        "noResults": "لم يتم العثور على مشاريع",
+        "noResultsDescription": "جرب تعديل كلمات البحث أو تصفح جميع المشاريع",
+        "startSearching": "ابحث عن مشاريع",
+        "startSearchingDescription": "اعثر على مشاريع إسلامية مفتوحة المصدر تناسب مهاراتك"
+    },
+    "applications": {
+        "applyTitle": "تقديم طلب المساهمة",
+        "whyContribute": "لماذا تريد المساهمة؟",
+        "whyContributePlaceholder": "شارك دافعك وكيف يمكنك المساعدة في هذا المشروع...",
+        "whyContributeHint": "اذكر خبرتك ذات الصلة وما الذي يجذبك لهذا المشروع",
+        "portfolioUrl": "ملفك الشخصي أو GitHub",
+        "hoursPerWeek": "الساعات المتاحة أسبوعيًا",
+        "selectHours": "اختر التوفر",
+        "hoursLabel": "ساعات",
+        "submitting": "جاري الإرسال...",
+        "submitApplication": "إرسال الطلب",
+        "applicationNote": "سيتم إخطار أصحاب المشروع بطلبك"
+    },
+    "messages": {
+        "noMessages": "لا توجد رسائل بعد",
+        "startConversation": "ابدأ المحادثة!",
+        "typePlaceholder": "اكتب رسالة...",
+        "sending": "جاري الإرسال..."
     }
 }

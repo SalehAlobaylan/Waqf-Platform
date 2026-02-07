@@ -76,5 +76,36 @@
         "termsOfService": "Terms of Service",
         "and": "and",
         "privacyPolicy": "Privacy Policy"
+    },
+    "search": {
+        "placeholder": "Search projects...",
+        "searchPlaceholder": "Search for Islamic projects to contribute to...",
+        "searching": "Searching...",
+        "result": "result",
+        "results": "results",
+        "for": "for",
+        "noResults": "No projects found",
+        "noResultsDescription": "Try adjusting your search terms or browse all projects",
+        "startSearching": "Search for projects",
+        "startSearchingDescription": "Find Islamic open-source projects that match your skills"
+    },
+    "applications": {
+        "applyTitle": "Apply to Contribute",
+        "whyContribute": "Why do you want to contribute?",
+        "whyContributePlaceholder": "Share your motivation and how you can help this project...",
+        "whyContributeHint": "Mention your relevant experience and what draws you to this project",
+        "portfolioUrl": "Portfolio or GitHub",
+        "hoursPerWeek": "Hours available per week",
+        "selectHours": "Select availability",
+        "hoursLabel": "hours",
+        "submitting": "Submitting...",
+        "submitApplication": "Submit Application",
+        "applicationNote": "Project owners will be notified of your application"
+    },
+    "messages": {
+        "noMessages": "No messages yet",
+        "startConversation": "Start the conversation!",
+        "typePlaceholder": "Type a message...",
+        "sending": "Sending..."
     }
 }
