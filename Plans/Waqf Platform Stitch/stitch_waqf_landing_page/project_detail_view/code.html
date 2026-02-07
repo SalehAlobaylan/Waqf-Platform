@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Waqf - Project Detail View</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1f705d",
+                        "background-light": "#f6f8f7",
+                        "background-dark": "#131f1c",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1e2927",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Custom scrollbar for cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white antialiased selection:bg-primary selection:text-white">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+<!-- Navbar -->
+<header class="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-solid border-[#e9f1ef] dark:border-white/10 bg-white/80 dark:bg-background-dark/80 backdrop-blur-md px-10 py-3">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-4 text-primary dark:text-white">
+<div class="size-8 flex items-center justify-center">
+<span class="material-symbols-outlined text-3xl">mosque</span>
+</div>
+<h2 class="text-primary dark:text-white text-xl font-bold leading-tight tracking-[-0.015em]">Waqf</h2>
+</div>
+<div class="hidden lg:flex items-center gap-9">
+<a class="text-slate-900 dark:text-gray-200 text-sm font-medium hover:text-primary dark:hover:text-primary transition-colors" href="#">Projects</a>
+<a class="text-slate-900 dark:text-gray-200 text-sm font-medium hover:text-primary dark:hover:text-primary transition-colors" href="#">Organizations</a>
+<a class="text-slate-900 dark:text-gray-200 text-sm font-medium hover:text-primary dark:hover:text-primary transition-colors" href="#">About</a>
+<a class="text-slate-900 dark:text-gray-200 text-sm font-medium hover:text-primary dark:hover:text-primary transition-colors" href="#">Community</a>
+</div>
+</div>
+<div class="flex flex-1 justify-end gap-6 items-center">
+<label class="hidden md:flex flex-col min-w-40 !h-10 max-w-64">
+<div class="flex w-full flex-1 items-stretch rounded-xl h-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-dark focus-within:ring-2 focus-within:ring-primary/20 transition-all">
+<div class="text-slate-400 dark:text-gray-500 flex items-center justify-center pl-3 rounded-l-xl">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</div>
+<input class="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-xl text-slate-900 dark:text-white focus:outline-0 bg-transparent h-full placeholder:text-slate-400 dark:placeholder:text-gray-500 px-3 text-sm font-normal" placeholder="Search projects..."/>
+</div>
+</label>
+<div class="flex gap-3">
+<button class="flex items-center justify-center rounded-lg h-9 px-4 text-slate-700 dark:text-gray-200 text-sm font-semibold hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+                        Log In
+                    </button>
+<button class="flex items-center justify-center rounded-lg h-9 px-4 bg-primary hover:bg-primary/90 text-white text-sm font-semibold shadow-sm transition-all">
+                        Sign Up
+                    </button>
+</div>
+</div>
+</header>
+<!-- Main Content Wrapper -->
+<main class="flex-1 w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<!-- Breadcrumbs -->
+<nav class="flex mb-6 text-sm text-slate-500 dark:text-gray-400">
+<a class="hover:text-primary transition-colors" href="#">Projects</a>
+<span class="mx-2">/</span>
+<a class="hover:text-primary transition-colors" href="#">Education</a>
+<span class="mx-2">/</span>
+<span class="text-slate-900 dark:text-white font-medium">Quran Digital Library</span>
+</nav>
+<!-- Hero Section -->
+<div class="relative overflow-hidden rounded-2xl bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 shadow-sm mb-8">
+<!-- Abstract Pattern Background -->
+<div class="absolute inset-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'0.000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23000000\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
+<div class="relative z-10 flex flex-col md:flex-row gap-8 p-8 md:p-10 items-start">
+<div class="flex-shrink-0">
+<div class="w-24 h-24 rounded-xl bg-primary/10 flex items-center justify-center text-primary dark:text-white border border-primary/20">
+<span class="material-symbols-outlined text-5xl">menu_book</span>
+</div>
+</div>
+<div class="flex-1">
+<div class="flex flex-wrap items-center gap-3 mb-3">
+<span class="px-2.5 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs font-semibold uppercase tracking-wide border border-green-200 dark:border-green-800">Active Development</span>
+<span class="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-xs font-semibold uppercase tracking-wide border border-blue-200 dark:border-blue-800">Help Wanted</span>
+</div>
+<h1 class="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-3 tracking-tight">Quran Digital Library API</h1>
+<p class="text-lg text-slate-600 dark:text-gray-300 max-w-3xl leading-relaxed">
+                            Building an open-source, high-performance API for digitized manuscripts to preserve Islamic heritage for future generations.
+                        </p>
+</div>
+<div class="flex-shrink-0 w-full md:w-auto flex flex-col gap-3">
+<button class="w-full md:w-auto flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-bold py-3 px-6 rounded-lg shadow-lg shadow-primary/20 transition-all transform hover:-translate-y-0.5">
+<span class="material-symbols-outlined">volunteer_activism</span>
+                            Contribute Now
+                        </button>
+<div class="flex gap-2">
+<button class="flex-1 flex items-center justify-center gap-2 bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-slate-700 dark:text-gray-200 font-medium py-2.5 px-4 rounded-lg transition-colors text-sm">
+<span class="material-symbols-outlined text-[18px]">star</span>
+                                Star (1.2k)
+                            </button>
+<button class="flex-1 flex items-center justify-center gap-2 bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 text-slate-700 dark:text-gray-200 font-medium py-2.5 px-4 rounded-lg transition-colors text-sm">
+<span class="material-symbols-outlined text-[18px] filled">share</span>
+                                Share
+                            </button>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+<!-- Left Column: Content -->
+<div class="lg:col-span-8 flex flex-col gap-8">
+<!-- Bismillah Header -->
+<div class="flex justify-center py-4 opacity-60">
+<img alt="Bismillah Calligraphy" class="h-12 dark:invert" data-alt="Arabic calligraphy reading Bismillahir Rahmanir Raheem" src="https://lh3.googleusercontent.com/aida-public/AB6AXuALluhEZBw7UdjQecjOwYzUbDQKZAux5VUU3naU40ph2Q5mW1y6YyBlNgcrDAV6sY-OSqHQOKlsNyPVQOqtAgdXFVsYtPP2dHBq6T0P4cO7zwwliMf0waZ3kIqZS2CheCmzP4kPvU0sFYee-Eya9CPAzMBGRP92pBWR3-8Wa7mT9c82ZircC5Ih4fyFYBK3Bl72_DUe0SzS_068hi8oLzXdLC1-vAdTW9m4Wv5VSYh2Joy8GfLa3i1zJTtluuTn2CgxeEHuAx2G4Pw"/>
+</div>
+<!-- Impact Card (Sadaqah Jariyah) -->
+<div class="bg-gradient-to-br from-primary/5 to-primary/10 dark:from-primary/20 dark:to-primary/5 border border-primary/20 rounded-xl p-6 relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4 opacity-10 text-primary dark:text-white pointer-events-none">
+<span class="material-symbols-outlined text-9xl">spa</span>
+</div>
+<h3 class="flex items-center gap-2 text-primary dark:text-green-400 font-bold text-lg mb-2">
+<span class="material-symbols-outlined">eco</span>
+                            Project Impact (Sadaqah Jariyah)
+                        </h3>
+<p class="text-slate-700 dark:text-gray-300 leading-relaxed relative z-10">
+                            By contributing to this project, you are helping to digitize over <strong>5,000 ancient manuscripts</strong> that are currently at risk of decay. This creates a permanent, accessible resource for students of knowledge worldwide—a continuous charity that benefits the Ummah for generations to come, Insha'Allah.
+                        </p>
+</div>
+<!-- Description / README -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-800 p-8 shadow-sm">
+<div class="prose prose-slate dark:prose-invert max-w-none">
+<h2 class="text-2xl font-bold mb-4">About the Project</h2>
+<p class="mb-4">
+                                The Quran Digital Library (QDL) is an initiative to create a standardized, open-source API for accessing Quranic text, translations, tafsir, and digitized manuscript images. Unlike existing solutions, QDL focuses on high-fidelity manuscript preservation and advanced search capabilities rooted in Arabic morphology.
+                            </p>
+<h3 class="text-xl font-semibold mt-6 mb-3">Core Features</h3>
+<ul class="list-disc pl-5 space-y-2 mb-6 text-slate-700 dark:text-gray-300">
+<li><strong>RESTful &amp; GraphQL API:</strong> Flexible endpoints for fetching verses, chapters, and metadata.</li>
+<li><strong>Morphological Search:</strong> Powered by Elasticsearch, allowing root-word based searching.</li>
+<li><strong>Manuscript Viewer:</strong> A specialized deep-zoom viewer for high-resolution manuscript scans using IIIF standards.</li>
+<li><strong>Multilingual Support:</strong> Built-in i18n support for translations in 40+ languages.</li>
+</ul>
+<h3 class="text-xl font-semibold mt-6 mb-3">Current Roadmap</h3>
+<div class="space-y-4 mb-6">
+<div class="flex items-start gap-3">
+<div class="mt-1 flex-shrink-0 size-5 rounded-full bg-green-500 flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+<div>
+<p class="font-medium text-slate-900 dark:text-white">Phase 1: Core API Design</p>
+<p class="text-sm text-slate-500 dark:text-gray-400">Completed schema design and initial database migrations.</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<div class="mt-1 flex-shrink-0 size-5 rounded-full border-2 border-primary flex items-center justify-center">
+<div class="size-2 bg-primary rounded-full"></div>
+</div>
+<div>
+<p class="font-medium text-slate-900 dark:text-white">Phase 2: Search Engine Integration (Current)</p>
+<p class="text-sm text-slate-500 dark:text-gray-400">Implementing Elasticsearch for advanced Arabic text analysis.</p>
+</div>
+</div>
+<div class="flex items-start gap-3 opacity-60">
+<div class="mt-1 flex-shrink-0 size-5 rounded-full border-2 border-gray-300 dark:border-gray-600"></div>
+<div>
+<p class="font-medium text-slate-900 dark:text-white">Phase 3: Frontend Client</p>
+<p class="text-sm text-slate-500 dark:text-gray-400">Building the reference React application.</p>
+</div>
+</div>
+</div>
+<div class="mt-8 p-4 bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 text-sm text-yellow-800 dark:text-yellow-200">
+<strong>Note for Contributors:</strong> Please ensure you read our Code of Conduct. We value adab (etiquette) in communication and technical excellence in code.
+                            </div>
+</div>
+</div>
+<!-- Discussion / Updates (Simplified) -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-800 p-6 shadow-sm">
+<h3 class="font-bold text-lg mb-4 text-slate-900 dark:text-white">Recent Activity</h3>
+<div class="space-y-4">
+<div class="flex gap-3 pb-4 border-b border-gray-100 dark:border-gray-700/50">
+<div class="size-8 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+<img alt="User avatar" data-alt="Portrait of a user" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCosE9FRD0JqndA3A9riiUnCVpQNC5WqCJlOYRGADkeQ6T9ywhjSqkB1jq_VXZN_sBdRQaZRKonUiIg5inhK4QwGGnEsLCytvhlp5WMqGjOw9veBA6p1l0iO9lYJlefaUga_4v1bl8JdzBC11FBvrVupRIj5eSy6HbUVfTSUQ4P73w4jzMXef13n3l94mSUux2VNgSoIkt5IaqfZWpBxsk-1Ih8pnouDSv8gWj51tOog46caRt0KsNlLwhIyYxODPaimg_3t3oD2Yc"/>
+</div>
+<div>
+<p class="text-sm text-slate-800 dark:text-gray-200"><span class="font-semibold">Ahmed K.</span> merged PR <span class="font-mono text-xs bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-primary">#42: Fix search indexing bug</span></p>
+<p class="text-xs text-slate-500">2 hours ago</p>
+</div>
+</div>
+<div class="flex gap-3">
+<div class="size-8 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+<img alt="User avatar" data-alt="Portrait of a user" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCqLYmV4L5Uo7jHOQkBybK29RCwF8cI5EhGg275TkCmUgddy_lBbYJbapchmx5ouy8c1rGHe7UP7AycEIb_tYAu0Rhz2w1uv3uUmPvWDJCqqHGsXYTUc3WYbMmC3sCFn1mBtppBZAK0910ZwcqZ_vx_bu42QTCW4C-mVt3DtMLXz-qJahJS5on_CY2eTMg37FKlX15CuHlExKShZ2jwqg2xfZp_SflvMbYE47lIQ8dkW98H0taBUkzdXg7D3Qcm63eR-TF8qsEeGvI"/>
+</div>
+<div>
+<p class="text-sm text-slate-800 dark:text-gray-200"><span class="font-semibold">Sarah M.</span> opened issue <span class="font-mono text-xs bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-primary">#45: Add Urdu translation support</span></p>
+<p class="text-xs text-slate-500">5 hours ago</p>
+</div>
+</div>
+</div>
+<button class="w-full mt-4 text-sm text-primary font-medium hover:underline text-center">View all activity on GitHub</button>
+</div>
+</div>
+<!-- Right Column: Sidebar -->
+<div class="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
+<!-- Metadata Card -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-800 p-6 shadow-sm">
+<h4 class="text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider mb-4">Project Details</h4>
+<div class="space-y-5">
+<div class="flex items-start gap-3">
+<div class="text-slate-400 dark:text-gray-500 mt-0.5">
+<span class="material-symbols-outlined">category</span>
+</div>
+<div>
+<p class="text-xs text-slate-500 dark:text-gray-400">Category</p>
+<p class="font-medium text-slate-900 dark:text-white">Education &amp; Research</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<div class="text-slate-400 dark:text-gray-500 mt-0.5">
+<span class="material-symbols-outlined">signal_cellular_alt</span>
+</div>
+<div>
+<p class="text-xs text-slate-500 dark:text-gray-400">Difficulty Level</p>
+<p class="font-medium text-slate-900 dark:text-white">Intermediate</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<div class="text-slate-400 dark:text-gray-500 mt-0.5">
+<span class="material-symbols-outlined">schedule</span>
+</div>
+<div>
+<p class="text-xs text-slate-500 dark:text-gray-400">Est. Time Commitment</p>
+<p class="font-medium text-slate-900 dark:text-white">3-5 hours / week</p>
+</div>
+</div>
+</div>
+<hr class="my-5 border-gray-100 dark:border-gray-700/50"/>
+<h4 class="text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider mb-3">Tech Stack</h4>
+<div class="flex flex-wrap gap-2">
+<span class="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium border border-slate-200 dark:border-slate-700">Python</span>
+<span class="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium border border-slate-200 dark:border-slate-700">Django</span>
+<span class="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium border border-slate-200 dark:border-slate-700">PostgreSQL</span>
+<span class="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium border border-slate-200 dark:border-slate-700">Docker</span>
+<span class="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium border border-slate-200 dark:border-slate-700">Elasticsearch</span>
+</div>
+<div class="mt-6 flex flex-col gap-3">
+<a class="flex items-center justify-center gap-2 w-full bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:text-slate-900 dark:hover:bg-gray-100 font-bold py-2.5 rounded-lg transition-colors text-sm" href="#">
+<span class="material-symbols-outlined text-[18px]">code</span>
+                                View Repository
+                            </a>
+<a class="flex items-center justify-center gap-2 w-full bg-transparent hover:bg-slate-50 dark:hover:bg-white/5 border border-slate-200 dark:border-gray-700 text-slate-700 dark:text-gray-300 font-semibold py-2.5 rounded-lg transition-colors text-sm" href="#">
+<span class="material-symbols-outlined text-[18px]">description</span>
+                                Read Documentation
+                            </a>
+</div>
+</div>
+<!-- Creator Profile (Mutawalli) -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-800 p-6 shadow-sm">
+<h4 class="text-xs font-bold text-slate-400 dark:text-gray-500 uppercase tracking-wider mb-4">Meet the Creator</h4>
+<div class="flex items-center gap-4 mb-4">
+<div class="size-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xl border border-primary/20 overflow-hidden">
+<img alt="Organization Logo" class="w-full h-full object-cover" data-alt="Abstract geometric logo of the organization" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtcrhGm3Gtb9ZSWjH0l-3TGXTUL6LR28Cbm_b50wwhE0XHAyTS_8rx19isLEc9gI57u3eKGegAkMVTLNECN4EPB8MN14dTXEyXa3KAyyBmyCoaLrgdOBejazsWWAa3MT25rU_NTNeQsj8GB_VVBOJ1T8LDN9lvh-cOxa7NVfSGMFeAqRYXSy4YzjzE_SbMUYuWyV9DEj_loAyA7heihfb92IbfxcDbN4isKaLxiOBvTVEXLV8PEXeMH1kauovGogkOdLwB61Mtrvg"/>
+</div>
+<div>
+<h3 class="font-bold text-slate-900 dark:text-white">Al-Ilm Foundation</h3>
+<p class="text-xs text-slate-500 dark:text-gray-400">Mutawalli • Joined 2021</p>
+</div>
+</div>
+<p class="text-sm text-slate-600 dark:text-gray-300 mb-4 line-clamp-3">
+                            A non-profit organization dedicated to leveraging technology for Islamic education and heritage preservation. Based in Cairo, Egypt.
+                        </p>
+<button class="w-full py-2 px-4 rounded-lg border border-primary text-primary hover:bg-primary/5 dark:text-primary dark:border-primary dark:hover:bg-primary/10 font-medium text-sm transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">mail</span>
+                            Contact Organizer
+                        </button>
+</div>
+<!-- Suggestion / Related -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-800 p-5 shadow-sm opacity-80 hover:opacity-100 transition-opacity">
+<h4 class="text-sm font-bold text-slate-900 dark:text-white mb-3">Similar Projects</h4>
+<a class="flex gap-3 items-center group" href="#">
+<div class="size-10 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/50 transition-colors">
+<span class="material-symbols-outlined">mosque</span>
+</div>
+<div>
+<p class="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-primary transition-colors">Open Prayer Times</p>
+<p class="text-xs text-slate-500">Utilities</p>
+</div>
+</a>
+</div>
+</div>
+</div>
+</main>
+<footer class="mt-12 py-8 border-t border-gray-200 dark:border-gray-800 text-center text-slate-500 dark:text-gray-400 text-sm">
+<p>© 2023 Waqf Platform. Built for the Ummah.</p>
+</footer>
+</div>
+</body></html>

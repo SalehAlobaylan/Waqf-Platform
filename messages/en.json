@@ -1,0 +1,46 @@
+{
+    "common": {
+        "appName": "Waqf",
+        "tagline": "Contribute your skills as ongoing charity"
+    },
+    "nav": {
+        "explore": "Explore",
+        "about": "About",
+        "howItWorks": "How it Works",
+        "login": "Log In",
+        "signup": "Sign Up",
+        "myContributions": "My Contributions",
+        "dashboard": "Dashboard",
+        "profile": "Profile",
+        "logout": "Log Out"
+    },
+    "hero": {
+        "title": "Contribute to Islamic Open Source Projects",
+        "subtitle": "Join the Muslim developer community and contribute your skills as sadaqah jariyah",
+        "ctaContribute": "Start Contributing",
+        "ctaCreate": "Create a Project"
+    },
+    "footer": {
+        "madeWith": "Made with ❤️ for the Ummah",
+        "quickLinks": "Quick Links",
+        "community": "Community",
+        "resources": "Resources",
+        "legal": "Legal",
+        "privacy": "Privacy Policy",
+        "terms": "Terms of Service",
+        "contact": "Contact Us"
+    },
+    "categories": {
+        "quran": "Quran",
+        "prayer": "Prayer",
+        "charity": "Charity",
+        "education": "Education",
+        "community": "Community",
+        "tools": "Tools"
+    },
+    "language": {
+        "ar": "العربية",
+        "en": "English",
+        "switch": "Switch Language"
+    }
+}

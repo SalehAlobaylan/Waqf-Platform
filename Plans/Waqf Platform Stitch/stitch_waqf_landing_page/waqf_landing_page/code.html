@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Waqf - Tech for the Ummah</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;family=Noto+Sans+Arabic:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1f705d",
+                        "primary-dark": "#165244",
+                        "secondary": "#d4a056", // Gold/Sand accent
+                        "background-light": "#f9fbfb",
+                        "background-dark": "#131f1c",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1c2e29",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "Noto Sans Arabic", "sans-serif"],
+                        "arabic": ["Noto Sans Arabic", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>body {
+    font-family: "Inter", "Noto Sans Arabic", sans-serif
+    }
+.pattern-bg {
+    background-color: #f9fbfb;
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuC2wEypo1GeAKSPeQdwZ5hTumeAlRcewJCQE1J92vGAzBvLFInXyCyb5IYF7AQWl5jTYSTlo7rPF-kvKRam-m_beIsSNb8XR4jwmtH4_1bmyuhJ269cvpm2rbhoa7kIm_OcZqeW3Y6P-mP_0QxHVDP5T_wYckZPbj6mcPnkJbG-exOslDpu_0eBntsWe-uuAk7h-b-zoh5S9LI0tcIHVE5bZwIkKyq0azN2j300b7ECtlhzjL0hWJPnkOEQl7_KYTv6S88evW0AHrk)
+    }
+.dark .pattern-bg {
+    background-color: #131f1c;
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuCdXP9o9Ua8S_h7Jcq_P-GZXfrfNefnUYu8bmBKDXVa5OSg-1q79N7RsbYbZW4Gr9YA4cnDXZDm-88zh5-J10u6pZCQ6PlmaM792arMBtz3hi6Z219fjFQKND5wKPShnMzUgq977PZht_-QH6O4kHySNW0vNRovTwyz9Vf9M5P_3rgCs0IXmXn6aM_o20-0xzxXB2NJLeAdyqwpb7WCnFRVRq97EeRaHO36wZFhaIN9-3O16FBQXgG0Kl8FvjLaopF-R9zOa2uQHfU)
+    }</style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-[#101917] dark:text-gray-100 flex flex-col min-h-screen">
+<!-- Navigation -->
+<header class="sticky top-0 z-50 w-full border-b border-[#e9f1ef] dark:border-gray-800 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur supports-[backdrop-filter]:bg-background-light/60">
+<div class="px-4 md:px-10 py-3 flex items-center justify-between mx-auto max-w-[1280px]">
+<div class="flex items-center gap-3">
+<div class="size-8 text-primary bg-primary/10 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">mosque</span>
+</div>
+<div class="flex flex-col">
+<h2 class="text-[#101917] dark:text-white text-xl font-bold leading-none tracking-[-0.015em]">Waqf</h2>
+<span class="text-[10px] text-primary font-bold uppercase tracking-widest leading-none mt-0.5">Open Source</span>
+</div>
+</div>
+<nav class="hidden md:flex items-center gap-8">
+<a class="text-[#101917] dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors text-sm font-medium" href="#">Explore</a>
+<a class="text-[#101917] dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors text-sm font-medium" href="#">How it Works</a>
+<a class="text-[#101917] dark:text-gray-300 hover:text-primary dark:hover:text-primary transition-colors text-sm font-medium" href="#">About</a>
+</nav>
+<div class="flex items-center gap-3">
+<button class="hidden sm:flex text-[#101917] dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg px-2 py-1 text-xs font-bold items-center gap-1 border border-transparent hover:border-gray-200 dark:hover:border-gray-700">
+<span class="material-symbols-outlined text-[16px]">language</span>
+<span>EN/AR</span>
+</button>
+<div class="w-px h-6 bg-gray-200 dark:bg-gray-800 hidden sm:block"></div>
+<button class="hidden sm:flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-9 px-4 text-[#101917] dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 text-sm font-bold transition-colors">
+                    Log In
+                </button>
+<button class="flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-9 px-4 bg-primary hover:bg-primary-dark transition-colors text-[#f9fbfb] text-sm font-bold shadow-md shadow-primary/20">
+                    Sign Up
+                </button>
+</div>
+</div>
+</header>
+<main class="flex-grow w-full">
+<!-- Hero Section -->
+<section class="pattern-bg w-full py-16 md:py-24 px-4 flex justify-center border-b border-[#e9f1ef] dark:border-gray-800">
+<div class="max-w-[1280px] w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+<div class="flex flex-col gap-6 md:gap-8 order-2 lg:order-1">
+<div class="flex flex-col gap-4 text-left">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/10 border border-secondary/20 w-fit">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="text-secondary text-xs font-bold uppercase tracking-wide">Beta Available</span>
+</div>
+<h1 class="text-[#101917] dark:text-white text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] tracking-[-0.033em]">
+                            Tech for the Ummah <br/>
+<span class="text-primary font-arabic text-4xl md:text-5xl lg:text-6xl mt-2 block">صدقة جارية عبر الكود</span>
+</h1>
+<p class="text-gray-600 dark:text-gray-400 text-lg md:text-xl font-normal leading-relaxed max-w-xl">
+                            Join the first open-source community building technology for the Muslim Ummah. Contribute your skills to projects that benefit millions—Sadaqah Jariyah through code.
+                        </p>
+</div>
+<div class="flex flex-wrap gap-4">
+<button class="flex items-center justify-center gap-2 rounded-xl h-12 px-6 bg-primary hover:bg-primary-dark text-white text-base font-bold shadow-lg shadow-primary/25 transition-all hover:translate-y-[-1px]">
+<span class="material-symbols-outlined text-[20px]">code</span>
+<span>Start Contributing</span>
+</button>
+<button class="flex items-center justify-center gap-2 rounded-xl h-12 px-6 bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 text-[#101917] dark:text-white text-base font-bold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+<span class="material-symbols-outlined text-[20px]">add_box</span>
+<span>List a Project</span>
+</button>
+</div>
+<div class="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+<div class="flex -space-x-2">
+<img alt="Contributor avatar 1" class="w-8 h-8 rounded-full border-2 border-white dark:border-background-dark" data-alt="Portrait of a smiling woman" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBV6txoBZcDXhBRjO5X12Esoefg6Ub3sgGN-t51SHz3KFzhWnw38bFZkexWYIBbY-tyYeYhaGfFDtqaMBHCfmcr1WfIl9_rSP_lFf6rqAxwZFjqi7rBTCZqiNQRCV0I3uQEG_wZNZIgFba8NXTfTj0rq0NZIE4Nwu9bYoDtqf92PE8wtCFD3pa14Xfl7-iQMOg0aEKw9fJe4fuk-220AG3rooVdIfmUdBEOL60f5By3l_pLMpcUWGJzIdpDXrP2Ghw1aQ3GTAHDGzM"/>
+<img alt="Contributor avatar 2" class="w-8 h-8 rounded-full border-2 border-white dark:border-background-dark" data-alt="Portrait of a man with glasses" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBjqIU5b1j4m5AdcX1N9WeofAS1JpFusJzauiiMiE3FiDtudLPnPOGOEiR4f9vONqcLaEOVSq3pniIfS10Bp5No1cCU4QSQrxTyFXFSj93PkMjSE9bIL6DF0elQELLauDWemBG3XU4EoNqFSNixUpzz4lBYPs5rEiRoVsydaaJIp77LPz8D2StuZIDPA8PMiCnt_3vNNTMVFHx47Y_qxa1uYqJuSmXRCGtBKmnAMT6_CTpkDwe8eY_a7tHBBnwXs8ZwnnTEG96icSY"/>
+<img alt="Contributor avatar 3" class="w-8 h-8 rounded-full border-2 border-white dark:border-background-dark" data-alt="Portrait of a smiling man" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRTfMrCii2_FJCowbJBmd15PjGYaiToDYBRFcZtEwZwGSktPnaBxsJ6dZVQsDqkPW1-wH86pR8cLewQatbL6q_xsfhDFgT6pFYJ8pkk35YIDE_VTUMYATWkogeoRb_tATbm-bYAAwOzJMDUb_IZ7UNWelnB_VOlT2LN-ju3yCXezMNGQD5Q7eVUcVsISVOznx9Xo2Yp0NnmjgWQPru0LWhhBY34RDOwsUwMfgqGgIX1FhHTNVtUffk5FhrPKOb02SzWfgbu9ILXpE"/>
+<div class="w-8 h-8 rounded-full border-2 border-white dark:border-background-dark bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-[10px] font-bold">+2k</div>
+</div>
+<p>Join 2,000+ contributors worldwide</p>
+</div>
+</div>
+<div class="relative order-1 lg:order-2 h-full min-h-[300px] lg:min-h-[500px] rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-br from-primary/5 to-secondary/10 border border-primary/10">
+<!-- Abstract Code/Islamic Pattern Graphic -->
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="absolute w-[120%] h-[120%] bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')] opacity-10 animate-spin-slow" style="animation-duration: 60s;"></div>
+<div class="relative z-10 p-8 w-full max-w-md">
+<div class="bg-white/80 dark:bg-surface-dark/90 backdrop-blur-md rounded-xl shadow-lg border border-white/20 p-6 transform rotate-[-2deg] hover:rotate-0 transition-transform duration-500">
+<div class="flex items-center justify-between mb-4 border-b border-gray-100 dark:border-gray-700 pb-2">
+<div class="flex gap-2">
+<div class="w-3 h-3 rounded-full bg-red-400"></div>
+<div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+<div class="w-3 h-3 rounded-full bg-green-400"></div>
+</div>
+<span class="text-xs text-gray-400 font-mono">contribute.js</span>
+</div>
+<div class="space-y-2 font-mono text-sm">
+<div class="flex gap-2"><span class="text-purple-500">const</span> <span class="text-blue-500">sadaqah</span> <span class="text-gray-400">=</span> <span class="text-yellow-600">async</span> <span class="text-gray-400">()</span> <span class="text-purple-500">=&gt;</span> <span class="text-gray-400">{</span></div>
+<div class="pl-4 flex gap-2"><span class="text-purple-500">await</span> <span class="text-blue-500">buildForUmmah</span><span class="text-gray-400">();</span></div>
+<div class="pl-4 flex gap-2"><span class="text-purple-500">return</span> <span class="text-green-600">"Hasanat++"</span><span class="text-gray-400">;</span></div>
+<div class="flex gap-2"><span class="text-gray-400">}</span></div>
+</div>
+</div>
+<div class="absolute -bottom-6 -right-6 bg-primary text-white p-4 rounded-xl shadow-lg flex items-center gap-3 animate-bounce" style="animation-duration: 3s;">
+<span class="material-symbols-outlined">favorite</span>
+<div>
+<p class="text-xs opacity-80">Impact</p>
+<p class="font-bold">1.2M Users reached</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Stats Section -->
+<section class="bg-surface-light dark:bg-surface-dark border-b border-[#e9f1ef] dark:border-gray-800">
+<div class="max-w-[1280px] mx-auto px-4 py-8">
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 text-center divide-x-0 md:divide-x divide-gray-100 dark:divide-gray-700">
+<div class="flex flex-col gap-1 p-2">
+<span class="text-3xl font-black text-[#101917] dark:text-white tracking-tight">150+</span>
+<span class="text-sm font-medium text-gray-500 dark:text-gray-400">Active Projects</span>
+</div>
+<div class="flex flex-col gap-1 p-2">
+<span class="text-3xl font-black text-[#101917] dark:text-white tracking-tight">2,000+</span>
+<span class="text-sm font-medium text-gray-500 dark:text-gray-400">Contributors</span>
+</div>
+<div class="flex flex-col gap-1 p-2">
+<span class="text-3xl font-black text-[#101917] dark:text-white tracking-tight">10k+</span>
+<span class="text-sm font-medium text-gray-500 dark:text-gray-400">Commits for Good</span>
+</div>
+<div class="flex flex-col gap-1 p-2">
+<span class="text-3xl font-black text-[#101917] dark:text-white tracking-tight">Zero</span>
+<span class="text-sm font-medium text-gray-500 dark:text-gray-400">Platform Fees</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Category Grid -->
+<section class="py-16 md:py-24 px-4 bg-background-light dark:bg-background-dark">
+<div class="max-w-[1280px] mx-auto">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+<div>
+<h2 class="text-3xl font-bold text-[#101917] dark:text-white tracking-tight mb-2">Explore Domains</h2>
+<p class="text-gray-500 dark:text-gray-400 max-w-lg">Discover projects across various sectors needing your expertise.</p>
+</div>
+<a class="text-primary font-bold flex items-center gap-1 hover:underline" href="#">View All Categories <span class="material-symbols-outlined text-sm">arrow_forward</span></a>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Category Card 1 -->
+<a class="group bg-white dark:bg-surface-dark p-6 rounded-2xl border border-[#e9f1ef] dark:border-gray-700 hover:border-primary/50 hover:shadow-lg transition-all duration-300" href="#">
+<div class="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">menu_book</span>
+</div>
+<h3 class="text-lg font-bold text-[#101917] dark:text-white mb-2">Quran &amp; Sunnah</h3>
+<p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">APIs, reading apps, and memorization tools.</p>
+</a>
+<!-- Category Card 2 -->
+<a class="group bg-white dark:bg-surface-dark p-6 rounded-2xl border border-[#e9f1ef] dark:border-gray-700 hover:border-primary/50 hover:shadow-lg transition-all duration-300" href="#">
+<div class="w-12 h-12 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">volunteer_activism</span>
+</div>
+<h3 class="text-lg font-bold text-[#101917] dark:text-white mb-2">Charity &amp; Zakat</h3>
+<p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">Donation platforms, Zakat calculators, and aid tracking.</p>
+</a>
+<!-- Category Card 3 -->
+<a class="group bg-white dark:bg-surface-dark p-6 rounded-2xl border border-[#e9f1ef] dark:border-gray-700 hover:border-primary/50 hover:shadow-lg transition-all duration-300" href="#">
+<div class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">school</span>
+</div>
+<h3 class="text-lg font-bold text-[#101917] dark:text-white mb-2">Islamic EdTech</h3>
+<p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">LMS for Madrasahs, Arabic learning, and kids apps.</p>
+</a>
+<!-- Category Card 4 -->
+<a class="group bg-white dark:bg-surface-dark p-6 rounded-2xl border border-[#e9f1ef] dark:border-gray-700 hover:border-primary/50 hover:shadow-lg transition-all duration-300" href="#">
+<div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined">savings</span>
+</div>
+<h3 class="text-lg font-bold text-[#101917] dark:text-white mb-2">Halal Finance</h3>
+<p class="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">Ethical investment tools, inheritance calculators.</p>
+</a>
+</div>
+</div>
+</section>
+<!-- How It Works -->
+<section class="py-16 md:py-24 px-4 bg-primary/5 relative overflow-hidden">
+<!-- Background decoration -->
+<div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-primary/5 rounded-full blur-3xl"></div>
+<div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 bg-secondary/5 rounded-full blur-3xl"></div>
+<div class="max-w-[1280px] mx-auto relative z-10">
+<div class="text-center mb-16">
+<h2 class="text-3xl md:text-4xl font-black text-[#101917] dark:text-white tracking-tight mb-4">How It Works</h2>
+<p class="text-gray-600 dark:text-gray-300 max-w-xl mx-auto">Your journey from code commit to eternal reward.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+<!-- Connecting Line (Desktop) -->
+<div class="hidden md:block absolute top-12 left-[16%] right-[16%] h-0.5 bg-gray-200 dark:bg-gray-700 -z-10"></div>
+<!-- Step 1 -->
+<div class="flex flex-col items-center text-center">
+<div class="w-24 h-24 rounded-full bg-white dark:bg-surface-dark border-4 border-primary/20 flex items-center justify-center mb-6 shadow-sm">
+<span class="material-symbols-outlined text-4xl text-primary">search</span>
+</div>
+<h3 class="text-xl font-bold text-[#101917] dark:text-white mb-2">1. Discover</h3>
+<p class="text-sm text-gray-500 dark:text-gray-400 max-w-xs">Find open-source projects that match your tech stack and interests.</p>
+</div>
+<!-- Step 2 -->
+<div class="flex flex-col items-center text-center">
+<div class="w-24 h-24 rounded-full bg-white dark:bg-surface-dark border-4 border-primary/20 flex items-center justify-center mb-6 shadow-sm">
+<span class="material-symbols-outlined text-4xl text-primary">code_blocks</span>
+</div>
+<h3 class="text-xl font-bold text-[#101917] dark:text-white mb-2">2. Contribute</h3>
+<p class="text-sm text-gray-500 dark:text-gray-400 max-w-xs">Submit pull requests, fix bugs, or add features to improve the codebase.</p>
+</div>
+<!-- Step 3 -->
+<div class="flex flex-col items-center text-center">
+<div class="w-24 h-24 rounded-full bg-white dark:bg-surface-dark border-4 border-secondary/40 flex items-center justify-center mb-6 shadow-sm relative">
+<span class="material-symbols-outlined text-4xl text-secondary">favorite</span>
+<span class="absolute -top-2 -right-2 bg-secondary text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Reward</span>
+</div>
+<h3 class="text-xl font-bold text-[#101917] dark:text-white mb-2">3. Earn Hasanat</h3>
+<p class="text-sm text-gray-500 dark:text-gray-400 max-w-xs">Benefit from Sadaqah Jariyah as your code serves the community continuously.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Featured Projects -->
+<section class="py-16 md:py-24 px-4 bg-background-light dark:bg-background-dark">
+<div class="max-w-[1280px] mx-auto">
+<div class="flex items-center justify-between mb-10">
+<h2 class="text-3xl font-bold text-[#101917] dark:text-white tracking-tight">Featured Projects</h2>
+<div class="flex gap-2">
+<button class="w-10 h-10 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<button class="w-10 h-10 rounded-full border border-gray-200 dark:border-gray-700 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Project Card 1 -->
+<div class="flex flex-col rounded-xl overflow-hidden bg-white dark:bg-surface-dark border border-[#e9f1ef] dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+<div class="relative h-48 bg-gray-100 dark:bg-gray-800">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Open Quran book on wooden stand" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBe9BPjH_kyQ6s_7uZp52BCZLS-A5VHklQZdcZyClruU3MeD824lCKUXflMOirohEzXjWTW5tTblZyTctgcRPUarBPi4XMyPc77ga_SwDQytoCG3T2Hj-weCk5jR4TNlFiyO_mP2euiSgtOM49S1snkJFjdwfQsCq4tUqJTUX697IIj82LGskvQBbe7GcrQe8yB1mNByBSXWuyzSMM4wVI-GpTzVkq7K_7nbtmSzbrIK1VeDHRTqX4NYN0SZHe7Yu7wtXH0tzpOsM0');"></div>
+<div class="absolute top-4 right-4 bg-white/90 dark:bg-black/80 backdrop-blur px-2 py-1 rounded text-xs font-bold text-gray-800 dark:text-gray-200">
+                                 1.2k Stars
+                             </div>
+</div>
+<div class="p-6 flex flex-col flex-1">
+<div class="flex gap-2 mb-3">
+<span class="px-2 py-1 rounded bg-blue-100 text-blue-700 text-xs font-semibold">Python</span>
+<span class="px-2 py-1 rounded bg-green-100 text-green-700 text-xs font-semibold">Django</span>
+</div>
+<h3 class="text-lg font-bold text-[#101917] dark:text-white mb-2">OpenQuran API</h3>
+<p class="text-sm text-gray-500 dark:text-gray-400 mb-6 flex-1">A RESTful API for Quranic verses, translations, and audio. Needs help with Python optimization.</p>
+<div class="flex items-center justify-between mt-auto pt-4 border-t border-gray-100 dark:border-gray-700">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-green-500"></span>
+<span class="text-xs text-gray-500">2 Issues Open</span>
+</div>
+<button class="text-primary font-bold text-sm hover:underline">View Repo</button>
+</div>
+</div>
+</div>
+<!-- Project Card 2 -->
+<div class="flex flex-col rounded-xl overflow-hidden bg-white dark:bg-surface-dark border border-[#e9f1ef] dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+<div class="relative h-48 bg-gray-100 dark:bg-gray-800">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Silhouette of mosque architecture at sunset" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDYJ0RpToF42PPb1QSYd6hK_i2tt5wkrtzpjGBp6RyyOiXUTMn1S97lIMSRXMOKB4eYBCsdr8DY_hMUbO5oN2pVJof7kndPW47h4rmVCmfLe5HxzvQes584GTTRwe68CL4e7M_k_UFdkxj7WKA3-ZsmgYYOGyhgspb5RSlzS0a5mNRM4oLuwd34ZW86-0miicRPFEQ-xWqy4V4CNjAO2j81xJT6xR9SFINaYx87iu7WFiWDxzNzMm759hXWKhBy3jSjXqFJdnZ8a0M');"></div>
+<div class="absolute top-4 right-4 bg-white/90 dark:bg-black/80 backdrop-blur px-2 py-1 rounded text-xs font-bold text-gray-800 dark:text-gray-200">
+                                 850 Stars
+                             </div>
+</div>
+<div class="p-6 flex flex-col flex-1">
+<div class="flex gap-2 mb-3">
+<span class="px-2 py-1 rounded bg-yellow-100 text-yellow-700 text-xs font-semibold">JavaScript</span>
+<span class="px-2 py-1 rounded bg-sky-100 text-sky-700 text-xs font-semibold">React</span>
+</div>
+<h3 class="text-lg font-bold text-[#101917] dark:text-white mb-2">Salah Time Calculator</h3>
+<p class="text-sm text-gray-500 dark:text-gray-400 mb-6 flex-1">Modern, lightweight prayer time library supporting multiple calculation methods.</p>
+<div class="flex items-center justify-between mt-auto pt-4 border-t border-gray-100 dark:border-gray-700">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-yellow-500"></span>
+<span class="text-xs text-gray-500">5 Issues Open</span>
+</div>
+<button class="text-primary font-bold text-sm hover:underline">View Repo</button>
+</div>
+</div>
+</div>
+<!-- Project Card 3 -->
+<div class="flex flex-col rounded-xl overflow-hidden bg-white dark:bg-surface-dark border border-[#e9f1ef] dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow">
+<div class="relative h-48 bg-gray-100 dark:bg-gray-800">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Financial charts on a tablet screen" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDcLYZANg8PU5jDm9vwL5yvA8AZvq59F17fwC2XT-VlV44ivO4HeSdUc60M8UGuiZbDV9C1gtAFCWtFoNOf0aV85q1HQE1TkHQHtWAqm6hE0EmG5Bk3jOdW8NHmzZMBWJt-v5d-QwZWhJs9eF-crKbafOIr-UXNVkq85hNzzxYdJJ03CKtWWdlOW0FO-mUQawk6462KwoHz7AwZhEIoHONpd0eyzmKPZWjZKkG2utRJmOkkztPxqye2T0p2F8RGqd0pPttBcdjzv6w');"></div>
+<div class="absolute top-4 right-4 bg-white/90 dark:bg-black/80 backdrop-blur px-2 py-1 rounded text-xs font-bold text-gray-800 dark:text-gray-200">
+                                 400 Stars
+                             </div>
+</div>
+<div class="p-6 flex flex-col flex-1">
+<div class="flex gap-2 mb-3">
+<span class="px-2 py-1 rounded bg-purple-100 text-purple-700 text-xs font-semibold">Kotlin</span>
+<span class="px-2 py-1 rounded bg-orange-100 text-orange-700 text-xs font-semibold">Android</span>
+</div>
+<h3 class="text-lg font-bold text-[#101917] dark:text-white mb-2">Zakat Dashboard</h3>
+<p class="text-sm text-gray-500 dark:text-gray-400 mb-6 flex-1">Mobile application to help users track wealth and calculate Zakat annually.</p>
+<div class="flex items-center justify-between mt-auto pt-4 border-t border-gray-100 dark:border-gray-700">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-green-500"></span>
+<span class="text-xs text-gray-500">12 Issues Open</span>
+</div>
+<button class="text-primary font-bold text-sm hover:underline">View Repo</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- CTA Section -->
+<section class="px-4 pb-20 pt-10">
+<div class="max-w-[1280px] mx-auto bg-primary dark:bg-primary-dark rounded-3xl p-8 md:p-16 text-center text-white relative overflow-hidden">
+<!-- Decorative elements -->
+<div class="absolute top-0 left-0 w-full h-full opacity-10" style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 20px 20px;"></div>
+<div class="relative z-10 max-w-2xl mx-auto flex flex-col items-center gap-6">
+<h2 class="text-3xl md:text-5xl font-black tracking-tight">Ready to code for a cause?</h2>
+<p class="text-lg text-primary-50">Join thousands of developers turning their commits into Sadaqah Jariyah.</p>
+<div class="flex flex-col sm:flex-row gap-4 w-full justify-center mt-4">
+<button class="bg-white text-primary hover:bg-gray-100 px-8 py-3 rounded-xl font-bold text-lg transition-colors">
+                            Sign Up Now
+                        </button>
+<button class="bg-primary-dark/50 hover:bg-primary-dark border border-white/20 text-white px-8 py-3 rounded-xl font-bold text-lg transition-colors">
+                            Explore Projects
+                        </button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-white dark:bg-surface-dark border-t border-[#e9f1ef] dark:border-gray-800 py-12 px-4">
+<div class="max-w-[1280px] mx-auto">
+<div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+<div class="col-span-1 md:col-span-1">
+<div class="flex items-center gap-2 mb-4">
+<div class="size-6 text-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">mosque</span>
+</div>
+<h2 class="text-[#101917] dark:text-white text-lg font-bold">Waqf</h2>
+</div>
+<p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Building the digital future of the Ummah, one commit at a time.</p>
+<div class="flex gap-4">
+<a class="text-gray-400 hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">code</span></a>
+<a class="text-gray-400 hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">mail</span></a>
+</div>
+</div>
+<div>
+<h4 class="font-bold text-[#101917] dark:text-white mb-4">Platform</h4>
+<ul class="space-y-2 text-sm text-gray-500 dark:text-gray-400">
+<li><a class="hover:text-primary" href="#">Explore Projects</a></li>
+<li><a class="hover:text-primary" href="#">How it Works</a></li>
+<li><a class="hover:text-primary" href="#">Pricing</a></li>
+<li><a class="hover:text-primary" href="#">Leaderboard</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold text-[#101917] dark:text-white mb-4">Community</h4>
+<ul class="space-y-2 text-sm text-gray-500 dark:text-gray-400">
+<li><a class="hover:text-primary" href="#">Guidelines</a></li>
+<li><a class="hover:text-primary" href="#">Discord</a></li>
+<li><a class="hover:text-primary" href="#">Blog</a></li>
+<li><a class="hover:text-primary" href="#">Events</a></li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold text-[#101917] dark:text-white mb-4">Legal</h4>
+<ul class="space-y-2 text-sm text-gray-500 dark:text-gray-400">
+<li><a class="hover:text-primary" href="#">Privacy Policy</a></li>
+<li><a class="hover:text-primary" href="#">Terms of Service</a></li>
+<li><a class="hover:text-primary" href="#">Cookie Policy</a></li>
+</ul>
+</div>
+</div>
+<div class="pt-8 border-t border-gray-100 dark:border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4">
+<p class="text-sm text-gray-500 dark:text-gray-400">© 2023 Waqf Platform. All rights reserved.</p>
+<div class="flex items-center gap-2 text-sm text-gray-400">
+<span>Made with</span>
+<span class="material-symbols-outlined text-[16px] text-red-500">favorite</span>
+<span>for the Ummah</span>
+</div>
+</div>
+</div>
+</footer>
+</body></html>

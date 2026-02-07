@@ -1,0 +1,258 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============ ENUMS ============
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum ProjectStatus {
+  DRAFT
+  PENDING
+  OPEN
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum ProjectCategory {
+  QURAN
+  PRAYER
+  CHARITY
+  EDUCATION
+  COMMUNITY
+  TOOLS
+}
+
+enum ProjectLanguage {
+  ARABIC
+  ENGLISH
+  BOTH
+}
+
+// ============ MODELS ============
+
+model User {
+  id                 String               @id @default(cuid())
+  email              String               @unique
+  name               String
+  avatar             String?
+  passwordHash       String?
+  emailVerified      DateTime?
+  role               UserRole             @default(USER)
+  preferredLanguage  String               @default("ar")
+  contributorProfile ContributorProfile?
+  organizations      Organization[]
+  projects           Project[]
+  applications       Application[]
+  sentMessages       Message[]
+  notifications      Notification[]
+  accounts           Account[] // For NextAuth
+  sessions           Session[] // For NextAuth
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+}
+
+model ContributorProfile {
+  id                  String             @id @default(cuid())
+  userId              String             @unique
+  user                User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bio                 String?
+  intentionStatement  String?
+  timezone            String?
+  hoursPerWeek        Int?
+  isAvailable         Boolean            @default(true)
+  githubSynced        Boolean            @default(false)
+  githubUsername      String?
+  githubData          Json? // Cached GitHub stats
+  spokenLanguages     String[]           @default(["ar"])
+  preferredCategories ProjectCategory[]
+  skills              ContributorSkill[]
+  portfolioItems      PortfolioItem[]
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+}
+
+model Organization {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  slug        String    @unique
+  description String?
+  logo        String?
+  website     String?
+  verified    Boolean   @default(false)
+  projects    Project[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Skill {
+  id                Int                @id @default(autoincrement())
+  name              String             @unique
+  nameAr            String?
+  category          String
+  aliases           String[]           @default([])
+  contributorSkills ContributorSkill[]
+  projectSkills     ProjectSkill[]
+}
+
+model ContributorSkill {
+  id              Int                @id @default(autoincrement())
+  contributorId   String
+  contributor     ContributorProfile @relation(fields: [contributorId], references: [id], onDelete: Cascade)
+  skillId         Int
+  skill           Skill              @relation(fields: [skillId], references: [id])
+  level           SkillLevel         @default(BEGINNER)
+  yearsExperience Int?
+
+  @@unique([contributorId, skillId])
+}
+
+model PortfolioItem {
+  id            String             @id @default(cuid())
+  contributorId String
+  contributor   ContributorProfile @relation(fields: [contributorId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
+  url           String
+  imageUrl      String?
+  order         Int                @default(0)
+  createdAt     DateTime           @default(now())
+}
+
+model Project {
+  id             String          @id @default(cuid())
+  ownerId        String
+  owner          User            @relation(fields: [ownerId], references: [id])
+  organizationId String?
+  organization   Organization?   @relation(fields: [organizationId], references: [id])
+  title          String
+  slug           String          @unique
+  description    String
+  impact         String?
+  category       ProjectCategory
+  language       ProjectLanguage
+  country        String?
+  status         ProjectStatus   @default(DRAFT)
+  timeCommitment String?
+  duration       String?
+  githubUrl      String?
+  featuredImage  String?
+  featured       Boolean         @default(false)
+  featuredUntil  DateTime?
+  skills         ProjectSkill[]
+  applications   Application[]
+  adminFeedback  String?
+  viewCount      Int             @default(0)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([status, category])
+  @@index([featured, featuredUntil])
+}
+
+model ProjectSkill {
+  id         Int     @id @default(autoincrement())
+  projectId  String
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  skillId    Int
+  skill      Skill   @relation(fields: [skillId], references: [id])
+  isRequired Boolean @default(true)
+
+  @@unique([projectId, skillId])
+}
+
+model Application {
+  id            String            @id @default(cuid())
+  projectId     String
+  project       Project           @relation(fields: [projectId], references: [id])
+  contributorId String
+  contributor   User              @relation(fields: [contributorId], references: [id])
+  status        ApplicationStatus @default(PENDING)
+  message       String?
+  portfolioUrl  String?
+  hoursPerWeek  Int?
+  messages      Message[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@unique([projectId, contributorId])
+  @@index([status])
+}
+
+model Message {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  senderId      String
+  sender        User        @relation(fields: [senderId], references: [id])
+  content       String
+  readAt        DateTime?
+  createdAt     DateTime    @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  content   String?
+  read      Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
+}
+
+// ============ NextAuth.js Models ============
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
