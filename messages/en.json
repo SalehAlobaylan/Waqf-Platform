@@ -161,5 +161,32 @@
         "forTheUmmah": "for the Ummah",
         "impact": "Impact",
         "usersReached": "1.2M Users reached"
+    },
+    "admin": {
+        "panel": "Admin Panel",
+        "dashboard": "Dashboard",
+        "projects": "Projects",
+        "users": "Users",
+        "analytics": "Analytics",
+        "backToSite": "Back to Site",
+        "pendingReview": "Pending Review",
+        "approve": "Approve",
+        "reject": "Reject",
+        "feature": "Feature",
+        "unfeature": "Unfeature",
+        "delete": "Delete",
+        "makeAdmin": "Make Admin",
+        "removeAdmin": "Remove Admin",
+        "confirmApproval": "Confirm Approval",
+        "confirmRejection": "Confirm Rejection",
+        "addFeedback": "Add feedback (optional)...",
+        "noProjects": "No projects found",
+        "noUsers": "No users found",
+        "totalUsers": "Total Users",
+        "totalProjects": "Total Projects",
+        "activeProjects": "Active Projects",
+        "acceptanceRate": "Acceptance Rate",
+        "thisMonth": "this month",
+        "thisWeek": "this week"
     }
 }

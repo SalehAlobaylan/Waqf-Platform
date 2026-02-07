@@ -161,5 +161,32 @@
         "forTheUmmah": "للأمة",
         "impact": "التأثير",
         "usersReached": "ملايين المستخدمين"
+    },
+    "admin": {
+        "panel": "لوحة الإدارة",
+        "dashboard": "لوحة التحكم",
+        "projects": "المشاريع",
+        "users": "المستخدمين",
+        "analytics": "الإحصائيات",
+        "backToSite": "العودة للموقع",
+        "pendingReview": "قيد المراجعة",
+        "approve": "موافقة",
+        "reject": "رفض",
+        "feature": "تمييز",
+        "unfeature": "إلغاء التمييز",
+        "delete": "حذف",
+        "makeAdmin": "ترقية لمدير",
+        "removeAdmin": "تحويل لمستخدم",
+        "confirmApproval": "تأكيد الموافقة",
+        "confirmRejection": "تأكيد الرفض",
+        "addFeedback": "أضف ملاحظات (اختياري)...",
+        "noProjects": "لا توجد مشاريع",
+        "noUsers": "لا يوجد مستخدمين",
+        "totalUsers": "إجمالي المستخدمين",
+        "totalProjects": "إجمالي المشاريع",
+        "activeProjects": "مشاريع نشطة",
+        "acceptanceRate": "معدل القبول",
+        "thisMonth": "هذا الشهر",
+        "thisWeek": "هذا الأسبوع"
     }
 }
