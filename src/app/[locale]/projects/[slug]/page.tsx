@@ -2,19 +2,23 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { ArrowLeft, Clock, Users, ExternalLink, Github, Calendar, CheckCircle, Tag } from "lucide-react";
+import {
+    BookOpen, Heart, Star, Share2, ExternalLink, Github,
+    Calendar, Users, Clock, CheckCircle, Circle,
+    ChevronRight, GitPullRequest, AlertCircle
+} from "lucide-react";
 
 interface ProjectPageProps {
     params: Promise<{ locale: string; slug: string }>;
 }
 
-const categoryColors: Record<string, string> = {
-    QURAN: "bg-emerald-100 text-emerald-700",
-    PRAYER: "bg-blue-100 text-blue-700",
-    CHARITY: "bg-rose-100 text-rose-700",
-    EDUCATION: "bg-amber-100 text-amber-700",
-    COMMUNITY: "bg-purple-100 text-purple-700",
-    TOOLS: "bg-slate-100 text-slate-700",
+const categoryIcons: Record<string, { emoji: string; bgClass: string; textClass: string }> = {
+    QURAN: { emoji: "📖", bgClass: "bg-indigo-100", textClass: "text-indigo-700" },
+    PRAYER: { emoji: "🕌", bgClass: "bg-emerald-100", textClass: "text-emerald-700" },
+    CHARITY: { emoji: "🤲", bgClass: "bg-amber-100", textClass: "text-amber-700" },
+    EDUCATION: { emoji: "📚", bgClass: "bg-blue-100", textClass: "text-blue-700" },
+    COMMUNITY: { emoji: "👥", bgClass: "bg-purple-100", textClass: "text-purple-700" },
+    TOOLS: { emoji: "⚙️", bgClass: "bg-slate-100", textClass: "text-slate-700" },
 };
 
 export async function generateMetadata({ params }: ProjectPageProps) {
@@ -37,30 +41,10 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     const project = await prisma.project.findUnique({
         where: { slug },
         include: {
-            skills: {
-                include: {
-                    skill: true,
-                },
-            },
-            owner: {
-                select: {
-                    id: true,
-                    name: true,
-                    avatar: true,
-                },
-            },
-            organization: {
-                select: {
-                    id: true,
-                    name: true,
-                    logo: true,
-                },
-            },
-            _count: {
-                select: {
-                    applications: true,
-                },
-            },
+            skills: { include: { skill: true } },
+            owner: { select: { id: true, name: true, avatar: true } },
+            organization: { select: { id: true, name: true, logo: true } },
+            _count: { select: { applications: true } },
         },
     });
 
@@ -71,120 +55,119 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     const isOwner = session?.user?.id === project.owner.id;
     const requiredSkills = project.skills.filter((s) => s.isRequired);
     const optionalSkills = project.skills.filter((s) => !s.isRequired);
+    const icon = categoryIcons[project.category] || { emoji: "📦", bgClass: "bg-gray-100", textClass: "text-gray-700" };
 
     return (
-        <div className="min-h-screen bg-secondary-50">
-            {/* Hero */}
-            <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 text-white">
-                <div className="container max-w-5xl mx-auto px-4 py-8">
-                    <Link
-                        href={`/${locale}/explore`}
-                        className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-6 transition-colors"
-                    >
-                        <ArrowLeft className="w-4 h-4" />
-                        Back to Explore
+        <div className="min-h-screen bg-waqf-bg">
+            {/* Breadcrumbs */}
+            <div className="max-w-[1280px] mx-auto px-6 pt-6">
+                <nav className="flex items-center gap-2 text-sm text-secondary-500">
+                    <Link href={`/${locale}/explore`} className="hover:text-primary-600 transition-colors">
+                        {locale === "ar" ? "استكشاف" : "Explore"}
                     </Link>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                    <span className="text-secondary-400">{project.category}</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                    <span className="text-secondary-900 font-medium truncate max-w-[200px]">{project.title}</span>
+                </nav>
+            </div>
 
-                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
+            {/* Hero Card */}
+            <div className="max-w-[1280px] mx-auto px-6 py-6">
+                <div className="bg-white rounded-2xl border border-waqf-border p-8 shadow-sm">
+                    <div className="flex flex-col md:flex-row md:items-start gap-6">
+                        <div className={`w-14 h-14 ${icon.bgClass} rounded-2xl flex items-center justify-center text-2xl shrink-0`}>
+                            {icon.emoji}
+                        </div>
                         <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-4">
-                                <span className={`px-3 py-1 text-sm font-medium rounded-full ${categoryColors[project.category]}`}>
-                                    {project.category}
+                            <div className="flex flex-wrap gap-2 mb-3">
+                                <span className="px-3 py-1 text-xs font-semibold rounded-full bg-primary-600/10 text-primary-600">
+                                    {locale === "ar" ? "تطوير نشط" : "Active Development"}
                                 </span>
                                 {project.status === "OPEN" && (
-                                    <span className="inline-flex items-center gap-1 px-3 py-1 text-sm font-medium bg-green-400/20 text-green-100 rounded-full">
-                                        <CheckCircle className="w-3.5 h-3.5" />
-                                        Open for Contributors
+                                    <span className="px-3 py-1 text-xs font-semibold rounded-full bg-accent-500/10 text-accent-600">
+                                        {locale === "ar" ? "يحتاج مساعدة" : "Help Wanted"}
                                     </span>
                                 )}
                             </div>
-
-                            <h1 className="text-3xl md:text-4xl font-bold mb-4">{project.title}</h1>
-
-                            <div className="flex flex-wrap items-center gap-4 text-white/80 text-sm">
-                                <span className="flex items-center gap-2">
-                                    <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-medium">
-                                        {project.owner.name.charAt(0)}
-                                    </div>
-                                    {project.owner.name}
-                                </span>
-                                <span className="flex items-center gap-1.5">
-                                    <Calendar className="w-4 h-4" />
-                                    {new Date(project.createdAt).toLocaleDateString()}
-                                </span>
-                                <span className="flex items-center gap-1.5">
-                                    <Users className="w-4 h-4" />
-                                    {project._count.applications} applicants
-                                </span>
-                                {project.timeCommitment && (
-                                    <span className="flex items-center gap-1.5">
-                                        <Clock className="w-4 h-4" />
-                                        {project.timeCommitment}
-                                    </span>
-                                )}
-                            </div>
+                            <h1 className="text-2xl md:text-3xl font-bold text-secondary-900 mb-3 tracking-tight">
+                                {project.title}
+                            </h1>
+                            <p className="text-secondary-500 max-w-2xl leading-relaxed">
+                                {project.description?.slice(0, 180)}
+                            </p>
                         </div>
-
-                        <div className="flex flex-col gap-3">
+                        <div className="flex flex-wrap gap-3 shrink-0 md:flex-col">
                             {isOwner ? (
                                 <Link
                                     href={`/${locale}/projects/${project.slug}/edit`}
-                                    className="px-6 py-3 bg-white text-primary-700 font-medium rounded-xl hover:bg-white/90 transition-colors text-center shadow-lg"
+                                    className="flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-colors shadow-md shadow-primary-600/20"
                                 >
-                                    Edit Project
+                                    {locale === "ar" ? "تعديل المشروع" : "Edit Project"}
                                 </Link>
                             ) : (
-                                <button className="px-6 py-3 bg-white text-primary-700 font-medium rounded-xl hover:bg-white/90 transition-colors shadow-lg">
-                                    Contribute to this Project
+                                <button className="flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-colors shadow-md shadow-primary-600/20">
+                                    {locale === "ar" ? "ساهم الآن" : "Contribute Now"}
                                 </button>
                             )}
-                            {project.githubUrl && (
-                                <a
-                                    href={project.githubUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center justify-center gap-2 px-6 py-3 bg-white/10 text-white font-medium rounded-xl hover:bg-white/20 transition-colors border border-white/20"
-                                >
-                                    <Github className="w-5 h-5" />
-                                    View on GitHub
-                                </a>
-                            )}
+                            <div className="flex gap-2">
+                                <button className="flex items-center gap-2 px-4 py-2.5 border border-secondary-200 rounded-xl bg-white hover:bg-secondary-50 transition-colors text-sm font-medium text-secondary-700">
+                                    <Star className="w-4 h-4" />
+                                    {locale === "ar" ? "تفضيل" : "Star"}
+                                </button>
+                                <button className="flex items-center gap-2 px-4 py-2.5 border border-secondary-200 rounded-xl bg-white hover:bg-secondary-50 transition-colors text-sm font-medium text-secondary-700">
+                                    <Share2 className="w-4 h-4" />
+                                    {locale === "ar" ? "مشاركة" : "Share"}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Content */}
-            <div className="container max-w-5xl mx-auto px-4 py-8">
-                <div className="grid gap-8 md:grid-cols-3">
-                    {/* Main Content */}
-                    <div className="md:col-span-2 space-y-6">
-                        {/* Description */}
-                        <div className="bg-white rounded-xl border border-secondary-100 p-6">
-                            <h2 className="text-lg font-semibold text-secondary-900 mb-4">About this Project</h2>
-                            <div className="prose prose-secondary max-w-none">
-                                <p className="text-secondary-700 whitespace-pre-wrap">{project.description}</p>
-                            </div>
-                        </div>
-
-                        {/* Impact */}
+            {/* 8+4 Grid Layout */}
+            <div className="max-w-[1280px] mx-auto px-6 pb-12">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* Main Content (8 cols) */}
+                    <div className="lg:col-span-8 space-y-6">
+                        {/* Sadaqah Jariyah Impact */}
                         {project.impact && (
-                            <div className="bg-gradient-to-br from-primary-50 to-primary-100 rounded-xl border border-primary-200 p-6">
-                                <h2 className="text-lg font-semibold text-primary-900 mb-4 flex items-center gap-2">
-                                    <span className="text-2xl">🌟</span>
-                                    Impact on the Ummah
-                                </h2>
-                                <p className="text-primary-800">{project.impact}</p>
+                            <div className="rounded-2xl p-6 bg-gradient-to-br from-primary-600 to-primary-800 text-white relative overflow-hidden">
+                                <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -mr-10 -mt-10"></div>
+                                <div className="relative z-10">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <Heart className="w-5 h-5 text-accent-400" fill="currentColor" />
+                                        <h2 className="text-lg font-bold">
+                                            {locale === "ar" ? "أثر الصدقة الجارية" : "Sadaqah Jariyah Impact"}
+                                        </h2>
+                                    </div>
+                                    <p className="text-white/90 leading-relaxed">{project.impact}</p>
+                                </div>
                             </div>
                         )}
 
-                        {/* Skills */}
-                        <div className="bg-white rounded-xl border border-secondary-100 p-6">
-                            <h2 className="text-lg font-semibold text-secondary-900 mb-4">Required Skills</h2>
+                        {/* About / README */}
+                        <div className="bg-white rounded-2xl border border-waqf-border p-6">
+                            <h2 className="text-lg font-bold text-secondary-900 mb-4 flex items-center gap-2">
+                                <BookOpen className="w-5 h-5 text-secondary-400" />
+                                {locale === "ar" ? "حول هذا المشروع" : "About this Project"}
+                            </h2>
+                            <div className="prose prose-secondary max-w-none">
+                                <p className="text-secondary-700 whitespace-pre-wrap leading-relaxed">{project.description}</p>
+                            </div>
+                        </div>
+
+                        {/* Required Skills */}
+                        <div className="bg-white rounded-2xl border border-waqf-border p-6">
+                            <h2 className="text-lg font-bold text-secondary-900 mb-4">
+                                {locale === "ar" ? "المهارات المطلوبة" : "Required Skills"}
+                            </h2>
 
                             {requiredSkills.length > 0 && (
-                                <div className="mb-6">
-                                    <p className="text-sm text-secondary-500 mb-3">Required</p>
+                                <div className="mb-5">
+                                    <p className="text-sm font-medium text-secondary-500 mb-3">
+                                        {locale === "ar" ? "مطلوبة" : "Required"}
+                                    </p>
                                     <div className="flex flex-wrap gap-2">
                                         {requiredSkills.map((ps) => (
                                             <span
@@ -200,7 +183,9 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
                             {optionalSkills.length > 0 && (
                                 <div>
-                                    <p className="text-sm text-secondary-500 mb-3">Nice to have</p>
+                                    <p className="text-sm font-medium text-secondary-500 mb-3">
+                                        {locale === "ar" ? "يفضل وجودها" : "Nice to have"}
+                                    </p>
                                     <div className="flex flex-wrap gap-2">
                                         {optionalSkills.map((ps) => (
                                             <span
@@ -214,66 +199,197 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                                 </div>
                             )}
                         </div>
-                    </div>
 
-                    {/* Sidebar */}
-                    <div className="space-y-6">
-                        {/* Owner Card */}
-                        <div className="bg-white rounded-xl border border-secondary-100 p-6">
-                            <h3 className="text-sm font-medium text-secondary-500 mb-4">Project Owner</h3>
-                            <Link
-                                href={`/${locale}/profile/${project.owner.id}`}
-                                className="flex items-center gap-3 group"
-                            >
-                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white text-lg font-bold">
-                                    {project.owner.name.charAt(0)}
-                                </div>
-                                <div>
-                                    <p className="font-medium text-secondary-900 group-hover:text-primary-600 transition-colors">
-                                        {project.owner.name}
-                                    </p>
-                                    <p className="text-sm text-secondary-500">View Profile</p>
-                                </div>
-                            </Link>
+                        {/* Roadmap */}
+                        <div className="bg-white rounded-2xl border border-waqf-border p-6">
+                            <h2 className="text-lg font-bold text-secondary-900 mb-4">
+                                {locale === "ar" ? "خارطة الطريق" : "Project Roadmap"}
+                            </h2>
+                            <div className="space-y-4">
+                                {[
+                                    { label: locale === "ar" ? "إعداد البنية التحتية" : "Set up project infrastructure", done: true },
+                                    { label: locale === "ar" ? "التصميم الأولي" : "Initial API design & documentation", done: true },
+                                    { label: locale === "ar" ? "التطوير الأساسي" : "Core feature development", done: false },
+                                    { label: locale === "ar" ? "الاختبار والنشر" : "Testing & deployment", done: false },
+                                ].map((item, i) => (
+                                    <div key={i} className="flex items-center gap-3">
+                                        {item.done ? (
+                                            <CheckCircle className="w-5 h-5 text-primary-600 shrink-0" />
+                                        ) : (
+                                            <Circle className="w-5 h-5 text-secondary-300 shrink-0" />
+                                        )}
+                                        <span className={`text-sm ${item.done ? "text-secondary-900 font-medium" : "text-secondary-500"}`}>
+                                            {item.label}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
 
-                        {/* Details */}
-                        <div className="bg-white rounded-xl border border-secondary-100 p-6">
-                            <h3 className="text-sm font-medium text-secondary-500 mb-4">Details</h3>
-                            <dl className="space-y-4 text-sm">
+                        {/* Recent Activity */}
+                        <div className="bg-white rounded-2xl border border-waqf-border p-6">
+                            <h2 className="text-lg font-bold text-secondary-900 mb-4">
+                                {locale === "ar" ? "النشاط الأخير" : "Recent Activity"}
+                            </h2>
+                            <div className="space-y-4">
+                                <div className="flex items-start gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center shrink-0 mt-0.5">
+                                        <GitPullRequest className="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-secondary-900">
+                                            <span className="font-medium">{locale === "ar" ? "تم دمج PR #42:" : "PR #42 merged:"}</span>{" "}
+                                            {locale === "ar" ? "إضافة دعم البحث" : "Add search functionality"}
+                                        </p>
+                                        <p className="text-xs text-secondary-400 mt-1">
+                                            {locale === "ar" ? "منذ يومين" : "2 days ago"}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
+                                        <AlertCircle className="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-secondary-900">
+                                            <span className="font-medium">{locale === "ar" ? "Issue #15:" : "Issue #15:"}</span>{" "}
+                                            {locale === "ar" ? "تحسين أداء الاستعلامات" : "Improve query performance"}
+                                        </p>
+                                        <p className="text-xs text-secondary-400 mt-1">
+                                            {locale === "ar" ? "منذ 5 أيام" : "5 days ago"}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Sidebar (4 cols) */}
+                    <div className="lg:col-span-4 space-y-6">
+                        {/* Project Details */}
+                        <div className="bg-white rounded-2xl border border-waqf-border p-6 sticky top-[80px]">
+                            <h3 className="text-sm font-semibold text-secondary-900 mb-4">
+                                {locale === "ar" ? "تفاصيل المشروع" : "Project Details"}
+                            </h3>
+                            <dl className="space-y-3 text-sm">
                                 <div className="flex justify-between">
-                                    <dt className="text-secondary-600">Status</dt>
-                                    <dd className="font-medium text-secondary-900 flex items-center gap-1.5">
-                                        <Tag className="w-4 h-4" />
-                                        {project.status}
+                                    <dt className="text-secondary-500 flex items-center gap-1.5">
+                                        <Calendar className="w-4 h-4" />
+                                        {locale === "ar" ? "تاريخ الإنشاء" : "Created"}
+                                    </dt>
+                                    <dd className="font-medium text-secondary-900">
+                                        {new Date(project.createdAt).toLocaleDateString(locale === "ar" ? "ar-SA" : "en-US", {
+                                            year: "numeric",
+                                            month: "short",
+                                        })}
                                     </dd>
                                 </div>
                                 <div className="flex justify-between">
-                                    <dt className="text-secondary-600">Language</dt>
-                                    <dd className="font-medium text-secondary-900">{project.language}</dd>
+                                    <dt className="text-secondary-500 flex items-center gap-1.5">
+                                        <Users className="w-4 h-4" />
+                                        {locale === "ar" ? "المتقدمين" : "Applicants"}
+                                    </dt>
+                                    <dd className="font-medium text-secondary-900">{project._count.applications}</dd>
                                 </div>
-                                {project.duration && (
-                                    <div className="flex justify-between">
-                                        <dt className="text-secondary-600">Duration</dt>
-                                        <dd className="font-medium text-secondary-900">{project.duration}</dd>
-                                    </div>
-                                )}
                                 {project.timeCommitment && (
                                     <div className="flex justify-between">
-                                        <dt className="text-secondary-600">Commitment</dt>
+                                        <dt className="text-secondary-500 flex items-center gap-1.5">
+                                            <Clock className="w-4 h-4" />
+                                            {locale === "ar" ? "الالتزام" : "Commitment"}
+                                        </dt>
                                         <dd className="font-medium text-secondary-900">{project.timeCommitment}</dd>
                                     </div>
                                 )}
                             </dl>
                         </div>
 
-                        {/* Share */}
-                        <div className="bg-white rounded-xl border border-secondary-100 p-6">
-                            <h3 className="text-sm font-medium text-secondary-500 mb-4">Share Project</h3>
-                            <div className="flex gap-2">
-                                <button className="flex-1 p-2 text-secondary-600 hover:bg-secondary-100 rounded-lg transition-colors">
-                                    <ExternalLink className="w-5 h-5 mx-auto" />
-                                </button>
+                        {/* Tech Stack */}
+                        <div className="bg-white rounded-2xl border border-waqf-border p-6">
+                            <h3 className="text-sm font-semibold text-secondary-900 mb-3">
+                                {locale === "ar" ? "التقنيات" : "Tech Stack"}
+                            </h3>
+                            <div className="flex flex-wrap gap-2">
+                                {project.skills.slice(0, 6).map((ps) => (
+                                    <span
+                                        key={ps.skillId}
+                                        className="px-3 py-1.5 bg-secondary-50 text-secondary-700 rounded-lg text-xs font-medium"
+                                    >
+                                        {locale === "ar" ? ps.skill.nameAr : ps.skill.name}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Repository / Docs Links */}
+                        <div className="bg-white rounded-2xl border border-waqf-border p-6">
+                            <h3 className="text-sm font-semibold text-secondary-900 mb-3">
+                                {locale === "ar" ? "الروابط" : "Links"}
+                            </h3>
+                            <div className="space-y-2">
+                                {project.githubUrl && (
+                                    <a
+                                        href={project.githubUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-3 p-3 rounded-xl border border-secondary-200 hover:border-primary-600/40 hover:bg-primary-50/50 transition-all group"
+                                    >
+                                        <Github className="w-5 h-5 text-secondary-500 group-hover:text-primary-600" />
+                                        <span className="text-sm font-medium text-secondary-700 group-hover:text-primary-600">
+                                            {locale === "ar" ? "عرض المستودع" : "View Repository"}
+                                        </span>
+                                        <ExternalLink className="w-3.5 h-3.5 text-secondary-400 ml-auto" />
+                                    </a>
+                                )}
+
+                            </div>
+                        </div>
+
+                        {/* Creator Profile */}
+                        <div className="bg-white rounded-2xl border border-waqf-border p-6">
+                            <h3 className="text-sm font-semibold text-secondary-900 mb-4">
+                                {locale === "ar" ? "منشئ المشروع" : "Project Creator"}
+                            </h3>
+                            <Link
+                                href={`/${locale}/profile/${project.owner.id}`}
+                                className="flex items-center gap-3 group mb-4"
+                            >
+                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white text-lg font-bold shadow-md">
+                                    {project.owner.name.charAt(0)}
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-secondary-900 group-hover:text-primary-600 transition-colors">
+                                        {project.owner.name}
+                                    </p>
+                                    <p className="text-xs text-secondary-500">
+                                        {locale === "ar" ? "الملف الشخصي" : "View Profile"}
+                                    </p>
+                                </div>
+                            </Link>
+                            <button className="w-full px-4 py-2.5 border border-secondary-200 rounded-xl text-sm font-medium text-secondary-700 hover:bg-secondary-50 transition-colors">
+                                {locale === "ar" ? "تواصل مع المنشئ" : "Contact Creator"}
+                            </button>
+                        </div>
+
+                        {/* Similar Projects */}
+                        <div className="bg-white rounded-2xl border border-waqf-border p-6">
+                            <h3 className="text-sm font-semibold text-secondary-900 mb-4">
+                                {locale === "ar" ? "مشاريع مشابهة" : "Similar Projects"}
+                            </h3>
+                            <div className="space-y-3">
+                                <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary-50 transition-colors cursor-pointer">
+                                    <div className="w-9 h-9 bg-indigo-50 rounded-lg flex items-center justify-center text-sm">📖</div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-secondary-900 truncate">Quran Reader App</p>
+                                        <p className="text-xs text-secondary-500">React · TypeScript</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary-50 transition-colors cursor-pointer">
+                                    <div className="w-9 h-9 bg-amber-50 rounded-lg flex items-center justify-center text-sm">🤲</div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium text-secondary-900 truncate">Zakat Calculator</p>
+                                        <p className="text-xs text-secondary-500">Flutter · Dart</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

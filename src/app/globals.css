@@ -8,18 +8,18 @@
    ============================================ */
 
 @theme {
-  /* Primary Colors - Emerald (Islamic Green) */
-  --color-primary-50: #ecfdf5;
-  --color-primary-100: #d1fae5;
-  --color-primary-200: #a7f3d0;
-  --color-primary-300: #6ee7b7;
-  --color-primary-400: #34d399;
-  --color-primary-500: #10b981;
-  --color-primary-600: #059669;
-  --color-primary-700: #047857;
-  --color-primary-800: #065f46;
-  --color-primary-900: #064e3b;
-  --color-primary-950: #022c22;
+  /* Primary Colors - Waqf Green (Figma: #1f705d) */
+  --color-primary-50: #e6f5f1;
+  --color-primary-100: #d0ede6;
+  --color-primary-200: #a3dccf;
+  --color-primary-300: #6ec4b2;
+  --color-primary-400: #3da895;
+  --color-primary-500: #258e78;
+  --color-primary-600: #1f705d;
+  --color-primary-700: #195c4c;
+  --color-primary-800: #134a3d;
+  --color-primary-900: #0e3a30;
+  --color-primary-950: #082520;
 
   /* Secondary Colors - Slate */
   --color-secondary-50: #f8fafc;
@@ -34,18 +34,23 @@
   --color-secondary-900: #0f172a;
   --color-secondary-950: #020617;
 
-  /* Accent Colors - Amber/Gold */
-  --color-accent-50: #fffbeb;
-  --color-accent-100: #fef3c7;
-  --color-accent-200: #fde68a;
-  --color-accent-300: #fcd34d;
-  --color-accent-400: #fbbf24;
-  --color-accent-500: #f59e0b;
-  --color-accent-600: #d97706;
-  --color-accent-700: #b45309;
-  --color-accent-800: #92400e;
-  --color-accent-900: #78350f;
-  --color-accent-950: #451a03;
+  /* Accent Colors - Gold (Figma: #d4a056) */
+  --color-accent-50: #fdf8ef;
+  --color-accent-100: #faefd9;
+  --color-accent-200: #f3ddb3;
+  --color-accent-300: #ecc98a;
+  --color-accent-400: #e0b268;
+  --color-accent-500: #d4a056;
+  --color-accent-600: #b8863e;
+  --color-accent-700: #996d30;
+  --color-accent-800: #7a5526;
+  --color-accent-900: #5e411d;
+  --color-accent-950: #3d2a13;
+
+  /* Waqf-specific Tokens */
+  --color-waqf-bg: #f9fbfb;
+  --color-waqf-border: #e9f1ef;
+  --color-waqf-muted: #588d81;
 
   /* Font Families */
   --font-sans: "Inter", "Noto Sans Arabic", system-ui, sans-serif;
@@ -62,11 +67,11 @@
 
 /* Base styles */
 * {
-  @apply border-secondary-200;
+  @apply border-waqf-border;
 }
 
 body {
-  @apply bg-secondary-50 text-secondary-900;
+  @apply bg-waqf-bg text-secondary-900;
   font-feature-settings: "rlig" 1, "calt" 1;
 }
 

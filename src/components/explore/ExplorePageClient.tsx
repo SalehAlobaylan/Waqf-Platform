@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Search, SlidersHorizontal, Grid, List } from "lucide-react";
+import { Search, SlidersHorizontal, ChevronDown } from "lucide-react";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { FilterSidebar } from "@/components/explore/FilterSidebar";
 
@@ -30,8 +30,8 @@ export function ExplorePageClient({ initialProjects, skills }: ExplorePageClient
     const [projects, setProjects] = useState(initialProjects);
     const [loading, setLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
-    const [sortBy, setSortBy] = useState<"newest" | "oldest">("newest");
-    const [showFilters, setShowFilters] = useState(true);
+    const [sortBy, setSortBy] = useState("recommended");
+    const [showMobileFilters, setShowMobileFilters] = useState(false);
     const [filters, setFilters] = useState<{
         category?: string;
         skills: string[];
@@ -45,7 +45,8 @@ export function ExplorePageClient({ initialProjects, skills }: ExplorePageClient
             const params = new URLSearchParams();
             if (searchQuery) params.set("search", searchQuery);
             if (filters.category) params.set("category", filters.category);
-            if (sortBy) params.set("sortBy", sortBy);
+            if (sortBy === "newest") params.set("sortBy", "newest");
+            if (sortBy === "oldest") params.set("sortBy", "oldest");
             params.set("limit", "24");
 
             const res = await fetch(`/api/projects?${params.toString()}`);
@@ -64,105 +65,122 @@ export function ExplorePageClient({ initialProjects, skills }: ExplorePageClient
     }, [fetchProjects]);
 
     return (
-        <div className="min-h-screen bg-secondary-50">
-            {/* Header */}
-            <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800 text-white">
-                <div className="container max-w-7xl mx-auto px-4 py-12">
-                    <h1 className="text-3xl md:text-4xl font-bold mb-4">
-                        {locale === "ar" ? "استكشف المشاريع" : "Explore Projects"}
-                    </h1>
-                    <p className="text-white/80 text-lg max-w-2xl">
-                        {locale === "ar"
-                            ? "اكتشف فرص المساهمة في المشاريع الإسلامية مفتوحة المصدر"
-                            : "Discover opportunities to contribute to Islamic open-source projects as sadaqah jariyah"}
-                    </p>
-
-                    {/* Search */}
-                    <div className="mt-8 max-w-xl">
-                        <div className="relative">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-secondary-400 w-5 h-5" />
-                            <input
-                                type="text"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder={locale === "ar" ? "ابحث عن مشاريع..." : "Search projects..."}
-                                className="w-full pl-12 pr-4 py-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/60 focus:bg-white/20 focus:border-white/40 focus:outline-none transition-all"
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div className="flex flex-1 overflow-hidden">
+            {/* Sidebar Filters */}
+            <FilterSidebar
+                filters={filters}
+                onFilterChange={setFilters}
+                skills={skills}
+                locale={locale}
+            />
 
             {/* Main Content */}
-            <div className="container max-w-7xl mx-auto px-4 py-8">
-                {/* Toolbar */}
-                <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => setShowFilters(!showFilters)}
-                            className="lg:hidden flex items-center gap-2 px-4 py-2 border border-secondary-200 rounded-lg bg-white text-secondary-700 hover:bg-secondary-50"
-                        >
-                            <SlidersHorizontal className="w-4 h-4" />
-                            {locale === "ar" ? "التصفية" : "Filters"}
-                        </button>
-                        <span className="text-sm text-secondary-600">
-                            {projects.length} {locale === "ar" ? "مشروع" : "projects"}
-                        </span>
-                    </div>
+            <main className="flex-1 h-[calc(100vh-65px)] overflow-y-auto bg-waqf-bg">
+                <div className="max-w-7xl mx-auto px-6 py-8">
+                    {/* Header Section */}
+                    <div className="mb-10">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                            <div>
+                                <h1 className="text-3xl font-bold text-secondary-900 mb-2">
+                                    {locale === "ar" ? "استكشف الفرص" : "Explore Opportunities"}
+                                </h1>
+                                <p className="text-waqf-muted">
+                                    {locale === "ar"
+                                        ? "اعثر على مشروع لتساهم بمهاراتك كصدقة جارية."
+                                        : "Find a project to contribute your skills for Sadaqah Jariyah."}
+                                </p>
+                            </div>
+                            <div className="hidden md:block">
+                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-600/10 text-primary-600">
+                                    <span className="w-2 h-2 rounded-full bg-primary-600 mr-2"></span>
+                                    {projects.length} {locale === "ar" ? "مشروع نشط" : "Active Projects"}
+                                </span>
+                            </div>
+                        </div>
 
-                    <div className="flex items-center gap-4">
-                        <select
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value as "newest" | "oldest")}
-                            className="px-4 py-2 border border-secondary-200 rounded-lg bg-white text-secondary-700 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                        >
-                            <option value="newest">{locale === "ar" ? "الأحدث" : "Newest"}</option>
-                            <option value="oldest">{locale === "ar" ? "الأقدم" : "Oldest"}</option>
-                        </select>
-                    </div>
-                </div>
+                        {/* Search & Sort */}
+                        <div className="flex flex-col md:flex-row gap-4">
+                            {/* Search Bar */}
+                            <div className="relative flex-1">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <Search className="w-5 h-5 text-waqf-muted" />
+                                </div>
+                                <input
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="block w-full pl-10 pr-3 py-3 border border-secondary-200 rounded-xl leading-5 bg-white placeholder-secondary-400 focus:outline-none focus:ring-1 focus:ring-primary-600 focus:border-primary-600 sm:text-sm shadow-sm"
+                                    placeholder={
+                                        locale === "ar"
+                                            ? "ابحث عن مشاريع بالاسم أو التقنية..."
+                                            : "Search projects by name, technology, or impact..."
+                                    }
+                                />
+                            </div>
 
-                {/* Content */}
-                <div className="flex flex-col lg:flex-row gap-8">
-                    {/* Filter Sidebar */}
-                    <div className={`${showFilters ? "block" : "hidden"} lg:block`}>
-                        <FilterSidebar
-                            filters={filters}
-                            onFilterChange={setFilters}
-                            skills={skills}
-                            locale={locale}
-                        />
+                            {/* Sort Dropdown */}
+                            <div className="relative min-w-[180px]">
+                                <select
+                                    value={sortBy}
+                                    onChange={(e) => setSortBy(e.target.value)}
+                                    className="block w-full pl-3 pr-10 py-3 text-base border-secondary-200 focus:outline-none focus:ring-primary-600 focus:border-primary-600 sm:text-sm rounded-xl bg-white shadow-sm appearance-none cursor-pointer"
+                                >
+                                    <option value="recommended">{locale === "ar" ? "موصى به" : "Recommended"}</option>
+                                    <option value="newest">{locale === "ar" ? "الأحدث" : "Newest First"}</option>
+                                    <option value="oldest">{locale === "ar" ? "الأقدم" : "Most Active"}</option>
+                                </select>
+                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-secondary-500">
+                                    <ChevronDown className="w-4 h-4" />
+                                </div>
+                            </div>
+
+                            {/* Mobile Filter Toggle */}
+                            <button
+                                onClick={() => setShowMobileFilters(!showMobileFilters)}
+                                className="lg:hidden flex items-center justify-center px-4 py-3 border border-secondary-200 rounded-xl bg-white text-secondary-900 shadow-sm"
+                            >
+                                <SlidersHorizontal className="w-4 h-4 mr-2" />
+                                {locale === "ar" ? "التصفية" : "Filters"}
+                            </button>
+                        </div>
                     </div>
 
                     {/* Projects Grid */}
-                    <div className="flex-1">
-                        {loading ? (
-                            <div className="flex items-center justify-center py-20">
-                                <div className="animate-spin w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full"></div>
-                            </div>
-                        ) : projects.length === 0 ? (
-                            <div className="text-center py-20 bg-white rounded-xl border border-secondary-100">
-                                <p className="text-secondary-600">
-                                    {locale === "ar"
-                                        ? "لم يتم العثور على مشاريع"
-                                        : "No projects found"}
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                                {projects.map((project) => (
-                                    <ProjectCard
-                                        key={project.id}
-                                        // @ts-expect-error - Type mismatch for project props, safe to ignore
-                                        project={project}
-                                        locale={locale}
-                                    />
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                    {loading ? (
+                        <div className="flex items-center justify-center py-20">
+                            <div className="animate-spin w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full"></div>
+                        </div>
+                    ) : projects.length === 0 ? (
+                        <div className="text-center py-20 bg-white rounded-xl border border-waqf-border">
+                            <p className="text-secondary-600">
+                                {locale === "ar"
+                                    ? "لم يتم العثور على مشاريع"
+                                    : "No projects found"}
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                            {projects.map((project) => (
+                                <ProjectCard
+                                    key={project.id}
+                                    project={project}
+                                    locale={locale}
+                                />
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Load More */}
+                    {projects.length > 0 && (
+                        <div className="mt-12 flex justify-center">
+                            <button className="flex items-center gap-2 px-6 py-3 border border-secondary-200 rounded-xl bg-white text-secondary-900 font-medium hover:bg-secondary-50 transition-colors">
+                                {locale === "ar" ? "تحميل المزيد" : "Load More Projects"}
+                                <ChevronDown className="w-5 h-5" />
+                            </button>
+                        </div>
+                    )}
                 </div>
-            </div>
+            </main>
         </div>
     );
 }

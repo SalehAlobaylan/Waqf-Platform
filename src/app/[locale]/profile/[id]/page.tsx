@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { SkillsMatrix } from "@/components/profile/SkillsMatrix";
+import { ContributionHeatmap } from "@/components/profile/ContributionHeatmap";
+import { WaqfTimeline } from "@/components/profile/WaqfTimeline";
+import { Heart, GitPullRequest, FolderOpen } from "lucide-react";
 
 interface ProfilePageProps {
     params: Promise<{ locale: string; id: string }>;
@@ -25,7 +28,6 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     const { locale, id } = await params;
     const session = await auth();
 
-    // Fetch user with profile
     const user = await prisma.user.findUnique({
         where: { id },
         select: {
@@ -53,7 +55,6 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
     const isOwnProfile = session?.user?.id === user.id;
 
-    // Transform skills (handle null nameAr)
     const skills = user.contributorProfile?.skills.map((cs) => ({
         id: cs.skill.id,
         name: cs.skill.name,
@@ -63,86 +64,96 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     })) || [];
 
     return (
-        <div className="container max-w-4xl mx-auto px-4 py-8">
-            <ProfileHeader
-                user={{
-                    name: user.name,
-                    avatar: user.avatar,
-                    role: user.role,
-                    bio: user.contributorProfile?.bio,
-                    timezone: user.contributorProfile?.timezone,
-                    githubUsername: user.contributorProfile?.githubUsername,
-                    createdAt: user.createdAt,
-                    isAvailable: user.contributorProfile?.isAvailable,
-                }}
-                isOwnProfile={isOwnProfile}
-            />
+        <div className="min-h-screen bg-waqf-bg">
+            <div className="max-w-[1280px] mx-auto px-6 py-8">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* Left Column - Profile Card (4 cols) */}
+                    <div className="lg:col-span-4">
+                        <div className="sticky top-[80px]">
+                            <ProfileHeader
+                                user={{
+                                    name: user.name,
+                                    avatar: user.avatar,
+                                    role: user.role,
+                                    bio: user.contributorProfile?.bio,
+                                    timezone: user.contributorProfile?.timezone,
+                                    githubUsername: user.contributorProfile?.githubUsername,
+                                    createdAt: user.createdAt,
+                                    isAvailable: user.contributorProfile?.isAvailable,
+                                }}
+                                isOwnProfile={isOwnProfile}
+                                locale={locale}
+                            />
 
-            <div className="mt-6 grid gap-6 md:grid-cols-3">
-                {/* Main Content */}
-                <div className="md:col-span-2 space-y-6">
-                    <SkillsMatrix skills={skills} locale={locale} />
-
-                    {/* Waqf History Placeholder */}
-                    <div className="bg-white rounded-xl border border-secondary-100 p-6">
-                        <h3 className="text-lg font-semibold text-secondary-900 mb-4">
-                            {locale === "ar" ? "تاريخ المساهمات" : "Contribution History"}
-                        </h3>
-                        <p className="text-secondary-500 text-sm">
-                            {locale === "ar" ? "لا توجد مساهمات بعد" : "No contributions yet"}
-                        </p>
-                    </div>
-                </div>
-
-                {/* Sidebar */}
-                <div className="space-y-6">
-                    {/* Stats */}
-                    <div className="bg-white rounded-xl border border-secondary-100 p-6">
-                        <h3 className="text-lg font-semibold text-secondary-900 mb-4">
-                            {locale === "ar" ? "الإحصائيات" : "Stats"}
-                        </h3>
-                        <div className="space-y-3">
-                            <div className="flex justify-between">
-                                <span className="text-secondary-600 text-sm">
-                                    {locale === "ar" ? "المشاريع" : "Projects"}
-                                </span>
-                                <span className="font-semibold text-secondary-900">0</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-secondary-600 text-sm">
-                                    {locale === "ar" ? "ساعات المساهمة" : "Hours Contributed"}
-                                </span>
-                                <span className="font-semibold text-secondary-900">0</span>
-                            </div>
-                            <div className="flex justify-between">
-                                <span className="text-secondary-600 text-sm">
-                                    {locale === "ar" ? "متاح" : "Availability"}
-                                </span>
-                                <span className="font-semibold text-secondary-900">
-                                    {user.contributorProfile?.hoursPerWeek || 0}h/week
-                                </span>
-                            </div>
+                            {/* Languages Card */}
+                            {(user.contributorProfile?.spokenLanguages?.length ?? 0) > 0 && (
+                                <div className="mt-6 bg-white rounded-2xl border border-waqf-border p-6">
+                                    <h3 className="text-sm font-semibold text-secondary-900 mb-3">
+                                        {locale === "ar" ? "اللغات" : "Languages"}
+                                    </h3>
+                                    <div className="flex flex-wrap gap-2">
+                                        {user.contributorProfile?.spokenLanguages.map((lang) => (
+                                            <span
+                                                key={lang}
+                                                className="px-3 py-1 text-xs font-medium bg-secondary-100 text-secondary-700 rounded-lg"
+                                            >
+                                                {lang === "ar" ? "العربية" : lang === "en" ? "English" : lang}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    {/* Languages */}
-                    {(user.contributorProfile?.spokenLanguages?.length ?? 0) > 0 && (
-                        <div className="bg-white rounded-xl border border-secondary-100 p-6">
-                            <h3 className="text-lg font-semibold text-secondary-900 mb-4">
-                                {locale === "ar" ? "اللغات" : "Languages"}
-                            </h3>
-                            <div className="flex flex-wrap gap-2">
-                                {user.contributorProfile?.spokenLanguages.map((lang) => (
-                                    <span
-                                        key={lang}
-                                        className="px-3 py-1 text-sm bg-secondary-100 text-secondary-700 rounded-lg"
-                                    >
-                                        {lang === "ar" ? "العربية" : lang === "en" ? "English" : lang}
-                                    </span>
-                                ))}
+                    {/* Right Column - Main Content (8 cols) */}
+                    <div className="lg:col-span-8 space-y-6">
+                        {/* Stats Overview */}
+                        <div className="grid grid-cols-3 gap-4">
+                            <div className="bg-white rounded-2xl border border-waqf-border p-5">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-10 h-10 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center">
+                                        <FolderOpen className="w-5 h-5" />
+                                    </div>
+                                </div>
+                                <p className="text-2xl font-bold text-secondary-900">12</p>
+                                <p className="text-xs text-secondary-500 mt-0.5">
+                                    {locale === "ar" ? "مشاريع" : "Projects"}
+                                </p>
+                            </div>
+                            <div className="bg-white rounded-2xl border border-waqf-border p-5">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-10 h-10 rounded-xl bg-accent-50 text-accent-600 flex items-center justify-center">
+                                        <GitPullRequest className="w-5 h-5" />
+                                    </div>
+                                </div>
+                                <p className="text-2xl font-bold text-secondary-900">48</p>
+                                <p className="text-xs text-secondary-500 mt-0.5">
+                                    {locale === "ar" ? "مساهمات" : "Contributions"}
+                                </p>
+                            </div>
+                            <div className="bg-white rounded-2xl border border-waqf-border p-5">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="w-10 h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center">
+                                        <Heart className="w-5 h-5" />
+                                    </div>
+                                </div>
+                                <p className="text-2xl font-bold text-secondary-900">156h</p>
+                                <p className="text-xs text-secondary-500 mt-0.5">
+                                    {locale === "ar" ? "ساعات الوقف" : "Hours of Waqf"}
+                                </p>
                             </div>
                         </div>
-                    )}
+
+                        {/* Contribution Heatmap */}
+                        <ContributionHeatmap locale={locale} />
+
+                        {/* Skills Matrix */}
+                        <SkillsMatrix skills={skills} locale={locale} />
+
+                        {/* Waqf Timeline */}
+                        <WaqfTimeline locale={locale} />
+                    </div>
                 </div>
             </div>
         </div>
