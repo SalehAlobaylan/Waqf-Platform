@@ -12,7 +12,7 @@ interface ConversationPreview {
     otherUser: {
         id: string;
         name: string;
-        avatar: string | null;
+        image: string | null;
     };
     lastMessage?: {
         content: string;
@@ -57,9 +57,9 @@ export function MessageList({ conversations }: MessageListProps) {
                                hover:border-primary-200 hover:shadow-sm transition-all group"
                 >
                     {/* Avatar */}
-                    {conv.otherUser.avatar ? (
+                    {conv.otherUser.image ? (
                         <Image
-                            src={conv.otherUser.avatar}
+                            src={conv.otherUser.image}
                             alt={conv.otherUser.name}
                             width={48}
                             height={48}

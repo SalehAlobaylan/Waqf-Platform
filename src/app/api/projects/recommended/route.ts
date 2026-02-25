@@ -121,7 +121,7 @@ export async function GET(request: NextRequest) {
       owner: {
         id: p.owner.id,
         name: p.owner.name,
-        avatar: p.owner.image,
+        image: p.owner.image,
       },
     }));
 

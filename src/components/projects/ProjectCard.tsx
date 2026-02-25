@@ -15,7 +15,7 @@ interface ProjectCardProps {
         featured?: boolean;
         _count?: { applications: number };
         skills: Array<{ skill: { name: string; nameAr: string | null }; isRequired: boolean }>;
-        owner: { name: string; avatar: string | null };
+        owner: { name: string; image: string | null };
     };
     locale: string;
 }

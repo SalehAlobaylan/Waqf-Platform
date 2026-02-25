@@ -41,12 +41,12 @@ interface Stats {
             title: string;
             status: string;
             createdAt: string;
-            owner: { name: string; avatar: string | null };
+            owner: { name: string; image: string | null };
         }>;
         topContributors: Array<{
             id: string;
             name: string;
-            avatar: string | null;
+            image: string | null;
             _count: { applications: number };
         }>;
     };

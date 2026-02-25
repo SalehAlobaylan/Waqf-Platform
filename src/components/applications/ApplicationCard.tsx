@@ -22,14 +22,14 @@ interface ApplicationCardProps {
             owner?: {
                 id: string;
                 name: string;
-                avatar: string | null;
+                image: string | null;
             };
         };
         contributor?: {
             id: string;
             name: string;
             email: string;
-            avatar: string | null;
+            image: string | null;
         };
         _count: {
             messages: number;
@@ -58,9 +58,9 @@ export function ApplicationCard({ application, variant = "contributor" }: Applic
                     {/* Owner or Contributor info */}
                     {variant === "contributor" && application.project.owner && (
                         <div className="flex items-center gap-2 mt-2">
-                            {application.project.owner.avatar ? (
+                            {application.project.owner.image ? (
                                 <Image
-                                    src={application.project.owner.avatar}
+                                    src={application.project.owner.image}
                                     alt={application.project.owner.name}
                                     width={20}
                                     height={20}
@@ -79,9 +79,9 @@ export function ApplicationCard({ application, variant = "contributor" }: Applic
 
                     {variant === "owner" && application.contributor && (
                         <div className="flex items-center gap-2 mt-2">
-                            {application.contributor.avatar ? (
+                            {application.contributor.image ? (
                                 <Image
-                                    src={application.contributor.avatar}
+                                    src={application.contributor.image}
                                     alt={application.contributor.name}
                                     width={20}
                                     height={20}

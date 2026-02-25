@@ -72,9 +72,9 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                     <div className="lg:col-span-4">
                         <div className="sticky top-[80px]">
                             <ProfileHeader
-                            user={{
+                                user={{
                                     name: user.name,
-                                    avatar: user.image,
+                                    image: user.image,
                                     role: user.role,
                                     bio: user.contributorProfile?.bio,
                                     timezone: user.contributorProfile?.timezone,

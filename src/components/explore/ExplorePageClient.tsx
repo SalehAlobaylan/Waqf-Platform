@@ -18,7 +18,7 @@ interface ExplorePageClientProps {
         createdAt: Date;
         _count: { applications: number };
         skills: Array<{ skill: { name: string; nameAr: string }; isRequired: boolean }>;
-        owner: { name: string; avatar: string | null };
+        owner: { name: string; image: string | null };
     }>;
     skills: Array<{ id: number; name: string; nameAr: string; category: string }>;
 }

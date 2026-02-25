@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import {
     Code,
     Heart,
@@ -13,7 +12,10 @@ import {
     ChevronRight,
     Users,
     GitCommit,
-    Folder
+    Folder,
+    Star,
+    Shield,
+    Globe
 } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 
@@ -436,6 +438,125 @@ export async function LandingPage({ locale }: LandingPageProps) {
                 </div>
             </section>
 
+            {/* Testimonials */}
+            <section className="py-16 md:py-24 px-4 bg-white border-b border-[#e9f1ef]">
+                <div className="max-w-[1280px] mx-auto">
+                    <div className="text-center mb-14">
+                        <h2 className="text-3xl md:text-4xl font-black text-[#101917] tracking-tight mb-4">
+                            {isAr ? "أصوات من المجتمع" : "Voices from the Community"}
+                        </h2>
+                        <p className="text-gray-500 max-w-xl mx-auto">
+                            {isAr
+                                ? "مطورون من حول العالم يشاركون تجربتهم مع وقف."
+                                : "Developers worldwide share their Waqf experience."
+                            }
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {[
+                            {
+                                name: isAr ? "أحمد خالد" : "Ahmed Khalid",
+                                role: isAr ? "مطور Full-Stack" : "Full-Stack Developer",
+                                text: isAr
+                                    ? "ساعدتني منصة وقف على إيجاد مشاريع ذات أثر حقيقي. الآن كل سطر كود أكتبه يصبح صدقة جارية."
+                                    : "Waqf helped me find projects with real impact. Now every line of code I write becomes Sadaqah Jariyah.",
+                                initials: "AK",
+                                color: "bg-[#1f705d]/10 text-[#1f705d]",
+                            },
+                            {
+                                name: isAr ? "فاطمة نور" : "Fatima Nour",
+                                role: isAr ? "مصممة UX" : "UX Designer",
+                                text: isAr
+                                    ? "المجتمع هنا مذهل. وجدت فريقاً يشاركني نفس الرؤية لخدمة الأمة بالتقنية."
+                                    : "The community here is amazing. I found a team that shares my vision of serving the Ummah through tech.",
+                                initials: "FN",
+                                color: "bg-[#d4a056]/10 text-[#d4a056]",
+                            },
+                            {
+                                name: isAr ? "عمر حسن" : "Omar Hassan",
+                                role: isAr ? "مهندس Backend" : "Backend Engineer",
+                                text: isAr
+                                    ? "من أفضل المنصات للمساهمة في المصادر المفتوحة. المشاريع هنا تخدم ملايين المسلمين."
+                                    : "One of the best platforms for open-source contribution. Projects here serve millions of Muslims.",
+                                initials: "OH",
+                                color: "bg-blue-500/10 text-blue-600",
+                            },
+                        ].map((t, i) => (
+                            <div key={i} className="bg-[#f9fbfb] border border-[#e9f1ef] rounded-2xl p-6 flex flex-col">
+                                <div className="flex gap-1 mb-4">
+                                    {[...Array(5)].map((_, s) => (
+                                        <Star key={s} className="w-4 h-4 text-[#d4a056]" fill="currentColor" />
+                                    ))}
+                                </div>
+                                <p className="text-gray-600 text-sm leading-relaxed mb-6 flex-1">
+                                    &ldquo;{t.text}&rdquo;
+                                </p>
+                                <div className="flex items-center gap-3 pt-4 border-t border-[#e9f1ef]">
+                                    <div className={`w-10 h-10 rounded-full ${t.color} flex items-center justify-center text-sm font-bold`}>
+                                        {t.initials}
+                                    </div>
+                                    <div>
+                                        <p className="font-semibold text-[#101917] text-sm">{t.name}</p>
+                                        <p className="text-xs text-gray-500">{t.role}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Open Source & Trust */}
+            <section className="py-16 md:py-20 px-4 bg-[#f9fbfb]">
+                <div className="max-w-[1280px] mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                        <div className="flex flex-col items-center gap-3 p-6">
+                            <div className="w-14 h-14 rounded-2xl bg-[#1f705d]/10 flex items-center justify-center">
+                                <Shield className="w-7 h-7 text-[#1f705d]" />
+                            </div>
+                            <h3 className="text-lg font-bold text-[#101917]">
+                                {isAr ? "مفتوح المصدر 100%" : "100% Open Source"}
+                            </h3>
+                            <p className="text-sm text-gray-500 max-w-xs">
+                                {isAr
+                                    ? "كل الكود متاح للجميع. الشفافية هي أساس الثقة."
+                                    : "All code is publicly available. Transparency is the foundation of trust."
+                                }
+                            </p>
+                        </div>
+                        <div className="flex flex-col items-center gap-3 p-6">
+                            <div className="w-14 h-14 rounded-2xl bg-[#d4a056]/10 flex items-center justify-center">
+                                <Globe className="w-7 h-7 text-[#d4a056]" />
+                            </div>
+                            <h3 className="text-lg font-bold text-[#101917]">
+                                {isAr ? "مجتمع عالمي" : "Global Community"}
+                            </h3>
+                            <p className="text-sm text-gray-500 max-w-xs">
+                                {isAr
+                                    ? "مطورون من أكثر من 40 دولة يساهمون معاً."
+                                    : "Developers from 40+ countries contributing together."
+                                }
+                            </p>
+                        </div>
+                        <div className="flex flex-col items-center gap-3 p-6">
+                            <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center">
+                                <Heart className="w-7 h-7 text-blue-600" />
+                            </div>
+                            <h3 className="text-lg font-bold text-[#101917]">
+                                {isAr ? "صدقة جارية" : "Sadaqah Jariyah"}
+                            </h3>
+                            <p className="text-sm text-gray-500 max-w-xs">
+                                {isAr
+                                    ? "كل مساهمة هي استثمار في الآخرة."
+                                    : "Every contribution is an investment in the Hereafter."
+                                }
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* CTA Section */}
             <section className="px-4 pb-20 pt-10">
                 <div className="max-w-[1280px] mx-auto bg-[#1f705d] rounded-3xl p-8 md:p-16 text-center text-white relative overflow-hidden">
@@ -470,75 +591,6 @@ export async function LandingPage({ locale }: LandingPageProps) {
                     </div>
                 </div>
             </section>
-
-            {/* Footer */}
-            <footer className="bg-white border-t border-[#e9f1ef] py-12 px-4">
-                <div className="max-w-[1280px] mx-auto">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
-                        <div className="col-span-1 md:col-span-1">
-                            <div className="flex items-center gap-2 mb-4">
-                                <div className="w-6 h-6 text-[#1f705d] flex items-center justify-center">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                                        <path d="M12 2L4 7v6.5c0 4.97 3.5 9.04 8 10.5 4.5-1.46 8-5.53 8-10.5V7l-8-5z" />
-                                    </svg>
-                                </div>
-                                <h2 className="text-[#101917] text-lg font-bold">
-                                    {isAr ? "وقف" : "Waqf"}
-                                </h2>
-                            </div>
-                            <p className="text-sm text-gray-500 mb-4">
-                                {isAr
-                                    ? "نبني المستقبل الرقمي للأمة، كوميت تلو الآخر."
-                                    : "Building the digital future of the Ummah, one commit at a time."
-                                }
-                            </p>
-                        </div>
-
-                        <div>
-                            <h4 className="font-bold text-[#101917] mb-4">
-                                {isAr ? "المنصة" : "Platform"}
-                            </h4>
-                            <ul className="space-y-2 text-sm text-gray-500">
-                                <li><Link className="hover:text-[#1f705d]" href={`/${locale}/explore`}>{isAr ? "استكشف المشاريع" : "Explore Projects"}</Link></li>
-                                <li><Link className="hover:text-[#1f705d]" href="#">{isAr ? "كيف يعمل" : "How it Works"}</Link></li>
-                                <li><Link className="hover:text-[#1f705d]" href="#">{isAr ? "الأسعار" : "Pricing"}</Link></li>
-                            </ul>
-                        </div>
-
-                        <div>
-                            <h4 className="font-bold text-[#101917] mb-4">
-                                {isAr ? "المجتمع" : "Community"}
-                            </h4>
-                            <ul className="space-y-2 text-sm text-gray-500">
-                                <li><Link className="hover:text-[#1f705d]" href="#">{isAr ? "الإرشادات" : "Guidelines"}</Link></li>
-                                <li><Link className="hover:text-[#1f705d]" href="#">Discord</Link></li>
-                                <li><Link className="hover:text-[#1f705d]" href="#">{isAr ? "المدونة" : "Blog"}</Link></li>
-                            </ul>
-                        </div>
-
-                        <div>
-                            <h4 className="font-bold text-[#101917] mb-4">
-                                {isAr ? "قانوني" : "Legal"}
-                            </h4>
-                            <ul className="space-y-2 text-sm text-gray-500">
-                                <li><Link className="hover:text-[#1f705d]" href="#">{isAr ? "سياسة الخصوصية" : "Privacy Policy"}</Link></li>
-                                <li><Link className="hover:text-[#1f705d]" href="#">{isAr ? "شروط الاستخدام" : "Terms of Service"}</Link></li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div className="pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
-                        <p className="text-sm text-gray-500">
-                            © 2024 Waqf Platform. {isAr ? "جميع الحقوق محفوظة." : "All rights reserved."}
-                        </p>
-                        <div className="flex items-center gap-2 text-sm text-gray-400">
-                            <span>{isAr ? "صُنع بـ" : "Made with"}</span>
-                            <Heart className="w-4 h-4 text-red-500" fill="currentColor" />
-                            <span>{isAr ? "للأمة" : "for the Ummah"}</span>
-                        </div>
-                    </div>
-                </div>
-            </footer>
         </div>
     );
 }

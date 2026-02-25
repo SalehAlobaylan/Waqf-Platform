@@ -18,7 +18,7 @@ interface UserData {
     id: string;
     name: string;
     email: string;
-    avatar: string | null;
+    image: string | null;
     role: "USER" | "ADMIN";
     createdAt: string;
     _count: {
@@ -232,8 +232,8 @@ export function UserManagement({ locale }: UserManagementProps) {
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-medium ${user.role === "ADMIN"
-                                                ? "bg-primary-100 text-primary-700"
-                                                : "bg-secondary-100 text-secondary-700"
+                                            ? "bg-primary-100 text-primary-700"
+                                            : "bg-secondary-100 text-secondary-700"
                                             }`}>
                                             {user.role === "ADMIN" ? (
                                                 <Shield className="w-3 h-3" />

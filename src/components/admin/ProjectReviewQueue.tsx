@@ -29,7 +29,7 @@ interface Project {
         id: string;
         name: string;
         email: string;
-        avatar: string | null;
+        image: string | null;
     };
     skills: Array<{
         skill: { name: string };
@@ -280,8 +280,8 @@ export function ProjectReviewQueue({ locale }: ProjectReviewQueueProps) {
                                         onClick={() => handleAction(project.id, project.featured ? "unfeature" : "feature")}
                                         disabled={actionLoading === project.id}
                                         className={`flex items-center gap-1 px-3 py-2 rounded-lg transition-colors disabled:opacity-50 ${project.featured
-                                                ? "bg-secondary-100 text-secondary-700 hover:bg-secondary-200"
-                                                : "bg-amber-100 text-amber-700 hover:bg-amber-200"
+                                            ? "bg-secondary-100 text-secondary-700 hover:bg-secondary-200"
+                                            : "bg-amber-100 text-amber-700 hover:bg-amber-200"
                                             }`}
                                     >
                                         {project.featured ? (
@@ -373,8 +373,8 @@ export function ProjectReviewQueue({ locale }: ProjectReviewQueueProps) {
                                 onClick={() => handleAction(feedbackModal.projectId, feedbackModal.action, { feedback })}
                                 disabled={actionLoading === feedbackModal.projectId}
                                 className={`flex-1 px-4 py-2 rounded-lg text-white disabled:opacity-50 ${feedbackModal.action === "approve"
-                                        ? "bg-green-600 hover:bg-green-700"
-                                        : "bg-red-600 hover:bg-red-700"
+                                    ? "bg-green-600 hover:bg-green-700"
+                                    : "bg-red-600 hover:bg-red-700"
                                     }`}
                             >
                                 {actionLoading === feedbackModal.projectId ? (

@@ -17,7 +17,7 @@ export const mockProjects = [
             id: "user1",
             name: "Ahmed Hassan",
             email: "ahmed@example.com",
-            avatar: null,
+            image: null,
         },
         skills: [
             { skill: { name: "React Native" } },
@@ -40,7 +40,7 @@ export const mockProjects = [
             id: "user2",
             name: "Fatima Ali",
             email: "fatima@example.com",
-            avatar: null,
+            image: null,
         },
         skills: [
             { skill: { name: "Next.js" } },
@@ -63,7 +63,7 @@ export const mockProjects = [
             id: "user3",
             name: "Omar Ibrahim",
             email: "omar@example.com",
-            avatar: null,
+            image: null,
         },
         skills: [
             { skill: { name: "Vue.js" } },
@@ -114,25 +114,25 @@ export const mockAdminStats = {
     recent: {
         projects: mockProjects.slice(0, 5).map(p => ({
             ...p,
-            owner: { name: p.owner.name, avatar: p.owner.avatar },
+            owner: { name: p.owner.name, image: p.owner.image },
         })),
         topContributors: [
             {
                 id: "c1",
                 name: "Ahmed Hassan",
-                avatar: null,
+                image: null,
                 _count: { applications: 15 },
             },
             {
                 id: "c2",
                 name: "Fatima Ali",
-                avatar: null,
+                image: null,
                 _count: { applications: 12 },
             },
             {
                 id: "c3",
                 name: "Omar Ibrahim",
-                avatar: null,
+                image: null,
                 _count: { applications: 10 },
             },
         ],

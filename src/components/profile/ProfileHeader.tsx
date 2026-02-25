@@ -4,7 +4,7 @@ import { Github, Globe, Linkedin, Share2, Calendar, UserPlus } from "lucide-reac
 interface ProfileHeaderProps {
     user: {
         name: string;
-        avatar?: string | null;
+        image?: string | null;
         role: string;
         bio?: string | null;
         timezone?: string | null;
@@ -28,9 +28,9 @@ export function ProfileHeader({ user, isOwnProfile, locale = "en" }: ProfileHead
             <div className="flex flex-col items-center -mt-14 px-6 pb-6">
                 {/* Avatar */}
                 <div className="w-24 h-24 rounded-full bg-white p-1.5 shadow-lg mb-3">
-                    {user.avatar ? (
+                    {user.image ? (
                         <Image
-                            src={user.avatar}
+                            src={user.image}
                             alt={user.name}
                             width={88}
                             height={88}

@@ -26,14 +26,14 @@ interface ApplicationDetailClientProps {
             owner: {
                 id: string;
                 name: string;
-                avatar: string | null;
+                image: string | null;
             };
         };
         contributor: {
             id: string;
             name: string;
             email: string;
-            avatar: string | null;
+            image: string | null;
             contributorProfile?: {
                 bio: string | null;
                 skills: {
@@ -50,7 +50,7 @@ interface ApplicationDetailClientProps {
             sender: {
                 id: string;
                 name: string;
-                avatar: string | null;
+                image: string | null;
             };
         }>;
     };
@@ -178,9 +178,9 @@ export function ApplicationDetailClient({
                             </h3>
 
                             <div className="flex items-center gap-3 mb-4">
-                                {otherUser.avatar ? (
+                                {otherUser.image ? (
                                     <Image
-                                        src={otherUser.avatar}
+                                        src={otherUser.image}
                                         alt={otherUser.name}
                                         width={48}
                                         height={48}

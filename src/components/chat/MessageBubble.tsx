@@ -42,15 +42,15 @@ export function MessageBubble({ message, isOwn, showAvatar = true }: MessageBubb
                 </div>
             )}
 
-            {/* Spacer when no avatar */}
+            {/* Spacer when no image */}
             {!showAvatar && <div className="w-8" />}
 
             {/* Bubble */}
             <div className={`max-w-[70%] ${isOwn ? "items-end" : "items-start"}`}>
                 <div
                     className={`px-4 py-2.5 rounded-2xl ${isOwn
-                            ? "bg-primary-600 text-white rounded-tr-sm"
-                            : "bg-secondary-100 text-secondary-900 rounded-tl-sm"
+                        ? "bg-primary-600 text-white rounded-tr-sm"
+                        : "bg-secondary-100 text-secondary-900 rounded-tl-sm"
                         }`}
                 >
                     <p className="text-sm leading-relaxed whitespace-pre-wrap">
