@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ApplicationCard } from "@/components/applications/ApplicationCard";
@@ -15,7 +16,7 @@ export const metadata = {
 };
 
 export default async function ApplicationsPage({ params }: ApplicationsPageProps) {
-    const session = await auth();
+    const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user?.id) {
         redirect("/login");
     }
@@ -38,7 +39,7 @@ export default async function ApplicationsPage({ params }: ApplicationsPageProps
                         select: {
                             id: true,
                             name: true,
-                            avatar: true,
+                            image: true,
                         },
                     },
                 },

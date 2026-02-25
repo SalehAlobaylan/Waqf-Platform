@@ -1,4 +1,5 @@
 import { redirect, notFound } from "next/navigation";
+import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ApplicationDetailClient } from "@/components/applications/ApplicationDetailClient";
@@ -24,7 +25,7 @@ export async function generateMetadata({ params }: ApplicationDetailPageProps) {
 }
 
 export default async function ApplicationDetailPage({ params }: ApplicationDetailPageProps) {
-    const session = await auth();
+    const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user?.id) {
         redirect("/login");
     }
@@ -45,7 +46,7 @@ export default async function ApplicationDetailPage({ params }: ApplicationDetai
                         select: {
                             id: true,
                             name: true,
-                            avatar: true,
+                            image: true,
                         },
                     },
                 },
@@ -55,7 +56,7 @@ export default async function ApplicationDetailPage({ params }: ApplicationDetai
                     id: true,
                     name: true,
                     email: true,
-                    avatar: true,
+                    image: true,
                     contributorProfile: {
                         select: {
                             bio: true,
@@ -77,7 +78,7 @@ export default async function ApplicationDetailPage({ params }: ApplicationDetai
                         select: {
                             id: true,
                             name: true,
-                            avatar: true,
+                            image: true,
                         },
                     },
                 },

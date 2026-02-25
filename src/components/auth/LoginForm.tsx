@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
@@ -24,13 +24,13 @@ export function LoginForm() {
         setLoading(true);
 
         try {
-            const result = await signIn("credentials", {
+            const { error: signInError } = await authClient.signIn.email({
                 email,
                 password,
-                redirect: false,
+                callbackURL: `/${locale}/dashboard`,
             });
 
-            if (result?.error) {
+            if (signInError) {
                 setError(t("invalidCredentials"));
             } else {
                 router.push(`/${locale}/dashboard`);
@@ -43,8 +43,11 @@ export function LoginForm() {
         }
     };
 
-    const handleGitHubLogin = () => {
-        signIn("github", { callbackUrl: `/${locale}/dashboard` });
+    const handleGitHubLogin = async () => {
+        await authClient.signIn.social({
+            provider: "github",
+            callbackURL: `/${locale}/dashboard`,
+        });
     };
 
     return (

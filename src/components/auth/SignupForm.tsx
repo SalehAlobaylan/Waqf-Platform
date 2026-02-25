@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
@@ -53,32 +53,20 @@ export function SignupForm() {
         setLoading(true);
 
         try {
-            const res = await fetch("/api/auth/signup", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password, name }),
+            const { error: signUpError } = await authClient.signUp.email({
+                email,
+                password,
+                name,
+                callbackURL: `/${locale}/onboarding`,
             });
 
-            const data = await res.json();
-
-            if (!res.ok) {
-                setError(data.error || t("signupError"));
+            if (signUpError) {
+                setError(signUpError.message || t("signupError"));
                 return;
             }
 
-            // Auto sign in after signup
-            const result = await signIn("credentials", {
-                email,
-                password,
-                redirect: false,
-            });
-
-            if (result?.error) {
-                router.push(`/${locale}/login`);
-            } else {
-                router.push(`/${locale}/onboarding`);
-                router.refresh();
-            }
+            router.push(`/${locale}/onboarding`);
+            router.refresh();
         } catch {
             setError(t("signupError"));
         } finally {
@@ -86,8 +74,11 @@ export function SignupForm() {
         }
     };
 
-    const handleGitHubSignup = () => {
-        signIn("github", { callbackUrl: `/${locale}/onboarding` });
+    const handleGitHubSignup = async () => {
+        await authClient.signIn.social({
+            provider: "github",
+            callbackURL: `/${locale}/onboarding`,
+        });
     };
 
     return (

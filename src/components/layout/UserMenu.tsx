@@ -1,13 +1,13 @@
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
+import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { ChevronDown, User, LogOut, Settings, LayoutDashboard } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
 export function UserMenu() {
-    const { data: session } = useSession();
+    const { data: session } = authClient.useSession();
     const t = useTranslations("nav");
     const locale = useLocale();
     const [isOpen, setIsOpen] = useState(false);
@@ -106,7 +106,7 @@ export function UserMenu() {
                     {/* Logout */}
                     <div className="border-t border-secondary-100 pt-2">
                         <button
-                            onClick={() => signOut({ callbackUrl: `/${locale}` })}
+                            onClick={() => authClient.signOut({ fetchOptions: { onSuccess: () => { window.location.href = `/${locale}`; } } })}
                             className="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                         >
                             <LogOut className="w-4 h-4" />

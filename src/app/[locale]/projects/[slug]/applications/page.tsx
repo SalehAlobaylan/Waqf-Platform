@@ -1,4 +1,5 @@
 import { redirect, notFound } from "next/navigation";
+import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ApplicationCard } from "@/components/applications/ApplicationCard";
@@ -22,7 +23,7 @@ export async function generateMetadata({ params }: ProjectApplicationsPageProps)
 }
 
 export default async function ProjectApplicationsPage({ params }: ProjectApplicationsPageProps) {
-    const session = await auth();
+    const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user?.id) {
         redirect("/login");
     }
@@ -67,7 +68,7 @@ export default async function ProjectApplicationsPage({ params }: ProjectApplica
                     id: true,
                     name: true,
                     email: true,
-                    avatar: true,
+                    image: true,
                     contributorProfile: {
                         select: {
                             bio: true,

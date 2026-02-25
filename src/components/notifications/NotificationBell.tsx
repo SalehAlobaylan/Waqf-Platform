@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useSession } from "next-auth/react";
+import { authClient } from "@/lib/auth-client";
 import { useLocale } from "next-intl";
 import Link from "next/link";
 import {
@@ -34,7 +34,7 @@ const notificationIcons: Record<string, React.ElementType> = {
 };
 
 export function NotificationBell() {
-    const { data: session } = useSession();
+    const { data: session } = authClient.useSession();
     const locale = useLocale();
     const [isOpen, setIsOpen] = useState(false);
     const [notifications, setNotifications] = useState<Notification[]>([]);

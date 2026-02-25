@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { useSession } from "next-auth/react";
+import { authClient } from "@/lib/auth-client";
 import { Send, Loader2, ArrowDown } from "lucide-react";
 import { MessageBubble } from "./MessageBubble";
 
@@ -13,7 +13,7 @@ interface Message {
     sender: {
         id: string;
         name: string;
-        avatar: string | null;
+        image: string | null;
     };
 }
 
@@ -24,7 +24,7 @@ interface ChatWindowProps {
 }
 
 export function ChatWindow({ applicationId, initialMessages = [], recipientName }: ChatWindowProps) {
-    const { data: session } = useSession();
+    const { data: session } = authClient.useSession();
     const [messages, setMessages] = useState<Message[]>(initialMessages);
     const [newMessage, setNewMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -99,7 +99,7 @@ export function ChatWindow({ applicationId, initialMessages = [], recipientName 
             sender: {
                 id: session?.user?.id || "",
                 name: session?.user?.name || "",
-                avatar: session?.user?.image || null,
+                image: session?.user?.image || null,
             },
         };
         setMessages((prev) => [...prev, optimisticMessage]);

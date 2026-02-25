@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import {
@@ -36,13 +37,13 @@ export async function generateMetadata({ params }: ProjectPageProps) {
 
 export default async function ProjectPage({ params }: ProjectPageProps) {
     const { locale, slug } = await params;
-    const session = await auth();
+    const session = await auth.api.getSession({ headers: await headers() });
 
     const project = await prisma.project.findUnique({
         where: { slug },
         include: {
             skills: { include: { skill: true } },
-            owner: { select: { id: true, name: true, avatar: true } },
+            owner: { select: { id: true, name: true, image: true } },
             organization: { select: { id: true, name: true, logo: true } },
             _count: { select: { applications: true } },
         },

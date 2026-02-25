@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 interface AuthLayoutProps {
     children: React.ReactNode;
@@ -7,7 +8,7 @@ interface AuthLayoutProps {
 }
 
 export default async function AuthLayout({ children, params }: AuthLayoutProps) {
-    const session = await auth();
+    const session = await auth.api.getSession({ headers: await headers() });
     const { locale } = await params;
 
     // Redirect authenticated users to dashboard

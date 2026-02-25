@@ -3,7 +3,6 @@
 
 generator client {
   provider = "prisma-client-js"
-  engineType = "binary"
 }
 
 datasource db {
@@ -55,28 +54,75 @@ enum ProjectLanguage {
   BOTH
 }
 
-// ============ MODELS ============
+// ============ BETTER AUTH MODELS ============
 
 model User {
   id                 String               @id @default(cuid())
-  email              String               @unique
   name               String
-  avatar             String?
-  passwordHash       String?
-  emailVerified      DateTime?
-  role               UserRole             @default(USER)
+  email              String               @unique
+  emailVerified      Boolean              @default(false)
+  image              String?
+  role               String               @default("USER")
   preferredLanguage  String               @default("ar")
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  // App relations
   contributorProfile ContributorProfile?
   organizations      Organization[]
   projects           Project[]
   applications       Application[]
   sentMessages       Message[]
   notifications      Notification[]
-  accounts           Account[] // For NextAuth
-  sessions           Session[] // For NextAuth
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
+
+  // Better Auth relations
+  sessions           Session[]
+  accounts           Account[]
 }
+
+model Session {
+  id        String   @id @default(cuid())
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@unique([providerId, accountId])
+}
+
+model Verification {
+  id         String    @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
+
+  @@unique([identifier, value])
+}
+
+// ============ APP MODELS ============
 
 model ContributorProfile {
   id                  String             @id @default(cuid())
@@ -89,7 +135,7 @@ model ContributorProfile {
   isAvailable         Boolean            @default(true)
   githubSynced        Boolean            @default(false)
   githubUsername      String?
-  githubData          Json? // Cached GitHub stats
+  githubData          Json?
   spokenLanguages     String[]           @default(["ar"])
   preferredCategories ProjectCategory[]
   skills              ContributorSkill[]
@@ -230,31 +276,4 @@ model Notification {
   createdAt DateTime @default(now())
 
   @@index([userId, read])
-}
-
-// ============ NextAuth.js Models ============
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-}
-
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

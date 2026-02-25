@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
@@ -26,7 +27,7 @@ export async function generateMetadata({ params }: ProfilePageProps) {
 
 export default async function ProfilePage({ params }: ProfilePageProps) {
     const { locale, id } = await params;
-    const session = await auth();
+    const session = await auth.api.getSession({ headers: await headers() });
 
     const user = await prisma.user.findUnique({
         where: { id },
@@ -34,7 +35,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
             id: true,
             name: true,
             email: true,
-            avatar: true,
+            image: true,
             role: true,
             createdAt: true,
             contributorProfile: {
@@ -71,9 +72,9 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                     <div className="lg:col-span-4">
                         <div className="sticky top-[80px]">
                             <ProfileHeader
-                                user={{
+                            user={{
                                     name: user.name,
-                                    avatar: user.avatar,
+                                    avatar: user.image,
                                     role: user.role,
                                     bio: user.contributorProfile?.bio,
                                     timezone: user.contributorProfile?.timezone,

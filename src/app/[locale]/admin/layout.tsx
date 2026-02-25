@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import {
@@ -21,7 +22,7 @@ export default async function AdminLayout({ params, children }: Props) {
     const { locale } = await params;
     setRequestLocale(locale);
 
-    const session = await auth();
+    const session = await auth.api.getSession({ headers: await headers() });
 
     // Redirect if not logged in
     if (!session?.user?.id) {

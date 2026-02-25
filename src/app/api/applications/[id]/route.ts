@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -12,7 +13,7 @@ interface RouteParams {
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
     try {
-        const session = await auth();
+        const session = await auth.api.getSession({ headers: await headers() });
         if (!session?.user?.id) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
                             select: {
                                 id: true,
                                 name: true,
-                                avatar: true,
+                                image: true,
                             },
                         },
                     },
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
                         id: true,
                         name: true,
                         email: true,
-                        avatar: true,
+                        image: true,
                         contributorProfile: {
                             select: {
                                 bio: true,
@@ -68,7 +69,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
                             select: {
                                 id: true,
                                 name: true,
-                                avatar: true,
+                                image: true,
                             },
                         },
                     },
@@ -111,7 +112,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
  */
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
     try {
-        const session = await auth();
+        const session = await auth.api.getSession({ headers: await headers() });
         if (!session?.user?.id) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }

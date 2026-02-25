@@ -20,7 +20,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         id: true,
         name: true,
         email: true,
-        avatar: true,
+        image: true,
         role: true,
         createdAt: true,
         contributorProfile: {
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       id: user.id,
       name: user.name,
       email: user.email,
-      avatar: user.avatar,
+      avatar: user.image,
       role: user.role,
       createdAt: user.createdAt,
       bio: user.contributorProfile?.bio || null,

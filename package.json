@@ -20,15 +20,14 @@
     "seed": "npx tsx prisma/seed.ts"
   },
   "dependencies": {
-    "@auth/prisma-adapter": "^2.11.1",
     "@tanstack/react-query": "^5.90.20",
     "@types/bcryptjs": "^2.4.6",
     "bcryptjs": "^3.0.3",
+    "better-auth": "^1.4.19",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.563.0",
     "next": "16.1.6",
-    "next-auth": "^5.0.0-beta.30",
     "next-intl": "^4.8.2",
     "pg": "^8.18.0",
     "react": "19.2.3",

@@ -10,7 +10,7 @@ interface MessageBubbleProps {
         sender: {
             id: string;
             name: string;
-            avatar: string | null;
+            image: string | null;
         };
     };
     isOwn: boolean;
@@ -26,9 +26,9 @@ export function MessageBubble({ message, isOwn, showAvatar = true }: MessageBubb
             {/* Avatar */}
             {showAvatar && (
                 <div className="flex-shrink-0">
-                    {message.sender.avatar ? (
+                    {message.sender.image ? (
                         <Image
-                            src={message.sender.avatar}
+                            src={message.sender.image}
                             alt={message.sender.name}
                             width={32}
                             height={32}

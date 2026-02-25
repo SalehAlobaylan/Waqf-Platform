@@ -23,7 +23,7 @@ export default async function ExplorePage() {
                 select: {
                     id: true,
                     name: true,
-                    avatar: true,
+                    image: true,
                 },
             },
             _count: {
