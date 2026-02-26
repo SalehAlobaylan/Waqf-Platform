@@ -1,3 +1,4 @@
+// Added PortfolioGrid to imports (wait, need to actually replace the whole file from start)
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
@@ -6,6 +7,7 @@ import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { SkillsMatrix } from "@/components/profile/SkillsMatrix";
 import { ContributionHeatmap } from "@/components/profile/ContributionHeatmap";
 import { WaqfTimeline } from "@/components/profile/WaqfTimeline";
+import { PortfolioGrid } from "@/components/profile/PortfolioGrid";
 import { Heart, GitPullRequest, FolderOpen } from "lucide-react";
 
 interface ProfilePageProps {
@@ -45,6 +47,9 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                             skill: true,
                         },
                     },
+                    portfolioItems: {
+                        orderBy: { order: "asc" }
+                    }
                 },
             },
         },
@@ -79,6 +84,8 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                                     bio: user.contributorProfile?.bio,
                                     timezone: user.contributorProfile?.timezone,
                                     githubUsername: user.contributorProfile?.githubUsername,
+                                    discord: user.contributorProfile?.discord,
+                                    whatsapp: user.contributorProfile?.whatsapp,
                                     createdAt: user.createdAt,
                                     isAvailable: user.contributorProfile?.isAvailable,
                                 }}
@@ -148,6 +155,11 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
                         {/* Contribution Heatmap */}
                         <ContributionHeatmap locale={locale} />
+
+                        {/* Portfolio Grid */}
+                        {user.contributorProfile?.portfolioItems && user.contributorProfile.portfolioItems.length > 0 && (
+                            <PortfolioGrid items={user.contributorProfile.portfolioItems} locale={locale} />
+                        )}
 
                         {/* Skills Matrix */}
                         <SkillsMatrix skills={skills} locale={locale} />

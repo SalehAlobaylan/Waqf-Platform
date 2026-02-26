@@ -188,5 +188,23 @@
         "acceptanceRate": "Acceptance Rate",
         "thisMonth": "this month",
         "thisWeek": "this week"
+    },
+    "onboarding": {
+        "welcome": "Welcome, {name}",
+        "description": "How would you like to use the platform? Choose your primary path now (you can always switch roles later).",
+        "contributor": "Contributor",
+        "contributorDescription": "I want to contribute my skills as sadaqah jariyah to Islamic open-source projects.",
+        "creator": "Creator",
+        "creatorDescription": "I want to create an open-source Islamic project and recruit volunteers.",
+        "orgNameLabel": "Organization or Team Name",
+        "orgNamePlaceholder": "e.g., Quran Tech Team",
+        "continue": "Continue",
+        "orgNameRequired": "Please enter the organization name",
+        "createProfile": "Create a developer profile",
+        "findProjects": "Find projects matching your skills",
+        "buildHistory": "Build your waqf contribution history",
+        "registerOrg": "Register an organization",
+        "listProjects": "List projects for contribution",
+        "manageApplications": "Manage volunteer applications"
     }
 }

@@ -188,5 +188,23 @@
         "acceptanceRate": "معدل القبول",
         "thisMonth": "هذا الشهر",
         "thisWeek": "هذا الأسبوع"
+    },
+    "onboarding": {
+        "welcome": "مرحباً بك، {name}",
+        "description": "كيف ترغب في استخدام المنصة؟ اختر مسارك الأساسي الآن (يمكنك دائماً تغيير الأدوار لاحقاً).",
+        "contributor": "مساهم",
+        "contributorDescription": "أريد المساهمة بمهاراتي كصدقة جارية في مشاريع إسلامية مفتوحة المصدر.",
+        "creator": "منشئ مشاريع",
+        "creatorDescription": "أريد إنشاء مشروع إسلامي مفتوح المصدر واستقطاب المتطوعين.",
+        "orgNameLabel": "اسم المنظمة أو الفريق",
+        "orgNamePlaceholder": "مثال: فريق القرآن التقني",
+        "continue": "متابعة",
+        "orgNameRequired": "يرجى إدخال اسم المنظمة",
+        "createProfile": "إنشاء ملف تقني خاص بك",
+        "findProjects": "البحث عن مشاريع تناسب مهاراتك",
+        "buildHistory": "بناء سجل مساهمات وقفي",
+        "registerOrg": "تسجيل منظمة أو فريق",
+        "listProjects": "طرح مشاريع للمساهمة",
+        "manageApplications": "إدارة طلبات التطوع"
     }
 }

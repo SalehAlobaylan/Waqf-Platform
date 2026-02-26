@@ -137,6 +137,8 @@ model ContributorProfile {
   githubUsername      String?
   githubData          Json?
   spokenLanguages     String[]           @default(["ar"])
+  discord             String?
+  whatsapp            String?
   preferredCategories ProjectCategory[]
   skills              ContributorSkill[]
   portfolioItems      PortfolioItem[]
@@ -153,6 +155,8 @@ model Organization {
   description String?
   logo        String?
   website     String?
+  discord     String?
+  whatsapp    String?
   verified    Boolean   @default(false)
   projects    Project[]
   createdAt   DateTime  @default(now())

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Github, Globe, Linkedin, Share2, Calendar, UserPlus } from "lucide-react";
+import { Github, Globe, Linkedin, Share2, Calendar, UserPlus, MessageSquare, Phone } from "lucide-react";
 
 interface ProfileHeaderProps {
     user: {
@@ -9,6 +9,8 @@ interface ProfileHeaderProps {
         bio?: string | null;
         timezone?: string | null;
         githubUsername?: string | null;
+        discord?: string | null;
+        whatsapp?: string | null;
         createdAt: Date;
         isAvailable?: boolean;
     };
@@ -107,6 +109,26 @@ export function ProfileHeader({ user, isOwnProfile, locale = "en" }: ProfileHead
                             className="w-9 h-9 rounded-lg bg-secondary-100 hover:bg-secondary-200 flex items-center justify-center text-secondary-600 transition-colors"
                         >
                             <Github className="w-4 h-4" />
+                        </a>
+                    )}
+                    {user.discord && (
+                        <a
+                            href={`https://discord.com/users/${user.discord}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-9 h-9 rounded-lg bg-[#5865F2]/10 hover:bg-[#5865F2]/20 flex items-center justify-center text-[#5865F2] transition-colors"
+                        >
+                            <MessageSquare className="w-4 h-4" />
+                        </a>
+                    )}
+                    {user.whatsapp && (
+                        <a
+                            href={user.whatsapp}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="w-9 h-9 rounded-lg bg-[#25D366]/10 hover:bg-[#25D366]/20 flex items-center justify-center text-[#25D366] transition-colors"
+                        >
+                            <Phone className="w-4 h-4" />
                         </a>
                     )}
                     <button className="w-9 h-9 rounded-lg bg-secondary-100 hover:bg-secondary-200 flex items-center justify-center text-secondary-600 transition-colors">
