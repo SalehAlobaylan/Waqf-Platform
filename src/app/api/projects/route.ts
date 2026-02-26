@@ -118,6 +118,9 @@ export async function POST(request: NextRequest) {
       duration,
       impact,
       githubUrl,
+      featuredImage,
+      organizationId,
+      customSlug,
       skills,
     } = body;
 
@@ -129,12 +132,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate slug
-    const baseSlug = title
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-|-$/g, "");
-    const slug = `${baseSlug}-${Date.now().toString(36)}`;
+    // Generate or use custom slug
+    let baseSlug = customSlug
+      ? customSlug.toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-|-$/g, "")
+      : title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+
+    // Ensure uniqueness
+    let slug = baseSlug;
+    let counter = 0;
+    while (await prisma.project.findUnique({ where: { slug } })) {
+      counter++;
+      slug = `${baseSlug}-${counter}`;
+    }
 
     // Create project
     const project = await prisma.project.create({
@@ -149,6 +158,8 @@ export async function POST(request: NextRequest) {
         duration,
         impact,
         githubUrl,
+        featuredImage: featuredImage || null,
+        organizationId: organizationId || null,
         ownerId: session.user.id,
         skills: skills?.length
           ? {

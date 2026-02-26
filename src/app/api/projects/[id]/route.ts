@@ -15,7 +15,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
 
-    // Try to find by ID first, then by slug
     const project = await prisma.project.findFirst({
       where: {
         OR: [{ id }, { slug: id }],
@@ -96,12 +95,39 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       description,
       category,
       language,
-      status,
       timeCommitment,
       duration,
       impact,
       githubUrl,
+      featuredImage,
+      organizationId,
+      slug: newSlug,
+      skills,
     } = body;
+
+    // If slug changed, verify uniqueness
+    if (newSlug) {
+      const slugExists = await prisma.project.findFirst({
+        where: { slug: newSlug, id: { not: id } },
+      });
+      if (slugExists) {
+        return NextResponse.json({ error: "Slug already taken" }, { status: 400 });
+      }
+    }
+
+    // If skills provided, replace them
+    if (skills && Array.isArray(skills)) {
+      await prisma.projectSkill.deleteMany({ where: { projectId: id } });
+      if (skills.length > 0) {
+        await prisma.projectSkill.createMany({
+          data: skills.map((s: { skillId: number; isRequired: boolean }) => ({
+            projectId: id,
+            skillId: s.skillId,
+            isRequired: s.isRequired ?? false,
+          })),
+        });
+      }
+    }
 
     const project = await prisma.project.update({
       where: { id },
@@ -110,11 +136,13 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         ...(description && { description }),
         ...(category && { category }),
         ...(language && { language }),
-        ...(status && { status }),
+        ...(newSlug && { slug: newSlug }),
         ...(timeCommitment !== undefined && { timeCommitment }),
         ...(duration !== undefined && { duration }),
         ...(impact !== undefined && { impact }),
         ...(githubUrl !== undefined && { githubUrl }),
+        ...(featuredImage !== undefined && { featuredImage }),
+        ...(organizationId !== undefined && { organizationId: organizationId || null }),
       },
       include: {
         skills: {

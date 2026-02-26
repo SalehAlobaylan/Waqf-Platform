@@ -6,8 +6,11 @@ import { auth } from "@/lib/auth";
 import {
     BookOpen, Heart, Star, Share2, ExternalLink, Github,
     Calendar, Users, Clock, CheckCircle, Circle,
-    ChevronRight, GitPullRequest, AlertCircle
+    ChevronRight, GitPullRequest, AlertCircle, Eye
 } from "lucide-react";
+import { ViewTracker } from "@/components/projects/ViewTracker";
+import { SimilarProjects } from "@/components/projects/SimilarProjects";
+import { StatusWorkflow } from "@/components/projects/StatusWorkflow";
 
 interface ProjectPageProps {
     params: Promise<{ locale: string; slug: string }>;
@@ -20,6 +23,24 @@ const categoryIcons: Record<string, { emoji: string; bgClass: string; textClass:
     EDUCATION: { emoji: "📚", bgClass: "bg-blue-100", textClass: "text-blue-700" },
     COMMUNITY: { emoji: "👥", bgClass: "bg-purple-100", textClass: "text-purple-700" },
     TOOLS: { emoji: "⚙️", bgClass: "bg-slate-100", textClass: "text-slate-700" },
+};
+
+const categoryLabels: Record<string, { en: string; ar: string }> = {
+    QURAN: { en: "Quran", ar: "القرآن" },
+    PRAYER: { en: "Prayer", ar: "الصلاة" },
+    CHARITY: { en: "Charity", ar: "الصدقة" },
+    EDUCATION: { en: "Education", ar: "التعليم" },
+    COMMUNITY: { en: "Community", ar: "المجتمع" },
+    TOOLS: { en: "Tools", ar: "الأدوات" },
+};
+
+const statusLabels: Record<string, { en: string; ar: string; color: string }> = {
+    DRAFT: { en: "Draft", ar: "مسودة", color: "bg-secondary-100 text-secondary-600" },
+    PENDING: { en: "Pending Review", ar: "قيد المراجعة", color: "bg-amber-100 text-amber-700" },
+    OPEN: { en: "Open", ar: "مفتوح", color: "bg-green-100 text-green-700" },
+    IN_PROGRESS: { en: "In Progress", ar: "قيد التنفيذ", color: "bg-blue-100 text-blue-700" },
+    COMPLETED: { en: "Completed", ar: "مكتمل", color: "bg-primary-100 text-primary-700" },
+    CANCELLED: { en: "Cancelled", ar: "ملغى", color: "bg-red-100 text-red-700" },
 };
 
 export async function generateMetadata({ params }: ProjectPageProps) {
@@ -57,21 +78,37 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     const requiredSkills = project.skills.filter((s) => s.isRequired);
     const optionalSkills = project.skills.filter((s) => !s.isRequired);
     const icon = categoryIcons[project.category] || { emoji: "📦", bgClass: "bg-gray-100", textClass: "text-gray-700" };
+    const catLabel = categoryLabels[project.category];
+    const stLabel = statusLabels[project.status];
 
     return (
         <div className="min-h-screen bg-waqf-bg">
+            {/* View count tracker */}
+            <ViewTracker projectId={project.id} />
+
             {/* Breadcrumbs */}
             <div className="max-w-[1280px] mx-auto px-6 pt-6">
                 <nav className="flex items-center gap-2 text-sm text-secondary-500">
                     <Link href={`/${locale}/explore`} className="hover:text-primary-600 transition-colors">
                         {locale === "ar" ? "استكشاف" : "Explore"}
                     </Link>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                    <span className="text-secondary-400">{project.category}</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
+                    <ChevronRight className={`w-3.5 h-3.5 ${locale === "ar" ? "rotate-180" : ""}`} />
+                    <span className="text-secondary-400">
+                        {catLabel ? (locale === "ar" ? catLabel.ar : catLabel.en) : project.category}
+                    </span>
+                    <ChevronRight className={`w-3.5 h-3.5 ${locale === "ar" ? "rotate-180" : ""}`} />
                     <span className="text-secondary-900 font-medium truncate max-w-[200px]">{project.title}</span>
                 </nav>
             </div>
+
+            {/* Featured Image */}
+            {project.featuredImage && (
+                <div className="max-w-[1280px] mx-auto px-6 pt-4">
+                    <div className="rounded-2xl overflow-hidden border border-waqf-border shadow-sm">
+                        <img src={project.featuredImage} alt={project.title} className="w-full h-64 md:h-80 object-cover" />
+                    </div>
+                </div>
+            )}
 
             {/* Hero Card */}
             <div className="max-w-[1280px] mx-auto px-6 py-6">
@@ -82,8 +119,8 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                         </div>
                         <div className="flex-1">
                             <div className="flex flex-wrap gap-2 mb-3">
-                                <span className="px-3 py-1 text-xs font-semibold rounded-full bg-primary-600/10 text-primary-600">
-                                    {locale === "ar" ? "تطوير نشط" : "Active Development"}
+                                <span className={`px-3 py-1 text-xs font-semibold rounded-full ${stLabel?.color || "bg-secondary-100 text-secondary-600"}`}>
+                                    {stLabel ? (locale === "ar" ? stLabel.ar : stLabel.en) : project.status}
                                 </span>
                                 {project.status === "OPEN" && (
                                     <span className="px-3 py-1 text-xs font-semibold rounded-full bg-accent-500/10 text-accent-600">
@@ -125,6 +162,28 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                     </div>
                 </div>
             </div>
+
+            {/* Admin Feedback Banner (for project owner) */}
+            {isOwner && project.adminFeedback && project.status === "DRAFT" && (
+                <div className="max-w-[1280px] mx-auto px-6 pb-4">
+                    <div className="p-5 rounded-2xl bg-amber-50 border border-amber-200">
+                        <div className="flex items-start gap-3">
+                            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                            <div>
+                                <h3 className="font-bold text-amber-800 mb-1">
+                                    {locale === "ar" ? "ملاحظات الإدارة" : "Admin Feedback"}
+                                </h3>
+                                <p className="text-sm text-amber-700">
+                                    {locale === "ar"
+                                        ? "قدّم المسؤول الملاحظات التالية على طلب نشر مشروعك:"
+                                        : "The admin has provided the following feedback on your project submission:"}
+                                </p>
+                                <p className="mt-2 text-amber-900 bg-amber-100 rounded-xl p-3 text-sm">{project.adminFeedback}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* 8+4 Grid Layout */}
             <div className="max-w-[1280px] mx-auto px-6 pb-12">
@@ -267,6 +326,16 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
                     {/* Sidebar (4 cols) */}
                     <div className="lg:col-span-4 space-y-6">
+                        {/* Status Workflow (owner only) */}
+                        {isOwner && (
+                            <StatusWorkflow
+                                projectId={project.id}
+                                currentStatus={project.status}
+                                adminFeedback={project.adminFeedback}
+                                locale={locale}
+                            />
+                        )}
+
                         {/* Project Details */}
                         <div className="bg-white rounded-2xl border border-waqf-border p-6 sticky top-[80px]">
                             <h3 className="text-sm font-semibold text-secondary-900 mb-4">
@@ -291,6 +360,13 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                                         {locale === "ar" ? "المتقدمين" : "Applicants"}
                                     </dt>
                                     <dd className="font-medium text-secondary-900">{project._count.applications}</dd>
+                                </div>
+                                <div className="flex justify-between">
+                                    <dt className="text-secondary-500 flex items-center gap-1.5">
+                                        <Eye className="w-4 h-4" />
+                                        {locale === "ar" ? "المشاهدات" : "Views"}
+                                    </dt>
+                                    <dd className="font-medium text-secondary-900">{project.viewCount}</dd>
                                 </div>
                                 {project.timeCommitment && (
                                     <div className="flex justify-between">
@@ -341,7 +417,6 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                                         <ExternalLink className="w-3.5 h-3.5 text-secondary-400 ml-auto" />
                                     </a>
                                 )}
-
                             </div>
                         </div>
 
@@ -371,28 +446,8 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                             </button>
                         </div>
 
-                        {/* Similar Projects */}
-                        <div className="bg-white rounded-2xl border border-waqf-border p-6">
-                            <h3 className="text-sm font-semibold text-secondary-900 mb-4">
-                                {locale === "ar" ? "مشاريع مشابهة" : "Similar Projects"}
-                            </h3>
-                            <div className="space-y-3">
-                                <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary-50 transition-colors cursor-pointer">
-                                    <div className="w-9 h-9 bg-indigo-50 rounded-lg flex items-center justify-center text-sm">📖</div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-secondary-900 truncate">Quran Reader App</p>
-                                        <p className="text-xs text-secondary-500">React · TypeScript</p>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-secondary-50 transition-colors cursor-pointer">
-                                    <div className="w-9 h-9 bg-amber-50 rounded-lg flex items-center justify-center text-sm">🤲</div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-secondary-900 truncate">Zakat Calculator</p>
-                                        <p className="text-xs text-secondary-500">Flutter · Dart</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        {/* Similar Projects (dynamic) */}
+                        <SimilarProjects projectId={project.id} locale={locale} />
                     </div>
                 </div>
             </div>
