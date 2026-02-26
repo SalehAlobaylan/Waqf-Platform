@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Search, SlidersHorizontal, ChevronDown } from "lucide-react";
+import { Search, SlidersHorizontal, ChevronDown, Loader2 } from "lucide-react";
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { FilterSidebar } from "@/components/explore/FilterSidebar";
 
@@ -23,12 +23,17 @@ interface ExplorePageClientProps {
     skills: Array<{ id: number; name: string; nameAr: string; category: string }>;
 }
 
+const PAGE_SIZE = 24;
+
 export function ExplorePageClient({ initialProjects, skills }: ExplorePageClientProps) {
     const locale = useLocale();
     const t = useTranslations("explore");
 
     const [projects, setProjects] = useState(initialProjects);
     const [loading, setLoading] = useState(false);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [hasMore, setHasMore] = useState(initialProjects.length >= PAGE_SIZE);
+    const [offset, setOffset] = useState(initialProjects.length);
     const [searchQuery, setSearchQuery] = useState("");
     const [sortBy, setSortBy] = useState("recommended");
     const [showMobileFilters, setShowMobileFilters] = useState(false);
@@ -39,25 +44,51 @@ export function ExplorePageClient({ initialProjects, skills }: ExplorePageClient
         timeCommitment?: string;
     }>({ skills: [] });
 
+    const buildParams = useCallback((extraOffset?: number) => {
+        const params = new URLSearchParams();
+        if (searchQuery) params.set("search", searchQuery);
+        if (filters.category) params.set("category", filters.category);
+        if (sortBy === "newest") params.set("sortBy", "newest");
+        if (sortBy === "oldest") params.set("sortBy", "oldest");
+        params.set("limit", String(PAGE_SIZE));
+        params.set("offset", String(extraOffset ?? 0));
+        return params;
+    }, [searchQuery, filters.category, sortBy]);
+
+    // Fresh fetch when filters/search/sort change
     const fetchProjects = useCallback(async () => {
         setLoading(true);
         try {
-            const params = new URLSearchParams();
-            if (searchQuery) params.set("search", searchQuery);
-            if (filters.category) params.set("category", filters.category);
-            if (sortBy === "newest") params.set("sortBy", "newest");
-            if (sortBy === "oldest") params.set("sortBy", "oldest");
-            params.set("limit", "24");
-
+            const params = buildParams(0);
             const res = await fetch(`/api/projects?${params.toString()}`);
             const data = await res.json();
             setProjects(data.projects);
+            setOffset(data.projects.length);
+            setHasMore(data.pagination?.hasMore ?? data.projects.length >= PAGE_SIZE);
         } catch (error) {
             console.error("Error fetching projects:", error);
         } finally {
             setLoading(false);
         }
-    }, [searchQuery, filters.category, sortBy]);
+    }, [buildParams]);
+
+    // Load More
+    const loadMore = async () => {
+        setLoadingMore(true);
+        try {
+            const params = buildParams(offset);
+            const res = await fetch(`/api/projects?${params.toString()}`);
+            const data = await res.json();
+            const newProjects = data.projects;
+            setProjects(prev => [...prev, ...newProjects]);
+            setOffset(prev => prev + newProjects.length);
+            setHasMore(data.pagination?.hasMore ?? newProjects.length >= PAGE_SIZE);
+        } catch (error) {
+            console.error("Error loading more projects:", error);
+        } finally {
+            setLoadingMore(false);
+        }
+    };
 
     useEffect(() => {
         const timer = setTimeout(fetchProjects, 300);
@@ -171,12 +202,26 @@ export function ExplorePageClient({ initialProjects, skills }: ExplorePageClient
                     )}
 
                     {/* Load More */}
-                    {projects.length > 0 && (
+                    {!loading && projects.length > 0 && (
                         <div className="mt-12 flex justify-center">
-                            <button className="flex items-center gap-2 px-6 py-3 border border-secondary-200 rounded-xl bg-white text-secondary-900 font-medium hover:bg-secondary-50 transition-colors">
-                                {locale === "ar" ? "تحميل المزيد" : "Load More Projects"}
-                                <ChevronDown className="w-5 h-5" />
-                            </button>
+                            {hasMore ? (
+                                <button
+                                    onClick={loadMore}
+                                    disabled={loadingMore}
+                                    className="flex items-center gap-2 px-6 py-3 border border-secondary-200 rounded-xl bg-white text-secondary-900 font-medium hover:bg-secondary-50 transition-colors disabled:opacity-50"
+                                >
+                                    {loadingMore ? (
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                    ) : (
+                                        <ChevronDown className="w-5 h-5" />
+                                    )}
+                                    {locale === "ar" ? "تحميل المزيد" : "Load More Projects"}
+                                </button>
+                            ) : (
+                                <p className="text-sm text-secondary-400">
+                                    {locale === "ar" ? "لا توجد مشاريع أخرى" : "No more projects to show"}
+                                </p>
+                            )}
                         </div>
                     )}
                 </div>

@@ -11,6 +11,7 @@ import {
 import { ViewTracker } from "@/components/projects/ViewTracker";
 import { SimilarProjects } from "@/components/projects/SimilarProjects";
 import { StatusWorkflow } from "@/components/projects/StatusWorkflow";
+import { ReportButton } from "@/components/reports/ReportButton";
 
 interface ProjectPageProps {
     params: Promise<{ locale: string; slug: string }>;
@@ -158,6 +159,9 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                                     {locale === "ar" ? "مشاركة" : "Share"}
                                 </button>
                             </div>
+                            {!isOwner && (
+                                <ReportButton targetType="PROJECT" targetId={project.id} />
+                            )}
                         </div>
                     </div>
                 </div>
