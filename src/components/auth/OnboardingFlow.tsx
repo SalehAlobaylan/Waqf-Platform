@@ -39,11 +39,11 @@ export function OnboardingFlow({ locale, userId, userName }: { locale: string, u
                 throw new Error(data.error || t("failedToComplete"));
             }
 
-            // Route based on selection
+            // Route to dashboard after completing onboarding
             if (selectedPath === "CONTRIBUTOR") {
-                router.push(`/${locale}/settings/profile`); // route to set up their skills
+                router.push(`/${locale}/dashboard`);
             } else {
-                router.push(`/${locale}/projects/new`); // Creator should create project right away
+                router.push(`/${locale}/dashboard`);
             }
             router.refresh();
         } catch (err: any) {

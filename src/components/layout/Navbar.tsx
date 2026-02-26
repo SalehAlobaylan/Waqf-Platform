@@ -5,6 +5,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { UserMenu } from "./UserMenu";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 
 export function Navbar() {
     const t = useTranslations("nav");
@@ -56,22 +58,11 @@ export function Navbar() {
                     </Link>
                 </div>
 
-                {/* Desktop Actions */}
+                {/* Desktop Actions — auth-aware */}
                 <div className="hidden md:flex items-center gap-3">
                     <LanguageSwitcher />
-                    <div className="w-px h-6 bg-secondary-200"></div>
-                    <Link
-                        href={`/${locale}/login`}
-                        className="flex items-center justify-center rounded-lg h-9 px-4 text-secondary-900 hover:bg-secondary-50 text-sm font-bold transition-colors"
-                    >
-                        {t("login")}
-                    </Link>
-                    <Link
-                        href={`/${locale}/signup`}
-                        className="flex items-center justify-center rounded-lg h-9 px-4 bg-primary-600 hover:bg-primary-700 transition-colors text-white text-sm font-bold shadow-md shadow-primary-600/20"
-                    >
-                        {t("signup")}
-                    </Link>
+                    <NotificationBell />
+                    <UserMenu />
                 </div>
 
                 {/* Mobile Menu Button */}
@@ -113,21 +104,9 @@ export function Navbar() {
                         <div className="pt-4 border-t border-secondary-100 flex flex-col gap-3">
                             <div className="flex items-center justify-between">
                                 <LanguageSwitcher />
+                                <NotificationBell />
                             </div>
-                            <Link
-                                href={`/${locale}/login`}
-                                className="w-full text-center rounded-lg h-10 flex items-center justify-center px-4 text-secondary-900 bg-secondary-100 hover:bg-secondary-200 text-sm font-bold transition-colors"
-                                onClick={() => setIsMenuOpen(false)}
-                            >
-                                {t("login")}
-                            </Link>
-                            <Link
-                                href={`/${locale}/signup`}
-                                className="w-full text-center rounded-lg h-10 flex items-center justify-center px-4 bg-primary-600 hover:bg-primary-700 transition-colors text-white text-sm font-bold"
-                                onClick={() => setIsMenuOpen(false)}
-                            >
-                                {t("signup")}
-                            </Link>
+                            <UserMenu />
                         </div>
                     </nav>
                 </div>

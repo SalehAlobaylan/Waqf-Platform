@@ -27,7 +27,7 @@ export default async function SettingsLayout({
     // but doing simple labels here for brevity.
     const navItems = [
         { href: `/${locale}/settings/profile`, label: locale === "ar" ? "الملف الشخصي" : "Profile", icon: User },
-        // Add more settings pages in the future here
+        { href: `/${locale}/settings/general`, label: locale === "ar" ? "عام" : "General", icon: Shield },
     ];
 
     return (
