@@ -217,6 +217,7 @@ model Project {
   timeCommitment String?
   duration       String?
   githubUrl      String?
+  tags           String[]        @default([])
   featuredImage  String?
   featured       Boolean         @default(false)
   featuredUntil  DateTime?

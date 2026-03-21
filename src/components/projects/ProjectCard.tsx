@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen, Heart, Bookmark, CheckCircle } from "lucide-react";
+import { BookOpen, Bookmark, CheckCircle } from "lucide-react";
 
 interface ProjectCardProps {
     project: {
@@ -11,6 +11,7 @@ interface ProjectCardProps {
         description: string;
         category: string;
         status: string;
+        tags?: string[];
         timeCommitment?: string | null;
         featured?: boolean;
         _count?: { applications: number };
@@ -88,13 +89,20 @@ export function ProjectCard({ project, locale }: ProjectCardProps) {
                     ))}
                 </div>
 
-                {/* Sadaqah Jariyah Impact Badge */}
-                <div className="flex items-center gap-1.5 text-xs text-accent-600">
-                    <Heart className="w-3.5 h-3.5" fill="currentColor" />
-                    <span className="font-medium">
-                        {locale === "ar" ? "تأثير صدقة جارية" : "Sadaqah Jariyah Impact"}
-                    </span>
-                </div>
+                {/* Tags */}
+                {project.tags && project.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mb-4">
+                        {project.tags.slice(0, 3).map((tag, i) => (
+                            <span
+                                key={`tag-${i}`}
+                                className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-accent-50 text-accent-700 border border-accent-200"
+                            >
+                                #{tag}
+                            </span>
+                        ))}
+                    </div>
+                )}
+
             </div>
 
             {/* Card Footer */}
