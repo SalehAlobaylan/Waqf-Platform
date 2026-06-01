@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { projectStatusUpdateSchema, routeIdParamSchema } from "@/lib/validation/schemas";
+import { parseBody, parseParams } from "@/lib/validation/parse";
+import { makeValidationError } from "@/lib/validation/errors";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -26,13 +29,18 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: "Authentication required" }, { status: 401 });
         }
 
-        const { id } = await params;
-        const body = await request.json();
-        const { status: newStatus, adminFeedback } = body;
-
-        if (!newStatus) {
-            return NextResponse.json({ error: "Status is required" }, { status: 400 });
+        const parsedParams = parseParams(await params, routeIdParamSchema);
+        if (!parsedParams.success) {
+            return NextResponse.json(parsedParams.error, { status: 400 });
         }
+
+        const parsedBody = await parseBody(request, projectStatusUpdateSchema);
+        if (!parsedBody.success) {
+            return NextResponse.json(parsedBody.error, { status: 400 });
+        }
+
+        const { id } = parsedParams.data;
+        const { status: newStatus, adminFeedback } = parsedBody.data;
 
         const project = await prisma.project.findUnique({
             where: { id },
@@ -40,7 +48,10 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         });
 
         if (!project) {
-            return NextResponse.json({ error: "Project not found" }, { status: 404 });
+            return NextResponse.json(
+                makeValidationError("Project not found", "id"),
+                { status: 404 }
+            );
         }
 
         const isOwner = project.ownerId === session.user.id;
@@ -59,7 +70,10 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
         if (!allowed.includes(newStatus)) {
             return NextResponse.json(
-                { error: `Cannot transition from ${currentStatus} to ${newStatus}` },
+                makeValidationError(
+                    `Cannot transition from ${currentStatus} to ${newStatus}`,
+                    "status"
+                ),
                 { status: 400 }
             );
         }

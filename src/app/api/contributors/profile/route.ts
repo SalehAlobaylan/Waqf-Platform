@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { profileUpdateSchema } from "@/lib/validation/schemas";
+import { parseBody } from "@/lib/validation/parse";
 
 export async function PATCH(request: Request) {
     try {
@@ -10,41 +12,56 @@ export async function PATCH(request: Request) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const body = await request.json();
-        const { bio, intentionStatement, discord, whatsapp, isAvailable, hoursPerWeek, selectedSkills } = body;
+        const parsedBody = await parseBody(request, profileUpdateSchema);
+        if (!parsedBody.success) {
+            return NextResponse.json(parsedBody.error, { status: 400 });
+        }
+
+        const { bio, intentionStatement, discord, whatsapp, isAvailable, hoursPerWeek, selectedSkills } = parsedBody.data;
         const userId = session.user.id;
 
-        // Update basic profile fields
-        const updatedProfile = await prisma.contributorProfile.update({
-            where: { userId },
-            data: {
-                bio,
-                intentionStatement,
-                discord,
-                whatsapp,
-                isAvailable,
-                hoursPerWeek: hoursPerWeek ? parseInt(hoursPerWeek) : null,
-            }
-        });
+        const normalizedHours = hoursPerWeek ?? undefined;
 
-        // Update skills if provided
-        if (selectedSkills && Array.isArray(selectedSkills)) {
-            // Remove existing skills
-            await prisma.contributorSkill.deleteMany({
-                where: { contributorId: updatedProfile.id }
+        const updatedProfile = await prisma.$transaction(async (tx) => {
+            const profile = await tx.contributorProfile.upsert({
+                where: { userId },
+                create: {
+                    userId,
+                    bio: bio || null,
+                    intentionStatement: intentionStatement || null,
+                    discord: discord || null,
+                    whatsapp: whatsapp || null,
+                    isAvailable: isAvailable ?? true,
+                    hoursPerWeek: normalizedHours ?? null,
+                },
+                update: {
+                    ...(bio !== undefined && { bio }),
+                    ...(intentionStatement !== undefined && { intentionStatement }),
+                    ...(discord !== undefined && { discord }),
+                    ...(whatsapp !== undefined && { whatsapp }),
+                    ...(isAvailable !== undefined && { isAvailable }),
+                    ...(normalizedHours !== undefined && { hoursPerWeek: normalizedHours }),
+                },
             });
 
-            // Need to insert new skills
-            if (selectedSkills.length > 0) {
-                await prisma.contributorSkill.createMany({
-                    data: selectedSkills.map(skillId => ({
-                        contributorId: updatedProfile.id,
-                        skillId,
-                        level: "INTERMEDIATE" // default level for now
-                    }))
+            if (selectedSkills) {
+                await tx.contributorSkill.deleteMany({
+                    where: { contributorId: profile.id },
                 });
+
+                if (selectedSkills.length > 0) {
+                    await tx.contributorSkill.createMany({
+                        data: selectedSkills.map((skillId) => ({
+                            contributorId: profile.id,
+                            skillId,
+                            level: "INTERMEDIATE",
+                        })),
+                    });
+                }
             }
-        }
+
+            return profile;
+        });
 
         return NextResponse.json({ success: true, profile: updatedProfile });
     } catch (error) {

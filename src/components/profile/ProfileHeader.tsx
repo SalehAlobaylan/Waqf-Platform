@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { Github, Globe, Linkedin, Share2, Calendar, UserPlus, MessageSquare, Phone } from "lucide-react";
 
 interface ProfileHeaderProps {
@@ -80,12 +81,12 @@ export function ProfileHeader({ user, isOwnProfile, locale = "en" }: ProfileHead
                 {/* CTA Buttons */}
                 <div className="flex gap-2 w-full">
                     {isOwnProfile ? (
-                        <a
+                        <Link
                             href="/settings/profile"
                             className="flex-1 px-4 py-2.5 text-sm font-medium text-secondary-700 border border-secondary-200 rounded-xl hover:bg-secondary-50 transition-colors text-center"
                         >
                             {locale === "ar" ? "تعديل الملف" : "Edit Profile"}
-                        </a>
+                        </Link>
                     ) : (
                         <>
                             <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold bg-primary-600 text-white rounded-xl hover:bg-primary-700 transition-colors shadow-md shadow-primary-600/20">

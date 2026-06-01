@@ -604,12 +604,13 @@ async function getStats() {
             prisma.application.count({ where: { status: "ACCEPTED" } }),
         ]);
         return {
-            projects: projectCount || 150,
-            contributors: userCount || 2000,
-            contributions: applicationCount || 10000,
+            projects: projectCount,
+            contributors: userCount,
+            contributions: applicationCount,
         };
-    } catch {
-        return { projects: 150, contributors: 2000, contributions: 10000 };
+    } catch (e) {
+        console.error("[LandingPage] Failed to fetch stats:", e);
+        return { projects: 0, contributors: 0, contributions: 0 };
     }
 }
 
@@ -652,7 +653,8 @@ async function getFeaturedProjects() {
         }
 
         return projects;
-    } catch {
+    } catch (e) {
+        console.error("[LandingPage] Failed to fetch featured projects:", e);
         return [];
     }
 }

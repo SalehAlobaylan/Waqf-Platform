@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { onboardingSchema } from "@/lib/validation/schemas";
+import { parseBody } from "@/lib/validation/parse";
+import { makeValidationError } from "@/lib/validation/errors";
 
 function slugifyString(text: string) {
     return text
@@ -21,8 +24,12 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const body = await request.json();
-        const { type, orgName } = body;
+        const parsedBody = await parseBody(request, onboardingSchema);
+        if (!parsedBody.success) {
+            return NextResponse.json(parsedBody.error, { status: 400 });
+        }
+
+        const { type, orgName } = parsedBody.data;
 
         const userId = session.user.id;
 
@@ -30,7 +37,10 @@ export async function POST(request: Request) {
             // Check if exists
             const existing = await prisma.contributorProfile.findUnique({ where: { userId } });
             if (existing) {
-                return NextResponse.json({ error: "Profile already exists" }, { status: 400 });
+                return NextResponse.json(
+                    makeValidationError("Profile already exists", "type"),
+                    { status: 400 }
+                );
             }
 
             await prisma.contributorProfile.create({
@@ -45,23 +55,35 @@ export async function POST(request: Request) {
 
         if (type === "CREATOR") {
             if (!orgName) {
-                return NextResponse.json({ error: "Organization name is required" }, { status: 400 });
+                return NextResponse.json(
+                    makeValidationError("Organization name is required", "orgName"),
+                    { status: 400 }
+                );
             }
 
             // Check if exists
             const existing = await prisma.organization.findFirst({ where: { userId } });
             if (existing) {
-                return NextResponse.json({ error: "Organization already exists" }, { status: 400 });
+                return NextResponse.json(
+                    makeValidationError("Organization already exists", "type"),
+                    { status: 400 }
+                );
             }
 
             // Generate slug
-            let baseSlug = slugifyString(orgName) || `org-${Date.now()}`;
+            const baseSlug = slugifyString(orgName) || `org-${Date.now()}`;
             // check unique slug
             let slug = baseSlug;
             let counter = 1;
             while (await prisma.organization.findUnique({ where: { slug } })) {
                 slug = `${baseSlug}-${counter}`;
                 counter++;
+                if (counter > 50) {
+                    return NextResponse.json(
+                        makeValidationError("Unable to generate unique organization slug", "orgName"),
+                        { status: 400 }
+                    );
+                }
             }
 
             await prisma.organization.create({
@@ -75,7 +97,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ success: true, type: "CREATOR" });
         }
 
-        return NextResponse.json({ error: "Invalid type" }, { status: 400 });
+        return NextResponse.json(makeValidationError("Invalid type", "type"), { status: 400 });
     } catch (error) {
         console.error("Onboarding API error:", error);
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });

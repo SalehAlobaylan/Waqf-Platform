@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { adminProjectActionSchema, routeIdParamSchema } from "@/lib/validation/schemas";
+import { parseBody, parseParams } from "@/lib/validation/parse";
+import { makeValidationError } from "@/lib/validation/errors";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -28,9 +31,18 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
-        const { id } = await params;
-        const body = await request.json();
-        const { action, feedback, featured } = body;
+        const parsedParams = parseParams(await params, routeIdParamSchema);
+        if (!parsedParams.success) {
+            return NextResponse.json(parsedParams.error, { status: 400 });
+        }
+
+        const parsedBody = await parseBody(request, adminProjectActionSchema);
+        if (!parsedBody.success) {
+            return NextResponse.json(parsedBody.error, { status: 400 });
+        }
+
+        const { action, feedback, featured } = parsedBody.data;
+        const { id } = parsedParams.data;
 
         // Get the project
         const project = await prisma.project.findUnique({
@@ -39,10 +51,13 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         });
 
         if (!project) {
-            return NextResponse.json({ error: "Project not found" }, { status: 404 });
+            return NextResponse.json(
+                makeValidationError("Project not found", "id"),
+                { status: 404 }
+            );
         }
 
-        let updateData: Record<string, unknown> = {};
+        const updateData: Record<string, unknown> = {};
 
         if (action === "approve") {
             updateData.status = "OPEN";
@@ -54,6 +69,13 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             updateData.featured = false;
         } else if (typeof featured === "boolean") {
             updateData.featured = featured;
+        }
+
+        if (Object.keys(updateData).length === 0) {
+            return NextResponse.json(
+                makeValidationError("No changes requested", "action"),
+                { status: 400 }
+            );
         }
 
         // Update project
@@ -111,7 +133,20 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
-        const { id } = await params;
+        const parsedParams = parseParams(await params, routeIdParamSchema);
+        if (!parsedParams.success) {
+            return NextResponse.json(parsedParams.error, { status: 400 });
+        }
+
+        const { id } = parsedParams.data;
+
+        const project = await prisma.project.findUnique({ where: { id }, select: { id: true } });
+        if (!project) {
+            return NextResponse.json(
+                makeValidationError("Project not found", "id"),
+                { status: 404 }
+            );
+        }
 
         await prisma.project.delete({
             where: { id },

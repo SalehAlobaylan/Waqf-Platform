@@ -36,8 +36,9 @@ export function ApplicationActions({ applicationId, currentStatus, onStatusChang
             }
             setStatus(newStatus);
             onStatusChange?.(newStatus);
-        } catch (err: any) {
-            setError(err.message || "Failed to update");
+        } catch (err) {
+            const message = err instanceof Error ? err.message : "Failed to update";
+            setError(message);
         } finally {
             setLoading(false);
         }

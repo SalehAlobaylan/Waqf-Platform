@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { routeIdParamSchema } from "@/lib/validation/schemas";
+import { parseParams } from "@/lib/validation/parse";
+import { makeValidationError } from "@/lib/validation/errors";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -18,7 +21,12 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const { id } = await params;
+        const parsedParams = parseParams(await params, routeIdParamSchema);
+        if (!parsedParams.success) {
+            return NextResponse.json(parsedParams.error, { status: 400 });
+        }
+
+        const { id } = parsedParams.data;
 
         const message = await prisma.message.findUnique({
             where: { id },
@@ -38,7 +46,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
         if (!message) {
             return NextResponse.json(
-                { error: "Message not found" },
+                makeValidationError("Message not found", "id"),
                 { status: 404 }
             );
         }
@@ -54,7 +62,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         // Can't mark own messages as read
         if (message.senderId === session.user.id) {
             return NextResponse.json(
-                { error: "Cannot mark own message as read" },
+                makeValidationError("Cannot mark own message as read", "id"),
                 { status: 400 }
             );
         }

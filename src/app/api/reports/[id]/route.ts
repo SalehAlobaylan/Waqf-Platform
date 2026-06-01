@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { reportUpdateSchema, routeIdParamSchema } from "@/lib/validation/schemas";
+import { parseBody, parseParams } from "@/lib/validation/parse";
+import { makeValidationError } from "@/lib/validation/errors";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -18,12 +21,25 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
-        const { id } = await params;
-        const body = await request.json();
-        const { status } = body;
+        const parsedParams = parseParams(await params, routeIdParamSchema);
+        if (!parsedParams.success) {
+            return NextResponse.json(parsedParams.error, { status: 400 });
+        }
 
-        if (!status || !["REVIEWED", "RESOLVED", "DISMISSED"].includes(status)) {
-            return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+        const parsedBody = await parseBody(request, reportUpdateSchema);
+        if (!parsedBody.success) {
+            return NextResponse.json(parsedBody.error, { status: 400 });
+        }
+
+        const { id } = parsedParams.data;
+        const { status } = parsedBody.data;
+
+        const existing = await prisma.report.findUnique({ where: { id }, select: { id: true } });
+        if (!existing) {
+            return NextResponse.json(
+                makeValidationError("Report not found", "id"),
+                { status: 404 }
+            );
         }
 
         const report = await prisma.report.update({

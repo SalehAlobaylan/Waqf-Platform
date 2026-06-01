@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { messagesQuerySchema, messageCreateSchema } from "@/lib/validation/schemas";
+import { parseBody, parseQuery } from "@/lib/validation/parse";
+import { makeValidationError } from "@/lib/validation/errors";
 
 /**
  * GET /api/messages
@@ -14,15 +17,12 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const { searchParams } = new URL(request.url);
-        const applicationId = searchParams.get("applicationId");
-
-        if (!applicationId) {
-            return NextResponse.json(
-                { error: "Application ID is required" },
-                { status: 400 }
-            );
+        const parsedQuery = parseQuery(request, messagesQuerySchema);
+        if (!parsedQuery.success) {
+            return NextResponse.json(parsedQuery.error, { status: 400 });
         }
+
+        const { applicationId } = parsedQuery.data;
 
         // Verify user has access to this application
         const application = await prisma.application.findUnique({
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
 
         if (!application) {
             return NextResponse.json(
-                { error: "Application not found" },
+                makeValidationError("Application not found", "applicationId"),
                 { status: 404 }
             );
         }
@@ -101,15 +101,12 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const body = await request.json();
-        const { applicationId, content } = body;
-
-        if (!applicationId || !content?.trim()) {
-            return NextResponse.json(
-                { error: "Application ID and content are required" },
-                { status: 400 }
-            );
+        const parsedBody = await parseBody(request, messageCreateSchema);
+        if (!parsedBody.success) {
+            return NextResponse.json(parsedBody.error, { status: 400 });
         }
+
+        const { applicationId, content } = parsedBody.data;
 
         // Verify user has access
         const application = await prisma.application.findUnique({
@@ -128,7 +125,7 @@ export async function POST(request: NextRequest) {
 
         if (!application) {
             return NextResponse.json(
-                { error: "Application not found" },
+                makeValidationError("Application not found", "applicationId"),
                 { status: 404 }
             );
         }
@@ -168,7 +165,7 @@ export async function POST(request: NextRequest) {
                 userId: recipientId,
                 type: "NEW_MESSAGE",
                 title: "New Message",
-                content: `${session.user.name}: ${content.slice(0, 50)}${content.length > 50 ? "..." : ""}`,
+                content: `${session.user.name}: ${content.trim().slice(0, 50)}${content.trim().length > 50 ? "..." : ""}`,
                 link: `/dashboard/applications/${applicationId}`,
             },
         });

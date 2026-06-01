@@ -1,16 +1,63 @@
-import { NextResponse } from "next/server";
-import { mockProjects } from "@/lib/mock-data";
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { ProjectStatus } from "@prisma/client";
+import { exploreQuerySchema } from "@/lib/validation/schemas";
+import { parseQuery } from "@/lib/validation/parse";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
-        // Return mock data instead of database query
+        const parsedQuery = parseQuery(request, exploreQuerySchema);
+        if (!parsedQuery.success) {
+            return NextResponse.json(parsedQuery.error, { status: 400 });
+        }
+
+        const { limit, page, category, search, skills, language } = parsedQuery.data;
+        const offset = (page - 1) * limit;
+
+        const skillIds = skills
+            ? skills.split(",").map((id) => parseInt(id, 10)).filter((id) => !Number.isNaN(id))
+            : [];
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const where: any = {
+            status: ProjectStatus.OPEN,
+        };
+
+        if (category) where.category = category;
+        if (language) where.language = language;
+        if (search) {
+            where.OR = [
+                { title: { contains: search, mode: "insensitive" } },
+                { description: { contains: search, mode: "insensitive" } },
+                { impact: { contains: search, mode: "insensitive" } },
+            ];
+        }
+        if (skillIds.length > 0) {
+            where.skills = { some: { skillId: { in: skillIds } } };
+        }
+
+        const [projects, total] = await Promise.all([
+            prisma.project.findMany({
+                where,
+                include: {
+                    skills: { include: { skill: true } },
+                    owner: { select: { id: true, name: true, image: true } },
+                    _count: { select: { applications: true } },
+                },
+                orderBy: { createdAt: "desc" },
+                skip: offset,
+                take: limit,
+            }),
+            prisma.project.count({ where }),
+        ]);
+
         return NextResponse.json({
-            projects: mockProjects,
+            projects,
             pagination: {
-                page: 1,
-                limit: 20,
-                total: mockProjects.length,
-                totalPages: 1,
+                page,
+                limit,
+                total,
+                totalPages: Math.ceil(total / limit),
             },
         });
     } catch (error) {

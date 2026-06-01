@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { adminUsersQuerySchema } from "@/lib/validation/schemas";
+import { parseQuery, normalizeQueryValue } from "@/lib/validation/parse";
 
 /**
  * GET /api/admin/users
@@ -24,18 +26,20 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
-        const { searchParams } = new URL(request.url);
-        const search = searchParams.get("search") || "";
-        const role = searchParams.get("role");
-        const page = parseInt(searchParams.get("page") || "1");
-        const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 50);
+        const parsedQuery = parseQuery(request, adminUsersQuerySchema);
+        if (!parsedQuery.success) {
+            return NextResponse.json(parsedQuery.error, { status: 400 });
+        }
+
+        const { search, role, page, limit } = parsedQuery.data;
         const offset = (page - 1) * limit;
+        const searchValue = normalizeQueryValue(search || "");
 
         const where = {
-            ...(search && {
+            ...(searchValue && {
                 OR: [
-                    { name: { contains: search, mode: "insensitive" as const } },
-                    { email: { contains: search, mode: "insensitive" as const } },
+                    { name: { contains: searchValue, mode: "insensitive" as const } },
+                    { email: { contains: searchValue, mode: "insensitive" as const } },
                 ],
             }),
             ...(role && role !== "all" && { role: role as "USER" | "ADMIN" }),

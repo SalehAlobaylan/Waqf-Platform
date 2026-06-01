@@ -110,8 +110,9 @@ export function ProjectForm({ locale, mode, initialData, organizations }: Projec
             }
             const { url } = await res.json();
             setFeaturedImage(url);
-        } catch (err: any) {
-            setError(err.message || "Failed to upload image");
+        } catch (err) {
+            const message = err instanceof Error ? err.message : "Failed to upload image";
+            setError(message);
         } finally {
             setImageUploading(false);
         }
@@ -184,8 +185,9 @@ export function ProjectForm({ locale, mode, initialData, organizations }: Projec
 
             setSuccess(mode === "create" ? t("projectCreated") : t("projectUpdated"));
             setTimeout(() => router.push(`/${locale}/projects/${project.slug}`), 1200);
-        } catch (err: any) {
-            setError(err.message || "An error occurred");
+        } catch (err) {
+            const message = err instanceof Error ? err.message : "An error occurred";
+            setError(message);
         } finally {
             setSaving(false);
         }

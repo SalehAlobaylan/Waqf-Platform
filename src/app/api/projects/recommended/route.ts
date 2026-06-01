@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 import {
   getRecommendedProjects,
   ContributorMatchData,
@@ -7,39 +9,28 @@ import {
   RecommendedProjectsResponse,
 } from "@/lib/matching";
 import { ProjectStatus } from "@prisma/client";
+import { recommendedProjectsQuerySchema } from "@/lib/validation/schemas";
+import { parseQuery } from "@/lib/validation/parse";
+import { makeValidationError } from "@/lib/validation/errors";
 
-/**
- * GET /api/projects/recommended
- *
- * Returns personalized project recommendations for the logged-in contributor.
- * Projects are scored using the Waqf Score algorithm (PRD §3.5).
- *
- * Query params:
- * - limit: number (default: 10, max: 50)
- * - offset: number (default: 0)
- * - category: ProjectCategory (optional filter)
- */
 export async function GET(request: NextRequest) {
   try {
-    // Parse query params
-    const { searchParams } = new URL(request.url);
-    const limit = Math.min(
-      parseInt(searchParams.get("limit") || "10", 10),
-      50
-    );
-    const offset = parseInt(searchParams.get("offset") || "0", 10);
-    const category = searchParams.get("category");
-
-    // TODO: Get authenticated user from session
-    // For now, we'll use a mock user ID or return unauthorized
-    const userId = searchParams.get("userId"); // Temporary for testing
-
-    if (!userId) {
+    const session = await auth.api.getSession({ headers: await headers() });
+    if (!session?.user?.id) {
       return NextResponse.json(
-        { error: "Authentication required. Provide userId for testing." },
+        { error: "Authentication required" },
         { status: 401 }
       );
     }
+
+    const parsedQuery = parseQuery(request, recommendedProjectsQuerySchema);
+
+    if (!parsedQuery.success) {
+      return NextResponse.json(parsedQuery.error, { status: 400 });
+    }
+
+    const { limit, offset, category } = parsedQuery.data;
+    const userId = session.user.id;
 
     // Fetch contributor profile with skills
     const contributor = await prisma.contributorProfile.findUnique({
@@ -55,7 +46,7 @@ export async function GET(request: NextRequest) {
 
     if (!contributor) {
       return NextResponse.json(
-        { error: "Contributor profile not found. Please complete your profile." },
+        makeValidationError("Contributor profile not found. Please complete your profile.", "userId"),
         { status: 404 }
       );
     }

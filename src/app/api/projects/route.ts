@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { ProjectStatus } from "@prisma/client";
+import { projectCreateSchema, projectsQuerySchema } from "@/lib/validation/schemas";
+import { parseBody, parseQuery } from "@/lib/validation/parse";
+import { makeValidationError } from "@/lib/validation/errors";
 
 /**
  * GET /api/projects
@@ -10,14 +13,12 @@ import { ProjectStatus } from "@prisma/client";
  */
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    
-    const limit = Math.min(parseInt(searchParams.get("limit") || "12", 10), 50);
-    const offset = parseInt(searchParams.get("offset") || "0", 10);
-    const category = searchParams.get("category");
-    const status = searchParams.get("status") || "OPEN";
-    const search = searchParams.get("search");
-    const sortBy = searchParams.get("sortBy") || "newest";
+    const parsedQuery = parseQuery(request, projectsQuerySchema);
+    if (!parsedQuery.success) {
+      return NextResponse.json(parsedQuery.error, { status: 400 });
+    }
+
+    const { limit, offset, category, search, sortBy, status } = parsedQuery.data;
 
     // Build where clause
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -108,7 +109,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
+    const parsedBody = await parseBody(request, projectCreateSchema);
+    if (!parsedBody.success) {
+      return NextResponse.json(parsedBody.error, { status: 400 });
+    }
+
     const {
       title,
       description,
@@ -122,18 +127,10 @@ export async function POST(request: NextRequest) {
       organizationId,
       customSlug,
       skills,
-    } = body;
-
-    // Validation
-    if (!title || !description || !category) {
-      return NextResponse.json(
-        { error: "Title, description, and category are required" },
-        { status: 400 }
-      );
-    }
+    } = parsedBody.data;
 
     // Generate or use custom slug
-    let baseSlug = customSlug
+    const baseSlug = customSlug
       ? customSlug.toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-|-$/g, "")
       : title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
@@ -143,6 +140,12 @@ export async function POST(request: NextRequest) {
     while (await prisma.project.findUnique({ where: { slug } })) {
       counter++;
       slug = `${baseSlug}-${counter}`;
+      if (counter > 50) {
+        return NextResponse.json(
+          makeValidationError("Unable to generate unique slug", "customSlug"),
+          { status: 400 }
+        );
+      }
     }
 
     // Create project

@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { skillsQuerySchema } from "@/lib/validation/schemas";
+import { parseQuery } from "@/lib/validation/parse";
 
 export async function GET(request: Request) {
     try {
-        const { searchParams } = new URL(request.url);
-        const search = searchParams.get("q") || "";
+        const parsedQuery = parseQuery(request, skillsQuerySchema);
+        if (!parsedQuery.success) {
+            return NextResponse.json(parsedQuery.error, { status: 400 });
+        }
+
+        const search = parsedQuery.data.search || parsedQuery.data.q || "";
 
         let skills;
         if (search) {

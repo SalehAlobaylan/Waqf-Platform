@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { projectUpdateSchema, routeIdParamSchema } from "@/lib/validation/schemas";
+import { parseBody, parseParams } from "@/lib/validation/parse";
+import { makeValidationError } from "@/lib/validation/errors";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -13,7 +16,12 @@ interface RouteParams {
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const { id } = await params;
+    const parsedParams = parseParams(await params, routeIdParamSchema);
+    if (!parsedParams.success) {
+      return NextResponse.json(parsedParams.error, { status: 400 });
+    }
+
+    const { id } = parsedParams.data;
 
     const project = await prisma.project.findFirst({
       where: {
@@ -49,7 +57,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     });
 
     if (!project) {
-      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+      return NextResponse.json(
+        makeValidationError("Project not found", "id"),
+        { status: 404 }
+      );
     }
 
     return NextResponse.json(project);
@@ -73,8 +84,17 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
     }
 
-    const { id } = await params;
-    const body = await request.json();
+    const parsedParams = parseParams(await params, routeIdParamSchema);
+    if (!parsedParams.success) {
+      return NextResponse.json(parsedParams.error, { status: 400 });
+    }
+
+    const parsedBody = await parseBody(request, projectUpdateSchema);
+    if (!parsedBody.success) {
+      return NextResponse.json(parsedBody.error, { status: 400 });
+    }
+
+    const { id } = parsedParams.data;
 
     // Check ownership
     const existing = await prisma.project.findUnique({
@@ -83,7 +103,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     });
 
     if (!existing) {
-      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+      return NextResponse.json(
+        makeValidationError("Project not found", "id"),
+        { status: 404 }
+      );
     }
 
     if (existing.ownerId !== session.user.id) {
@@ -103,7 +126,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       organizationId,
       slug: newSlug,
       skills,
-    } = body;
+    } = parsedBody.data;
 
     // If slug changed, verify uniqueness
     if (newSlug) {
@@ -111,7 +134,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         where: { slug: newSlug, id: { not: id } },
       });
       if (slugExists) {
-        return NextResponse.json({ error: "Slug already taken" }, { status: 400 });
+        return NextResponse.json(
+          makeValidationError("Slug already taken", "slug"),
+          { status: 400 }
+        );
       }
     }
 
@@ -180,7 +206,12 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
     }
 
-    const { id } = await params;
+    const parsedParams = parseParams(await params, routeIdParamSchema);
+    if (!parsedParams.success) {
+      return NextResponse.json(parsedParams.error, { status: 400 });
+    }
+
+    const { id } = parsedParams.data;
 
     // Check ownership
     const existing = await prisma.project.findUnique({
@@ -189,7 +220,10 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     });
 
     if (!existing) {
-      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+      return NextResponse.json(
+        makeValidationError("Project not found", "id"),
+        { status: 404 }
+      );
     }
 
     if (existing.ownerId !== session.user.id) {

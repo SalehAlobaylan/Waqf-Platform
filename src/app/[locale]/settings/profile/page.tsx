@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { EditProfileForm } from "@/components/profile/EditProfileForm";
+import type { ContributorProfile, ContributorSkill, PortfolioItem } from "@prisma/client";
 
 export const metadata = {
     title: "Edit Profile | Waqf",
@@ -46,9 +47,9 @@ export default async function SettingsProfilePage({
 
     return (
         <EditProfileForm
-            initialProfile={mainProfile as any}
-            initialSkills={transformedSkills}
-            initialPortfolio={portfolioItems as any}
+            initialProfile={mainProfile as ContributorProfile}
+            initialSkills={transformedSkills as ContributorSkill[]}
+            initialPortfolio={portfolioItems as PortfolioItem[]}
             locale={locale}
         />
     );

@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { ApplicationStatus } from "@prisma/client";
+import { applicationStatusUpdateSchema, routeIdParamSchema } from "@/lib/validation/schemas";
+import { parseBody, parseParams } from "@/lib/validation/parse";
+import { makeValidationError } from "@/lib/validation/errors";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -19,17 +22,18 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const { id } = await params;
-        const body = await request.json();
-        const { status, feedback } = body;
-
-        // Validate status
-        if (!status || !["ACCEPTED", "REJECTED"].includes(status)) {
-            return NextResponse.json(
-                { error: "Invalid status. Must be ACCEPTED or REJECTED" },
-                { status: 400 }
-            );
+        const parsedParams = parseParams(await params, routeIdParamSchema);
+        if (!parsedParams.success) {
+            return NextResponse.json(parsedParams.error, { status: 400 });
         }
+
+        const parsedBody = await parseBody(request, applicationStatusUpdateSchema);
+        if (!parsedBody.success) {
+            return NextResponse.json(parsedBody.error, { status: 400 });
+        }
+
+        const { id } = parsedParams.data;
+        const { status, feedback } = parsedBody.data;
 
         // Get application with project
         const application = await prisma.application.findUnique({
@@ -54,7 +58,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
         if (!application) {
             return NextResponse.json(
-                { error: "Application not found" },
+                makeValidationError("Application not found", "id"),
                 { status: 404 }
             );
         }
@@ -67,7 +71,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         // Can only update pending applications
         if (application.status !== "PENDING") {
             return NextResponse.json(
-                { error: "Application has already been processed" },
+                makeValidationError("Application has already been processed", "status"),
                 { status: 400 }
             );
         }
@@ -90,7 +94,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
                     : "Application Update",
                 content: status === "ACCEPTED"
                     ? `Your application to "${application.project.title}" has been accepted!`
-                    : `Your application to "${application.project.title}" was not accepted this time.`,
+                    : feedback?.trim() || `Your application to "${application.project.title}" was not accepted this time.`,
                 link: `/dashboard/applications`,
             },
         });

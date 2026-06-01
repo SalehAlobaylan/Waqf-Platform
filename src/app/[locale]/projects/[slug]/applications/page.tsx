@@ -6,6 +6,7 @@ import { ArrowLeft, Users, Clock, CheckCircle, XCircle } from "lucide-react";
 import Link from "next/link";
 import { calculateMatchScore } from "@/lib/matching/engine";
 import type { ContributorMatchData, ProjectMatchData } from "@/lib/matching/types";
+import { ProjectCategory } from "@prisma/client";
 import { ApplicationListClient } from "@/components/applications/ApplicationListClient";
 
 interface ProjectApplicationsPageProps {
@@ -116,7 +117,7 @@ export default async function ProjectApplicationsPage({ params }: ProjectApplica
                     skillName: s.skill.name,
                     level: s.level,
                 })),
-                preferredCategories: (app.contributor.contributorProfile.preferredCategories || []) as any[],
+                preferredCategories: (app.contributor.contributorProfile.preferredCategories || []) as ProjectCategory[],
                 spokenLanguages: ["ar", "en"], // Default — could be enriched
             };
 

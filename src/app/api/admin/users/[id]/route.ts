@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { adminUserUpdateSchema, routeIdParamSchema } from "@/lib/validation/schemas";
+import { parseBody, parseParams } from "@/lib/validation/parse";
+import { makeValidationError } from "@/lib/validation/errors";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -28,14 +31,23 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
-        const { id } = await params;
-        const body = await request.json();
-        const { role } = body;
+        const parsedParams = parseParams(await params, routeIdParamSchema);
+        if (!parsedParams.success) {
+            return NextResponse.json(parsedParams.error, { status: 400 });
+        }
+
+        const parsedBody = await parseBody(request, adminUserUpdateSchema);
+        if (!parsedBody.success) {
+            return NextResponse.json(parsedBody.error, { status: 400 });
+        }
+
+        const { id } = parsedParams.data;
+        const { role } = parsedBody.data;
 
         // Prevent self-demotion
         if (id === session.user.id && role !== "ADMIN") {
             return NextResponse.json(
-                { error: "Cannot demote yourself" },
+                makeValidationError("Cannot demote yourself", "role"),
                 { status: 400 }
             );
         }
@@ -84,12 +96,17 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
-        const { id } = await params;
+        const parsedParams = parseParams(await params, routeIdParamSchema);
+        if (!parsedParams.success) {
+            return NextResponse.json(parsedParams.error, { status: 400 });
+        }
+
+        const { id } = parsedParams.data;
 
         // Prevent self-deletion
         if (id === session.user.id) {
             return NextResponse.json(
-                { error: "Cannot delete yourself" },
+                makeValidationError("Cannot delete yourself", "id"),
                 { status: 400 }
             );
         }

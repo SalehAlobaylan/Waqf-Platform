@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { routeIdParamSchema } from "@/lib/validation/schemas";
+import { parseParams } from "@/lib/validation/parse";
+import { makeValidationError } from "@/lib/validation/errors";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -7,7 +10,12 @@ interface RouteParams {
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
     try {
-        const { id } = await params;
+        const parsedParams = parseParams(await params, routeIdParamSchema);
+        if (!parsedParams.success) {
+            return NextResponse.json(parsedParams.error, { status: 400 });
+        }
+
+        const { id } = parsedParams.data;
 
         // Fetch current project's category and skills
         const project = await prisma.project.findUnique({
@@ -19,7 +27,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         });
 
         if (!project) {
-            return NextResponse.json({ error: "Project not found" }, { status: 404 });
+            return NextResponse.json(
+                makeValidationError("Project not found", "id"),
+                { status: 404 }
+            );
         }
 
         const skillIds = project.skills.map((s) => s.skillId);

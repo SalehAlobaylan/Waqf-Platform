@@ -5,11 +5,12 @@ import { useRouter } from "next/navigation";
 import { Save, Loader2, MessageSquare, Phone } from "lucide-react";
 import { SkillSelector } from "./SkillSelector";
 import { PortfolioManager } from "./PortfolioManager";
+import type { ContributorProfile, ContributorSkill, PortfolioItem } from "@prisma/client";
 
 interface EditProfileFormProps {
-    initialProfile: any;
-    initialSkills: any[];
-    initialPortfolio: any[];
+    initialProfile: ContributorProfile;
+    initialSkills: ContributorSkill[];
+    initialPortfolio: PortfolioItem[];
     locale: string;
 }
 
@@ -50,8 +51,9 @@ export function EditProfileForm({ initialProfile, initialSkills, initialPortfoli
 
             setSuccess(true);
             router.refresh();
-        } catch (err: any) {
-            setError(err.message || "An unexpected error occurred");
+        } catch (err) {
+            const message = err instanceof Error ? err.message : "An unexpected error occurred";
+            setError(message);
         } finally {
             setLoading(false);
         }

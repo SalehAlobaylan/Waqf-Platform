@@ -1,4 +1,4 @@
-import { test as base, Page } from "@playwright/test";
+import { test as base } from "@playwright/test";
 
 export type TestUser = {
   id: string;
@@ -39,17 +39,17 @@ export const test = base.extend<{
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
 }>({
-  testUser: async ({}, use) => {
-    await use(testUsers[0]);
+  testUser: async ({}, applyFixture) => {
+    await applyFixture(testUsers[0]);
   },
-  contributorUser: async ({}, use) => {
-    await use(testUsers[1]);
+  contributorUser: async ({}, applyFixture) => {
+    await applyFixture(testUsers[1]);
   },
-  adminUser: async ({}, use) => {
-    await use(testUsers[2]);
+  adminUser: async ({}, applyFixture) => {
+    await applyFixture(testUsers[2]);
   },
-  login: async ({ page }, use) => {
-    await use(async (email: string, password: string) => {
+  login: async ({ page }, applyFixture) => {
+    await applyFixture(async (email: string, password: string) => {
       await page.goto("/en/login");
       await page.fill('input[type="email"]', email);
       await page.fill('input[type="password"]', password);
@@ -57,8 +57,8 @@ export const test = base.extend<{
       await page.waitForURL("/en/dashboard", { timeout: 10000 });
     });
   },
-  logout: async ({ page }, use) => {
-    await use(async () => {
+  logout: async ({ page }, applyFixture) => {
+    await applyFixture(async () => {
       await page.click("button:has-text('Test Owner'), button:has-text('Test Contributor')");
       await page.click("button:has-text('logout'), button:has-text('Logout')");
       await page.waitForURL("/en", { timeout: 10000 });

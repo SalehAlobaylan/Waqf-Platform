@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { adminProjectsQuerySchema } from "@/lib/validation/schemas";
+import { parseQuery } from "@/lib/validation/parse";
 
 /**
  * GET /api/admin/projects
@@ -24,13 +26,15 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
-        const { searchParams } = new URL(request.url);
-        const status = searchParams.get("status");
-        const page = parseInt(searchParams.get("page") || "1");
-        const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 50);
+        const parsedQuery = parseQuery(request, adminProjectsQuerySchema);
+        if (!parsedQuery.success) {
+            return NextResponse.json(parsedQuery.error, { status: 400 });
+        }
+
+        const { status, page, limit } = parsedQuery.data;
         const offset = (page - 1) * limit;
 
-        const where = status ? { status: status as "PENDING" | "OPEN" | "DRAFT" } : {};
+        const where = status ? { status } : {};
 
         const [projects, total] = await Promise.all([
             prisma.project.findMany({

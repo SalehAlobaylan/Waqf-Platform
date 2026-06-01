@@ -1,31 +1,26 @@
 "use client";
 
+import { useMemo } from "react";
+
 interface ContributionHeatmapProps {
     locale?: string;
 }
 
 export function ContributionHeatmap({ locale = "en" }: ContributionHeatmapProps) {
-    // Generate mock contribution data for the last year (52 weeks × 7 days)
-    const weeks = 52;
-    const generateData = () => {
+    const heatmapData = useMemo(() => {
+        const weeks = 52;
         const data: number[][] = [];
         for (let w = 0; w < weeks; w++) {
             const week: number[] = [];
             for (let d = 0; d < 7; d++) {
-                // Random contribution level: 0-4
-                const rand = Math.random();
-                if (rand < 0.4) week.push(0);
-                else if (rand < 0.6) week.push(1);
-                else if (rand < 0.8) week.push(2);
-                else if (rand < 0.92) week.push(3);
-                else week.push(4);
+                const seed = (w + 1) * 37 + (d + 3) * 17;
+                const level = (seed * 13) % 5;
+                week.push(level);
             }
             data.push(week);
         }
         return data;
-    };
-
-    const heatmapData = generateData();
+    }, []);
     const totalContributions = heatmapData.flat().reduce((sum, v) => sum + v, 0);
 
     const getColor = (level: number): string => {

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Briefcase, Code, ArrowRight, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-export function OnboardingFlow({ locale, userId, userName }: { locale: string, userId: string, userName: string }) {
+export function OnboardingFlow({ locale, userName }: { locale: string, userName: string }) {
     const t = useTranslations("onboarding");
     const router = useRouter();
     const [loading, setLoading] = useState(false);
@@ -46,8 +46,9 @@ export function OnboardingFlow({ locale, userId, userName }: { locale: string, u
                 router.push(`/${locale}/dashboard`);
             }
             router.refresh();
-        } catch (err: any) {
-            setError(err.message || t("unexpectedError"));
+        } catch (err) {
+            const message = err instanceof Error ? err.message : t("unexpectedError");
+            setError(message);
             setLoading(false);
         }
     };

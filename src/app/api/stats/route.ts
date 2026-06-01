@@ -1,9 +1,19 @@
 import { NextResponse } from "next/server";
-import { mockStats } from "@/lib/mock-data";
+import { prisma } from "@/lib/prisma";
 
 export async function GET() {
     try {
-        return NextResponse.json(mockStats);
+        const [totalProjects, totalContributors, totalContributions] = await Promise.all([
+            prisma.project.count(),
+            prisma.contributorProfile.count(),
+            prisma.application.count(),
+        ]);
+
+        return NextResponse.json({
+            totalProjects,
+            totalContributors,
+            totalContributions,
+        });
     } catch (error) {
         console.error("Error fetching stats:", error);
         return NextResponse.json(

@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { adminFeaturedUpdateSchema } from "@/lib/validation/schemas";
+import { parseBody } from "@/lib/validation/parse";
+import { makeValidationError } from "@/lib/validation/errors";
 
 /**
  * GET /api/admin/featured
@@ -46,18 +49,26 @@ export async function PUT(request: NextRequest) {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
-        const body = await request.json();
-        const { projectId, featured, featuredUntil } = body;
+        const parsedBody = await parseBody(request, adminFeaturedUpdateSchema);
+        if (!parsedBody.success) {
+            return NextResponse.json(parsedBody.error, { status: 400 });
+        }
 
-        if (!projectId) {
-            return NextResponse.json({ error: "projectId is required" }, { status: 400 });
+        const { projectId, featured, featuredUntil } = parsedBody.data;
+
+        const existing = await prisma.project.findUnique({ where: { id: projectId }, select: { id: true } });
+        if (!existing) {
+            return NextResponse.json(
+                makeValidationError("Project not found", "projectId"),
+                { status: 404 }
+            );
         }
 
         const project = await prisma.project.update({
             where: { id: projectId },
             data: {
                 featured: !!featured,
-                featuredUntil: featuredUntil ? new Date(featuredUntil) : null,
+                featuredUntil: featuredUntil ?? null,
             },
             select: {
                 id: true,

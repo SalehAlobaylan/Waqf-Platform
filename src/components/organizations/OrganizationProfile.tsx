@@ -1,7 +1,10 @@
 import { ProjectCard } from "@/components/projects/ProjectCard";
 import { Building2, Globe, CheckCircle2, MessageSquare, Phone } from "lucide-react";
+import type { Organization, Project } from "@prisma/client";
 
-export function OrganizationProfile({ organization, locale }: { organization: any, locale: string }) {
+type OrganizationWithProjects = Organization & { projects: Project[] };
+
+export function OrganizationProfile({ organization, locale }: { organization: OrganizationWithProjects, locale: string }) {
     return (
         <div className="space-y-6">
             {/* Header Card */}
@@ -66,7 +69,7 @@ export function OrganizationProfile({ organization, locale }: { organization: an
                     </div>
                 ) : (
                     <div className="grid md:grid-cols-2 gap-4">
-                        {organization.projects.map((project: any) => (
+                        {organization.projects.map((project) => (
                             <ProjectCard key={project.id} project={project} locale={locale} />
                         ))}
                     </div>

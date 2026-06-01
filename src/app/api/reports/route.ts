@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { reportCreateSchema, reportsQuerySchema } from "@/lib/validation/schemas";
+import { parseBody, parseQuery } from "@/lib/validation/parse";
+import { makeValidationError } from "@/lib/validation/errors";
 
 /**
  * POST /api/reports
@@ -14,22 +18,12 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Authentication required" }, { status: 401 });
         }
 
-        const body = await request.json();
-        const { targetType, targetId, reason, details } = body;
-
-        if (!targetType || !targetId || !reason) {
-            return NextResponse.json(
-                { error: "targetType, targetId, and reason are required" },
-                { status: 400 }
-            );
+        const parsedBody = await parseBody(request, reportCreateSchema);
+        if (!parsedBody.success) {
+            return NextResponse.json(parsedBody.error, { status: 400 });
         }
 
-        if (!["PROJECT", "USER", "APPLICATION"].includes(targetType)) {
-            return NextResponse.json(
-                { error: "Invalid target type" },
-                { status: 400 }
-            );
-        }
+        const { targetType, targetId, reason, details } = parsedBody.data;
 
         // Prevent duplicate reports
         const existing = await prisma.report.findFirst({
@@ -43,7 +37,7 @@ export async function POST(request: NextRequest) {
 
         if (existing) {
             return NextResponse.json(
-                { error: "You have already reported this content" },
+                makeValidationError("You have already reported this content", "targetId"),
                 { status: 400 }
             );
         }
@@ -76,11 +70,17 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
-        const { searchParams } = new URL(request.url);
-        const status = searchParams.get("status");
+        const parsedQuery = parseQuery(request, reportsQuerySchema);
+        if (!parsedQuery.success) {
+            return NextResponse.json(parsedQuery.error, { status: 400 });
+        }
+
+        const status = parsedQuery.data.status;
+
+        const where: Prisma.ReportWhereInput | undefined = status ? { status } : undefined;
 
         const reports = await prisma.report.findMany({
-            where: status ? { status: status as any } : undefined,
+            where,
             include: {
                 reporter: {
                     select: { id: true, name: true, email: true, image: true },

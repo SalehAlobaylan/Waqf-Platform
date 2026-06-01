@@ -20,9 +20,10 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical, Plus, Trash2, ExternalLink, Code } from "lucide-react";
 import { useRouter } from "next/navigation";
+import type { PortfolioItem } from "@prisma/client";
 
 // -- Sortable Item Component --
-function SortableItem({ id, item, onDelete }: { id: string, item: any, onDelete: (id: string) => void }) {
+function SortableItem({ id, item, onDelete }: { id: string, item: PortfolioItem, onDelete: (id: string) => void }) {
     const {
         attributes,
         listeners,
@@ -70,7 +71,7 @@ function SortableItem({ id, item, onDelete }: { id: string, item: any, onDelete:
 }
 
 // -- Main Manager Component --
-export function PortfolioManager({ initialItems, locale, contributorId }: { initialItems: any[], locale: string, contributorId: string }) {
+export function PortfolioManager({ initialItems, locale, contributorId }: { initialItems: PortfolioItem[], locale: string, contributorId: string }) {
     const [items, setItems] = useState(initialItems);
     const [isAdding, setIsAdding] = useState(false);
     const [newItem, setNewItem] = useState({ title: "", description: "", url: "" });

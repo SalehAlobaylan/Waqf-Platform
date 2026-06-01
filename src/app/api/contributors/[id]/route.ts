@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { routeIdParamSchema } from "@/lib/validation/schemas";
+import { parseParams } from "@/lib/validation/parse";
+import { makeValidationError } from "@/lib/validation/errors";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -11,7 +14,12 @@ interface RouteParams {
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const { id } = await params;
+    const parsedParams = parseParams(await params, routeIdParamSchema);
+    if (!parsedParams.success) {
+      return NextResponse.json(parsedParams.error, { status: 400 });
+    }
+
+    const { id } = parsedParams.data;
 
     // Fetch user with contributor profile and skills
     const user = await prisma.user.findUnique({
@@ -36,7 +44,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     });
 
     if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json(
+        makeValidationError("User not found", "id"),
+        { status: 404 }
+      );
     }
 
     // Transform data (use actual schema fields)

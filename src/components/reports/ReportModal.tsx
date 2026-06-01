@@ -48,8 +48,9 @@ export function ReportModal({ targetType, targetId, isOpen, onClose }: ReportMod
                 setReason("");
                 setDetails("");
             }, 2000);
-        } catch (err: any) {
-            setError(err.message || "Failed to submit");
+        } catch (err) {
+            const message = err instanceof Error ? err.message : "Failed to submit";
+            setError(message);
         } finally {
             setLoading(false);
         }

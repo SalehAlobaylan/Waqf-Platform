@@ -242,7 +242,7 @@ async function main() {
   const techWriting = await getSkill("Technical Writing");
   const go = await getSkill("Go");
   const aws = await getSkill("AWS");
-  const fastapi = await getSkill("FastAPI");
+  await getSkill("FastAPI");
 
   const omarProfile = await prisma.contributorProfile.findUnique({ where: { userId: omar.id } });
   const fatimaProfile = await prisma.contributorProfile.findUnique({ where: { userId: fatima.id } });

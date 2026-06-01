@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations, useLocale } from "next-intl";
+import { useLocale } from "next-intl";
 import { Shield, Bell, Globe, Eye, EyeOff, Loader2, CheckCircle, Lock } from "lucide-react";
 
 interface GeneralSettingsProps {
@@ -34,12 +34,7 @@ function NotificationPreferences({ isRtl }: { isRtl: boolean }) {
     const [appRejected, setAppRejected] = useState(true);
     const [newApplications, setNewApplications] = useState(true);
     const [messages, setMessages] = useState(true);
-    const [saved, setSaved] = useState(false);
-
-    const handleSave = () => {
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
-    };
+    const handleSave = () => {};
 
     return (
         <section className="p-6">
@@ -147,8 +142,11 @@ function SecuritySection({ isRtl, userEmail }: { isRtl: boolean; userEmail: stri
             setCurrentPassword("");
             setNewPassword("");
             setConfirmPassword("");
-        } catch (err: any) {
-            setError(err.message || (isRtl ? "فشل تغيير كلمة المرور" : "Failed to change password"));
+        } catch (err) {
+            const message = err instanceof Error
+                ? err.message
+                : (isRtl ? "فشل تغيير كلمة المرور" : "Failed to change password");
+            setError(message);
         } finally {
             setLoading(false);
         }
@@ -227,7 +225,6 @@ function SecuritySection({ isRtl, userEmail }: { isRtl: boolean; userEmail: stri
 // ─── LANGUAGE PREFERENCES ────────────────────────
 function LanguagePreferences({ isRtl, currentLanguage }: { isRtl: boolean; currentLanguage: string }) {
     const [language, setLanguage] = useState(currentLanguage);
-    const [saved, setSaved] = useState(false);
 
     const handleSave = async () => {
         // Navigate to the selected locale

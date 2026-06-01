@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen, Bookmark, CheckCircle } from "lucide-react";
+import { Bookmark, CheckCircle } from "lucide-react";
 
 interface ProjectCardProps {
     project: {

@@ -21,6 +21,16 @@ This directory contains end-to-end (E2E) tests using Playwright to test all user
 npm test
 ```
 
+### Run API validation contract tests
+```bash
+npm run test:validation
+```
+
+### Run API validation tests in headed mode
+```bash
+npm run test:validation:headed
+```
+
 ### Run tests with UI
 ```bash
 npm run test:ui
@@ -166,3 +176,18 @@ The E2E tests cover:
 - Some tests may require existing data (users, projects) in the database
 - Tests include fallback logic for conditional elements
 - Screenshots are taken on test failures
+
+## Validation Contract
+
+All API validation failures should return:
+
+- `400` status
+- JSON payload:
+  - `error: "Validation failed"`
+  - `details: Array<{ path: string; message: string }>`
+
+Guardrail behavior:
+
+- `401/403` auth and permission failures keep their own shape
+- validation contract tests assert paths, not exact message copy
+- see `tests/e2e/api/validation-matrix.md` for coverage targets

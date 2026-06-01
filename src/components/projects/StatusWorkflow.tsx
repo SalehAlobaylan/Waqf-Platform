@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { CheckCircle, Circle, Loader2, AlertTriangle } from "lucide-react";
+import type { ProjectStatus } from "@prisma/client";
 
 interface StatusWorkflowProps {
     projectId: string;
@@ -31,7 +32,7 @@ export function StatusWorkflow({ projectId, currentStatus, adminFeedback, locale
 
     const currentIndex = STATUS_ORDER.indexOf(status);
 
-    const transition = async (newStatus: string) => {
+    const transition = async (newStatus: ProjectStatus) => {
         setLoading(true);
         setError("");
         try {
@@ -47,15 +48,16 @@ export function StatusWorkflow({ projectId, currentStatus, adminFeedback, locale
             const data = await res.json();
             setStatus(data.status);
             setFeedback(data.adminFeedback);
-        } catch (err: any) {
-            setError(err.message);
+        } catch (err) {
+            const message = err instanceof Error ? err.message : "Failed to update status";
+            setError(message);
         } finally {
             setLoading(false);
         }
     };
 
     // Possible actions based on status
-    const actions: Array<{ label: string; newStatus: string; variant: "primary" | "danger" }> = [];
+    const actions: Array<{ label: string; newStatus: ProjectStatus; variant: "primary" | "danger" }> = [];
     if (status === "DRAFT") {
         actions.push({ label: t("submitForReview"), newStatus: "PENDING", variant: "primary" });
     } else if (status === "OPEN") {

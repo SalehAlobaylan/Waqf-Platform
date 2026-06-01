@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { routeIdParamSchema } from "@/lib/validation/schemas";
+import { parseParams } from "@/lib/validation/parse";
+import { makeValidationError } from "@/lib/validation/errors";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -18,7 +21,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const { id } = await params;
+        const parsedParams = parseParams(await params, routeIdParamSchema);
+        if (!parsedParams.success) {
+            return NextResponse.json(parsedParams.error, { status: 400 });
+        }
+
+        const { id } = parsedParams.data;
 
         const application = await prisma.application.findUnique({
             where: { id },
@@ -79,7 +87,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
         if (!application) {
             return NextResponse.json(
-                { error: "Application not found" },
+                makeValidationError("Application not found", "id"),
                 { status: 404 }
             );
         }
@@ -117,7 +125,12 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const { id } = await params;
+        const parsedParams = parseParams(await params, routeIdParamSchema);
+        if (!parsedParams.success) {
+            return NextResponse.json(parsedParams.error, { status: 400 });
+        }
+
+        const { id } = parsedParams.data;
 
         const application = await prisma.application.findUnique({
             where: { id },
@@ -129,7 +142,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
         if (!application) {
             return NextResponse.json(
-                { error: "Application not found" },
+                makeValidationError("Application not found", "id"),
                 { status: 404 }
             );
         }
@@ -142,7 +155,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         // Can only withdraw pending applications
         if (application.status !== "PENDING") {
             return NextResponse.json(
-                { error: "Can only withdraw pending applications" },
+                makeValidationError("Can only withdraw pending applications", "id"),
                 { status: 400 }
             );
         }

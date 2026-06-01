@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { ProjectStatus } from "@prisma/client";
+import { Prisma, ProjectCategory, ProjectStatus } from "@prisma/client";
+import { searchQuerySchema } from "@/lib/validation/schemas";
+import { parseQuery } from "@/lib/validation/parse";
 
 /**
  * GET /api/search
@@ -8,18 +10,18 @@ import { ProjectStatus } from "@prisma/client";
  */
 export async function GET(request: NextRequest) {
     try {
-        const { searchParams } = new URL(request.url);
-        const query = searchParams.get("q")?.trim();
-        const category = searchParams.get("category");
-        const status = searchParams.get("status") || "OPEN";
-        const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 50);
-        const offset = parseInt(searchParams.get("offset") || "0");
+        const parsedQuery = parseQuery(request, searchQuerySchema);
+        if (!parsedQuery.success) {
+            return NextResponse.json(parsedQuery.error, { status: 400 });
+        }
 
-        if (!query || query.length < 2) {
+        const { q: query, category, status = "OPEN", limit, offset } = parsedQuery.data;
+
+        if (!query) {
             return NextResponse.json({
                 projects: [],
                 total: 0,
-                query: query || "",
+                query: "",
             });
         }
 
@@ -28,14 +30,12 @@ export async function GET(request: NextRequest) {
         
         // Using Prisma's native search (contains) for now
         // For production, consider using PostgreSQL full-text search via raw queries
-        const whereCondition = {
+        const whereCondition: Prisma.ProjectWhereInput = {
             AND: [
-                {
-                    status: status === "ALL" 
-                        ? { in: [ProjectStatus.OPEN, ProjectStatus.IN_PROGRESS, ProjectStatus.COMPLETED] }
-                        : status as ProjectStatus,
-                },
-                ...(category ? [{ category: category as any }] : []),
+                ...(status === "ALL"
+                    ? [{ status: { in: [ProjectStatus.OPEN, ProjectStatus.IN_PROGRESS, ProjectStatus.COMPLETED] } }]
+                    : [{ status: status as ProjectStatus }]),
+                ...(category ? [{ category: category as ProjectCategory }] : []),
                 {
                     OR: searchTerms.map(term => ({
                         OR: [

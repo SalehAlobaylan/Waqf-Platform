@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { Flag, CheckCircle, XCircle, Eye, Clock, Loader2 } from "lucide-react";
 
@@ -25,7 +25,7 @@ export function ReportQueue() {
     const [filter, setFilter] = useState("PENDING");
     const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-    const fetchReports = async () => {
+    const fetchReports = useCallback(async () => {
         setLoading(true);
         try {
             const params = filter !== "ALL" ? `?status=${filter}` : "";
@@ -37,11 +37,11 @@ export function ReportQueue() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [filter]);
 
     useEffect(() => {
         fetchReports();
-    }, [filter]);
+    }, [fetchReports]);
 
     const handleAction = async (reportId: string, status: string) => {
         setActionLoading(reportId);
@@ -89,7 +89,7 @@ export function ReportQueue() {
         <div className="space-y-6">
             {/* Filter Tabs */}
             <div className="flex gap-1 bg-white rounded-xl border border-secondary-100 p-1 overflow-x-auto">
-                {filters.map(f => (
+                        {filters.map(f => (
                     <button
                         key={f}
                         onClick={() => setFilter(f)}
@@ -98,7 +98,7 @@ export function ReportQueue() {
                                 : "text-secondary-500 hover:text-secondary-700 hover:bg-secondary-50"
                             }`}
                     >
-                        {f === "ALL" ? t("statusPending").replace(t("statusPending"), "All") : (t as any)(`status${f.charAt(0) + f.slice(1).toLowerCase()}`)}
+                        {f === "ALL" ? "All" : t(`status${f.charAt(0) + f.slice(1).toLowerCase()}`)}
                     </button>
                 ))}
             </div>

@@ -3,6 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { ApplicationStatus } from "@prisma/client";
+import {
+    applicationCreateSchema,
+    applicationsQuerySchema,
+} from "@/lib/validation/schemas";
+import { parseBody, parseQuery } from "@/lib/validation/parse";
+import { makeValidationError } from "@/lib/validation/errors";
 
 /**
  * GET /api/applications
@@ -15,10 +21,12 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const { searchParams } = new URL(request.url);
-        const type = searchParams.get("type") || "mine"; // "mine" or "incoming"
-        const status = searchParams.get("status");
-        const projectId = searchParams.get("projectId");
+        const parsedQuery = parseQuery(request, applicationsQuerySchema);
+        if (!parsedQuery.success) {
+            return NextResponse.json(parsedQuery.error, { status: 400 });
+        }
+
+        const { type, status, projectId } = parsedQuery.data;
 
         let applications;
 
@@ -125,15 +133,12 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const body = await request.json();
-        const { projectId, message, portfolioUrl, hoursPerWeek } = body;
-
-        if (!projectId) {
-            return NextResponse.json(
-                { error: "Project ID is required" },
-                { status: 400 }
-            );
+        const parsedBody = await parseBody(request, applicationCreateSchema);
+        if (!parsedBody.success) {
+            return NextResponse.json(parsedBody.error, { status: 400 });
         }
+
+        const { projectId, message, portfolioUrl, hoursPerWeek } = parsedBody.data;
 
         // Check if project exists and is open
         const project = await prisma.project.findUnique({
@@ -143,14 +148,14 @@ export async function POST(request: NextRequest) {
 
         if (!project) {
             return NextResponse.json(
-                { error: "Project not found" },
+                makeValidationError("Project not found", "projectId"),
                 { status: 404 }
             );
         }
 
         if (project.status !== "OPEN") {
             return NextResponse.json(
-                { error: "Project is not accepting applications" },
+                makeValidationError("Project is not accepting applications", "projectId"),
                 { status: 400 }
             );
         }
@@ -158,7 +163,7 @@ export async function POST(request: NextRequest) {
         // Check if user is the project owner
         if (project.ownerId === session.user.id) {
             return NextResponse.json(
-                { error: "You cannot apply to your own project" },
+                makeValidationError("You cannot apply to your own project", "projectId"),
                 { status: 400 }
             );
         }
@@ -175,7 +180,7 @@ export async function POST(request: NextRequest) {
 
         if (existingApplication) {
             return NextResponse.json(
-                { error: "You have already applied to this project" },
+                makeValidationError("You have already applied to this project", "projectId"),
                 { status: 400 }
             );
         }
@@ -187,8 +192,8 @@ export async function POST(request: NextRequest) {
                 contributorId: session.user.id,
                 message,
                 portfolioUrl,
-                hoursPerWeek: hoursPerWeek ? parseInt(hoursPerWeek) : null,
-            },
+            hoursPerWeek: hoursPerWeek ?? null,
+        },
             include: {
                 project: {
                     select: {

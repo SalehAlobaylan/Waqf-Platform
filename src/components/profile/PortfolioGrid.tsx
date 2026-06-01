@@ -1,6 +1,7 @@
 import { ExternalLink, Folder } from "lucide-react";
+import type { PortfolioItem } from "@prisma/client";
 
-export function PortfolioGrid({ items, locale }: { items: any[], locale: string }) {
+export function PortfolioGrid({ items, locale }: { items: PortfolioItem[], locale: string }) {
     if (!items || items.length === 0) return null;
 
     return (

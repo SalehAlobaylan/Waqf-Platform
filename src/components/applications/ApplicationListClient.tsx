@@ -8,6 +8,7 @@ import { Calendar, MessageSquare, Clock } from "lucide-react";
 import { ApplicationActions } from "./ApplicationActions";
 import { MatchScoreBadge } from "./MatchScoreBadge";
 import { ApplicationStatusBadge } from "./ApplicationStatus";
+import { ApplicationStatus } from "@prisma/client";
 
 interface ApplicationWithScore {
     id: string;
@@ -148,7 +149,7 @@ export function ApplicationListClient({ applications, locale }: ApplicationListC
                                             <div className="sm:hidden">
                                                 <MatchScoreBadge score={app.matchScore} compact />
                                             </div>
-                                            <ApplicationStatusBadge status={app.status as any} locale={locale} />
+                                            <ApplicationStatusBadge status={app.status as ApplicationStatus} locale={locale} />
                                         </div>
                                     </div>
 

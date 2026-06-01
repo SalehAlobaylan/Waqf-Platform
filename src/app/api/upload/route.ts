@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
+import { makeValidationError } from "@/lib/validation/errors";
 
 export async function POST(request: NextRequest) {
     try {
@@ -15,18 +16,27 @@ export async function POST(request: NextRequest) {
         const file = formData.get("file") as File | null;
 
         if (!file) {
-            return NextResponse.json({ error: "No file provided" }, { status: 400 });
+            return NextResponse.json(
+                makeValidationError("No file provided", "file"),
+                { status: 400 }
+            );
         }
 
         // Validate file size (5MB max)
         if (file.size > 5 * 1024 * 1024) {
-            return NextResponse.json({ error: "File too large. Max 5MB." }, { status: 400 });
+            return NextResponse.json(
+                makeValidationError("File too large. Max 5MB.", "file"),
+                { status: 400 }
+            );
         }
 
         // Validate file type
         const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
         if (!allowedTypes.includes(file.type)) {
-            return NextResponse.json({ error: "Invalid file type. Allowed: JPEG, PNG, WebP, GIF" }, { status: 400 });
+            return NextResponse.json(
+                makeValidationError("Invalid file type. Allowed: JPEG, PNG, WebP, GIF", "file"),
+                { status: 400 }
+            );
         }
 
         // Create uploads directory if it doesn't exist
