@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { CheckCircle, Circle, Loader2, AlertTriangle } from "lucide-react";
+import { CircleCheck, Circle, Loader2, AlertTriangle } from "lucide-react";
 import type { ProjectStatus } from "@prisma/client";
 
 interface StatusWorkflowProps {
@@ -90,7 +90,7 @@ export function StatusWorkflow({ projectId, currentStatus, adminFeedback, locale
                                         ? "bg-primary-100 text-primary-600 ring-2 ring-primary-600"
                                         : "bg-secondary-100 text-secondary-400"
                                     }`}>
-                                    {isDone ? <CheckCircle className="w-4 h-4" /> : <Circle className="w-3 h-3" />}
+                                    {isDone ? <CircleCheck className="w-4 h-4" /> : <Circle className="w-3 h-3" />}
                                 </div>
                                 <span className={`text-[10px] mt-1 text-center ${isCurrent ? "font-bold text-primary-600" : "text-secondary-400"}`}>
                                     {statusLabels[s]}

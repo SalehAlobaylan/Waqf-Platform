@@ -3,13 +3,13 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import {
-    CheckCircle2,
-    XCircle,
+    CircleCheckBig,
+    CircleX,
     Clock,
     Eye,
     Filter,
     Search,
-    AlertCircle,
+    CircleAlert,
     Loader2,
     X,
     Megaphone,
@@ -197,7 +197,7 @@ export function CampaignReviewCard({ locale }: Props) {
                 </div>
             ) : filtered.length === 0 ? (
                 <div className="text-center py-12 bg-white rounded-xl border border-secondary-200">
-                    <AlertCircle className="w-12 h-12 text-secondary-300 mx-auto mb-4" />
+                    <CircleAlert className="w-12 h-12 text-secondary-300 mx-auto mb-4" />
                     <p className="text-secondary-600">{t("noCampaigns")}</p>
                 </div>
             ) : (
@@ -234,7 +234,7 @@ export function CampaignReviewCard({ locale }: Props) {
                                                     disabled={actionLoading === c.id}
                                                     className="flex items-center gap-1 px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors disabled:opacity-50"
                                                 >
-                                                    <CheckCircle2 className="w-4 h-4" />
+                                                    <CircleCheckBig className="w-4 h-4" />
                                                     {t("approve")}
                                                 </button>
                                                 <button
@@ -248,7 +248,7 @@ export function CampaignReviewCard({ locale }: Props) {
                                                     disabled={actionLoading === c.id}
                                                     className="flex items-center gap-1 px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors disabled:opacity-50"
                                                 >
-                                                    <XCircle className="w-4 h-4" />
+                                                    <CircleX className="w-4 h-4" />
                                                     {t("reject")}
                                                 </button>
                                             </>

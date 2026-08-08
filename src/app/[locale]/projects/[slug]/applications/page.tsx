@@ -2,7 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { ArrowLeft, Users, Clock, CheckCircle, XCircle } from "lucide-react";
+import { ArrowLeft, Users, Clock, CircleCheck, CircleX } from "lucide-react";
 import Link from "next/link";
 import { calculateMatchScore } from "@/lib/matching/engine";
 import type { ContributorMatchData, ProjectMatchData } from "@/lib/matching/types";
@@ -176,14 +176,14 @@ export default async function ProjectApplicationsPage({ params }: ProjectApplica
                         </div>
                     </div>
                     <div className="bg-white rounded-xl border border-secondary-100 p-4 text-center">
-                        <CheckCircle className="w-5 h-5 mx-auto mb-1 text-green-500" />
+                        <CircleCheck className="w-5 h-5 mx-auto mb-1 text-green-500" />
                         <div className="text-2xl font-bold text-green-600">{acceptedCount}</div>
                         <div className="text-xs text-secondary-500">
                             {locale === "ar" ? "مقبول" : "Accepted"}
                         </div>
                     </div>
                     <div className="bg-white rounded-xl border border-secondary-100 p-4 text-center">
-                        <XCircle className="w-5 h-5 mx-auto mb-1 text-red-400" />
+                        <CircleX className="w-5 h-5 mx-auto mb-1 text-red-400" />
                         <div className="text-2xl font-bold text-red-500">{rejectedCount}</div>
                         <div className="text-xs text-secondary-500">
                             {locale === "ar" ? "مرفوض" : "Rejected"}

@@ -1,7 +1,7 @@
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card } from './ui/card';
-import { Building2, User, Clock, CheckCircle2, Bookmark } from 'lucide-react';
+import { Building2, User, Clock, CircleCheckBig, Bookmark } from 'lucide-react';
 import type { Project } from '../lib/mock-data';
 
 interface ProjectCardProps {
@@ -35,7 +35,7 @@ export function ProjectCard({ project, onClick }: ProjectCardProps) {
     if (project.category === 'Quran Apps' || project.category === 'Prayer') {
       return (
         <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
-          <CheckCircle2 className="w-3 h-3 mr-1" />
+          <CircleCheckBig className="w-3 h-3 mr-1" />
           Sadaqah Jariyah Impact
         </Badge>
       );

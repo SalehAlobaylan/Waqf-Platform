@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import {
     FolderGit2, Plus, Users, Eye, ArrowRight, Clock,
-    CheckCircle, AlertCircle, GitPullRequest, Inbox
+    CircleCheck, CircleAlert, GitPullRequest, Inbox
 } from "lucide-react";
 
 interface MyProjectsPageProps {
@@ -43,10 +43,10 @@ export default async function MyProjectsPage({ params }: MyProjectsPageProps) {
 
     const statusIcons: Record<string, React.ReactNode> = {
         DRAFT: <Clock className="w-4 h-4 text-secondary-400" />,
-        UNDER_REVIEW: <AlertCircle className="w-4 h-4 text-purple-500" />,
-        OPEN: <CheckCircle className="w-4 h-4 text-green-500" />,
+        UNDER_REVIEW: <CircleAlert className="w-4 h-4 text-purple-500" />,
+        OPEN: <CircleCheck className="w-4 h-4 text-green-500" />,
         IN_PROGRESS: <GitPullRequest className="w-4 h-4 text-blue-500" />,
-        COMPLETED: <CheckCircle className="w-4 h-4 text-teal-500" />,
+        COMPLETED: <CircleCheck className="w-4 h-4 text-teal-500" />,
     };
 
     const statusLabels: Record<string, { en: string; ar: string }> = {

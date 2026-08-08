@@ -1,5 +1,5 @@
 import { ProjectCard } from "@/components/projects/ProjectCard";
-import { Building2, Globe, CheckCircle2, MessageSquare, Phone, ArrowLeft } from "lucide-react";
+import { Building2, Globe, CircleCheckBig, MessageSquare, Phone, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import type { Organization, Project } from "@prisma/client";
 
@@ -42,7 +42,7 @@ export function OrganizationProfile({ organization, locale }: { organization: Or
                         <h1 className="text-3xl font-bold text-secondary-900">{organization.name}</h1>
                         {organization.verified && (
                             <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-700 text-xs font-semibold rounded-full border border-amber-200">
-                                <CheckCircle2 size={14} />
+                                <CircleCheckBig size={14} />
                                 {locale === "ar" ? "منظمة موثقة" : "Verified"}
                             </span>
                         )}

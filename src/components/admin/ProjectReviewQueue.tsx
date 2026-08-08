@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
-    CheckCircle2,
-    XCircle,
+    CircleCheckBig,
+    CircleX,
     Clock,
     Star,
     StarOff,
@@ -13,7 +13,7 @@ import {
     Eye,
     Filter,
     Search,
-    AlertCircle,
+    CircleAlert,
     Loader2,
     X
 } from "lucide-react";
@@ -220,7 +220,7 @@ export function ProjectReviewQueue({ locale }: ProjectReviewQueueProps) {
                 </div>
             ) : filteredProjects.length === 0 ? (
                 <div className="text-center py-12 bg-white rounded-xl border border-secondary-200">
-                    <AlertCircle className="w-12 h-12 text-secondary-300 mx-auto mb-4" />
+                    <CircleAlert className="w-12 h-12 text-secondary-300 mx-auto mb-4" />
                     <p className="text-secondary-600">
                         {t("noProjects")}
                     </p>
@@ -279,7 +279,7 @@ export function ProjectReviewQueue({ locale }: ProjectReviewQueueProps) {
                                                 disabled={actionLoading === project.id}
                                                 className="flex items-center gap-1 px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors disabled:opacity-50"
                                             >
-                                                <CheckCircle2 className="w-4 h-4" />
+                                                <CircleCheckBig className="w-4 h-4" />
                                                 {t("approve")}
                                             </button>
                                             <button
@@ -287,7 +287,7 @@ export function ProjectReviewQueue({ locale }: ProjectReviewQueueProps) {
                                                 disabled={actionLoading === project.id}
                                                 className="flex items-center gap-1 px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors disabled:opacity-50"
                                             >
-                                                <XCircle className="w-4 h-4" />
+                                                <CircleX className="w-4 h-4" />
                                                 {t("reject")}
                                             </button>
                                         </>
@@ -435,11 +435,11 @@ export function ProjectReviewQueue({ locale }: ProjectReviewQueueProps) {
 function StatusBadge({ status }: { status: string }) {
     const config: Record<string, { icon: React.ElementType; color: string }> = {
         PENDING: { icon: Clock, color: "bg-amber-100 text-amber-700" },
-        OPEN: { icon: CheckCircle2, color: "bg-green-100 text-green-700" },
+        OPEN: { icon: CircleCheckBig, color: "bg-green-100 text-green-700" },
         DRAFT: { icon: Clock, color: "bg-secondary-100 text-secondary-700" },
         IN_PROGRESS: { icon: Clock, color: "bg-blue-100 text-blue-700" },
-        COMPLETED: { icon: CheckCircle2, color: "bg-primary-100 text-primary-700" },
-        CANCELLED: { icon: XCircle, color: "bg-red-100 text-red-700" },
+        COMPLETED: { icon: CircleCheckBig, color: "bg-primary-100 text-primary-700" },
+        CANCELLED: { icon: CircleX, color: "bg-red-100 text-red-700" },
     };
 
     const { icon: Icon, color } = config[status] || config.PENDING;

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useLocale } from "next-intl";
-import { Shield, Bell, Globe, Loader2, CheckCircle, Mail, KeyRound } from "lucide-react";
+import { Shield, Bell, Globe, Loader2, CircleCheck, Mail, KeyRound } from "lucide-react";
 
 interface GeneralSettingsProps {
     userEmail: string;
@@ -141,7 +141,7 @@ function NotificationPreferences({ isRtl }: { isRtl: boolean }) {
                     disabled={saving}
                     className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-xl hover:bg-primary-700 transition-colors disabled:opacity-50"
                 >
-                    {saved ? <CheckCircle className="w-4 h-4" /> : null}
+                    {saved ? <CircleCheck className="w-4 h-4" /> : null}
                     {saved
                         ? (isRtl ? "تم الحفظ" : "Saved!")
                         : (isRtl ? "حفظ" : "Save")}

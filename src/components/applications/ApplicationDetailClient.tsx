@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, ExternalLink, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, SquareArrowOutUpRight, CircleCheck, CircleX, Loader2 } from "lucide-react";
 import { ApplicationStatusBadge } from "@/components/applications/ApplicationStatus";
 import { ChatWindow } from "@/components/chat/ChatWindow";
 import { ApplicationStatus } from "@prisma/client";
@@ -139,7 +139,7 @@ export function ApplicationDetailClient({
                                         {isUpdating ? (
                                             <Loader2 className="w-4 h-4 animate-spin" />
                                         ) : (
-                                            <CheckCircle className="w-4 h-4" />
+                                            <CircleCheck className="w-4 h-4" />
                                         )}
                                         {t("accept")}
                                     </button>
@@ -151,7 +151,7 @@ export function ApplicationDetailClient({
                                         {isUpdating ? (
                                             <Loader2 className="w-4 h-4 animate-spin" />
                                         ) : (
-                                            <XCircle className="w-4 h-4" />
+                                            <CircleX className="w-4 h-4" />
                                         )}
                                         {t("reject")}
                                     </button>
@@ -169,7 +169,7 @@ export function ApplicationDetailClient({
                                 className="text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1"
                             >
                                 {application.project.title}
-                                <ExternalLink className="w-3.5 h-3.5" />
+                                <SquareArrowOutUpRight className="w-3.5 h-3.5" />
                             </Link>
                         </div>
 
@@ -231,7 +231,7 @@ export function ApplicationDetailClient({
                                     rel="noopener noreferrer"
                                     className="mt-3 inline-flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700"
                                 >
-                                    <ExternalLink className="w-3.5 h-3.5" />
+                                    <SquareArrowOutUpRight className="w-3.5 h-3.5" />
                                     {t("portfolio")}
                                 </a>
                             )}

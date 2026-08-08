@@ -4,9 +4,10 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
-    Upload, X, Loader2, Link as LinkIcon, Github,
+    Upload, X, Loader2, Link as LinkIcon,
     Clock, Calendar, Sparkles, AlertTriangle, Save, Send, ArrowLeft, Globe, Mail, User, FileText
 } from "lucide-react";
+import { SiGithub } from "@icons-pack/react-simple-icons";
 import Link from "next/link";
 
 interface ProjectFormProps {
@@ -449,7 +450,7 @@ export function ProjectForm({ locale, mode, initialData, organizations }: Projec
                             {!isCurate && (
                                 <div>
                                     <label className="block text-sm font-semibold text-secondary-900 mb-2 flex items-center gap-1.5">
-                                        <Github className="w-4 h-4 text-secondary-400" />
+                                        <SiGithub className="w-4 h-4 text-secondary-400" />
                                         {t("githubUrl")}
                                     </label>
                                     <input

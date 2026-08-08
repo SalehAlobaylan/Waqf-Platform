@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, Filter, BookmarkIcon, CheckCircle, Heart, Globe, Users, GraduationCap, Code, Calendar, Package, ChevronDown } from 'lucide-react';
+import { Search, Filter, BookmarkIcon, CircleCheck, Heart, Globe, Users, GraduationCap, Code, Calendar, Package, ChevronDown } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 
@@ -304,7 +304,7 @@ export function ExplorePage({ onNavigate }: ExplorePageProps) {
                             {project.name}
                           </h3>
                           {project.verified && (
-                            <CheckCircle className="w-[18px] h-[18px] text-[#1f705d] fill-[#1f705d]" title="Verified Organization" />
+                            <CircleCheck className="w-[18px] h-[18px] text-[#1f705d] fill-[#1f705d]" title="Verified Organization" />
                           )}
                         </div>
                         <p className="text-xs text-[#588d81]">by {project.organization}</p>

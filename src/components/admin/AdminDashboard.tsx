@@ -9,9 +9,9 @@ import {
     FileCheck,
     TrendingUp,
     Clock,
-    CheckCircle2,
-    XCircle,
-    AlertCircle,
+    CircleCheckBig,
+    CircleX,
+    CircleAlert,
     ArrowUpRight,
     ArrowDownRight
 } from "lucide-react";
@@ -97,7 +97,7 @@ export function AdminDashboard({ locale }: AdminDashboardProps) {
     if (!stats) {
         return (
             <div className="text-center py-12">
-                <AlertCircle className="w-12 h-12 text-secondary-400 mx-auto mb-4" />
+                <CircleAlert className="w-12 h-12 text-secondary-400 mx-auto mb-4" />
                 <p className="text-secondary-600">
                     {isAr ? "فشل في تحميل الإحصائيات" : "Failed to load statistics"}
                 </p>
@@ -302,8 +302,8 @@ export function AdminDashboard({ locale }: AdminDashboardProps) {
 function StatusBadge({ status }: { status: string }) {
     const config: Record<string, { icon: React.ElementType; color: string }> = {
         PENDING: { icon: Clock, color: "bg-amber-100 text-amber-700" },
-        OPEN: { icon: CheckCircle2, color: "bg-green-100 text-green-700" },
-        CANCELLED: { icon: XCircle, color: "bg-red-100 text-red-700" },
+        OPEN: { icon: CircleCheckBig, color: "bg-green-100 text-green-700" },
+        CANCELLED: { icon: CircleX, color: "bg-red-100 text-red-700" },
     };
 
     const { icon: Icon, color } = config[status] || config.PENDING;

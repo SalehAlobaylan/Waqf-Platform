@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Bookmark, CheckCircle, ExternalLink } from "lucide-react";
+import { Bookmark, CircleCheck, SquareArrowOutUpRight } from "lucide-react";
 
 interface ProjectCardProps {
     project: {
@@ -56,7 +56,7 @@ export function ProjectCard({ project, locale }: ProjectCardProps) {
                                 <span className="text-xs font-medium text-secondary-500">
                                     {project.owner?.name ?? (isExternal ? "Curated" : "—")}
                                 </span>
-                                <CheckCircle className="w-3.5 h-3.5 text-primary-600" />
+                                <CircleCheck className="w-3.5 h-3.5 text-primary-600" />
                             </div>
                         </div>
                     </div>
@@ -75,7 +75,7 @@ export function ProjectCard({ project, locale }: ProjectCardProps) {
                             className="inline-flex items-center gap-1 ms-2 align-middle px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-[10px] font-semibold"
                             title={t("curatedExternalProject")}
                         >
-                            <ExternalLink className="w-2.5 h-2.5" />
+                            <SquareArrowOutUpRight className="w-2.5 h-2.5" />
                             {t("external")}
                         </span>
                     )}

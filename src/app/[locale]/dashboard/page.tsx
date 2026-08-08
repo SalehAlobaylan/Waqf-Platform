@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import {
     Briefcase, FolderGit2, MessageSquare, Bell, Users,
-    ArrowRight, Clock, CheckCircle, GitPullRequest, Plus,
+    ArrowRight, Clock, CircleCheck, GitPullRequest, Plus,
     BookOpen, Star
 } from "lucide-react";
 
@@ -126,7 +126,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                         href={`/${locale}/dashboard/applications`}
                     />
                     <StatCard
-                        icon={<CheckCircle className="w-5 h-5 text-green-600" />}
+                        icon={<CircleCheck className="w-5 h-5 text-green-600" />}
                         bgClass="bg-green-50"
                         value={acceptedApps}
                         label={isRtl ? "مقبولة" : "Accepted"}

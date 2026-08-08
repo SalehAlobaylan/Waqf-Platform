@@ -5,7 +5,8 @@ import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import { Github, Loader2, Mail, ArrowLeft, Chrome, Zap } from "lucide-react";
+import { Loader2, Mail, ArrowLeft, Zap } from "lucide-react";
+import { SiGithub, SiGooglechrome } from "@icons-pack/react-simple-icons";
 import { SEEDED_USERS } from "@/lib/dev/seeded-users";
 
 type Mode = "form" | "link-sent" | "otp-entry";
@@ -208,7 +209,7 @@ export function LoginForm() {
                         onClick={handleGitHub}
                         className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-secondary-900 text-white rounded-xl font-medium hover:bg-secondary-800 transition-all duration-200 mb-3 shadow-sm hover:shadow-md"
                     >
-                        <Github size={20} />
+                        <SiGithub size={20} />
                         {t("continueWithGitHub")}
                     </button>
 
@@ -216,7 +217,7 @@ export function LoginForm() {
                         onClick={handleGoogle}
                         className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white text-secondary-900 border border-secondary-200 rounded-xl font-medium hover:bg-secondary-50 transition-all duration-200 mb-6 shadow-sm hover:shadow-md"
                     >
-                        <Chrome size={20} />
+                        <SiGooglechrome size={20} />
                         {t("continueWithGoogle")}
                     </button>
 

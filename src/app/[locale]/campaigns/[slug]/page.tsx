@@ -5,7 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { CampaignStatus, CampaignRoleStatus } from "@prisma/client";
-import { ChevronRight, CheckCircle, MapPin, Mail, Calendar, Users, Megaphone } from "lucide-react";
+import { ChevronRight, CircleCheck, MapPin, Mail, Calendar, Users, Megaphone } from "lucide-react";
 import { CampaignStatusBadge } from "@/components/campaigns/CampaignStatusBadge";
 import { CampaignOverallProgress, ProgressBar } from "@/components/campaigns/ProgressBar";
 import { JoinModal } from "@/components/campaigns/JoinModal";
@@ -147,7 +147,7 @@ export default async function CampaignDetailPage({ params }: Props) {
                             <div className="flex items-center gap-1.5">
                                 <span className="font-medium">{isAr ? "بواسطة" : "by"}</span>
                                 <span className="font-semibold text-secondary-800">{campaign.owner.name}</span>
-                                <CheckCircle className="w-3.5 h-3.5 text-primary-600" />
+                                <CircleCheck className="w-3.5 h-3.5 text-primary-600" />
                             </div>
                             {campaign.country && (
                                 <div className="flex items-center gap-1.5">
@@ -397,7 +397,7 @@ export default async function CampaignDetailPage({ params }: Props) {
                                         </p>
                                         {campaign.organization.verified && (
                                             <span className="inline-flex items-center gap-1 text-xs text-primary-700">
-                                                <CheckCircle className="w-3 h-3" />
+                                                <CircleCheck className="w-3 h-3" />
                                                 {isAr ? "موثوق" : "Verified"}
                                             </span>
                                         )}

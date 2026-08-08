@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { Flag, CheckCircle, XCircle, Eye, Clock, Loader2 } from "lucide-react";
+import { Flag, CircleCheck, CircleX, Eye, Clock, Loader2 } from "lucide-react";
 
 interface Report {
     id: string;
@@ -154,7 +154,7 @@ export function ReportQueue() {
                                         disabled={actionLoading === report.id}
                                         className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
                                     >
-                                        <CheckCircle className="w-3.5 h-3.5" />
+                                        <CircleCheck className="w-3.5 h-3.5" />
                                         {t("resolve")}
                                     </button>
                                     <button
@@ -162,7 +162,7 @@ export function ReportQueue() {
                                         disabled={actionLoading === report.id}
                                         className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-secondary-500 bg-secondary-50 rounded-lg hover:bg-secondary-100 transition-colors"
                                     >
-                                        <XCircle className="w-3.5 h-3.5" />
+                                        <CircleX className="w-3.5 h-3.5" />
                                         {t("dismiss")}
                                     </button>
                                 </div>
@@ -175,7 +175,7 @@ export function ReportQueue() {
                                         disabled={actionLoading === report.id}
                                         className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
                                     >
-                                        <CheckCircle className="w-3.5 h-3.5" />
+                                        <CircleCheck className="w-3.5 h-3.5" />
                                         {t("resolve")}
                                     </button>
                                     <button
@@ -183,7 +183,7 @@ export function ReportQueue() {
                                         disabled={actionLoading === report.id}
                                         className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-secondary-500 bg-secondary-50 rounded-lg hover:bg-secondary-100 transition-colors"
                                     >
-                                        <XCircle className="w-3.5 h-3.5" />
+                                        <CircleX className="w-3.5 h-3.5" />
                                         {t("dismiss")}
                                     </button>
                                 </div>

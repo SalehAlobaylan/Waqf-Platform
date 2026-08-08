@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Github, Globe, Linkedin, Share2, Calendar, UserPlus, MessageSquare, Phone } from "lucide-react";
+import { Globe, Share2, Calendar, UserPlus, MessageSquare, Phone } from "lucide-react";
+import { SiGithub } from "@icons-pack/react-simple-icons";
 import { useTranslations } from "next-intl";
 
 interface ProfileHeaderProps {
@@ -116,7 +117,7 @@ export function ProfileHeader({ user, isOwnProfile, locale = "en" }: ProfileHead
                             aria-label={tCommon("view")}
                             className="w-9 h-9 rounded-lg bg-secondary-100 hover:bg-secondary-200 flex items-center justify-center text-secondary-600 transition-colors"
                         >
-                            <Github className="w-4 h-4" />
+                            <SiGithub className="w-4 h-4" />
                         </a>
                     )}
                     {user.discord && (
@@ -145,7 +146,9 @@ export function ProfileHeader({ user, isOwnProfile, locale = "en" }: ProfileHead
                         aria-label={t("shareOnLinkedin")}
                         className="w-9 h-9 rounded-lg bg-secondary-100 hover:bg-secondary-200 flex items-center justify-center text-secondary-600 transition-colors"
                     >
-                        <Linkedin className="w-4 h-4" />
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M20.45 20.45h-3.61v-5.47c0-1.31-.02-3-1.83-3-1.83 0-2.13 1.42-2.13 2.91v5.56H9.35V9h3.41v1.56h.05c.48-.87 1.66-1.8 3.41-1.8 3.65 0 4.32 2.4 4.32 5.5v6.24ZM5.34 7.43c-1.14 0-2.06-.93-2.06-2.07 0-1.13.93-2.05 2.06-2.05 1.14 0 2.06.92 2.06 2.05 0 1.14-.92 2.07-2.06 2.07ZM7.12 20.45H3.56V9h3.56v11.45ZM8.19 20.45h0 0v-11.45h0"/>
+                        </svg>
                     </button>
                     <button
                         aria-label={t("viewWebsite")}

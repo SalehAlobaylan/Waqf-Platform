@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
-import { Megaphone, Users, CheckCircle } from "lucide-react";
+import { Megaphone, Users, CircleCheck } from "lucide-react";
 import { CampaignOverallProgress } from "@/components/campaigns/ProgressBar";
 import { CampaignStatusBadge } from "@/components/campaigns/CampaignStatusBadge";
 
@@ -84,7 +84,7 @@ export function CampaignCard({ campaign }: { campaign: CampaignCardData }) {
                         <span className="font-medium truncate">
                             {tCard("by")} {campaign.owner.name}
                         </span>
-                        <CheckCircle className="w-3.5 h-3.5 text-primary-600 shrink-0" />
+                        <CircleCheck className="w-3.5 h-3.5 text-primary-600 shrink-0" />
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
                         <Users className="w-3.5 h-3.5" />

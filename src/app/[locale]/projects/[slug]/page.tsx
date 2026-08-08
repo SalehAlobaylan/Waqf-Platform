@@ -5,10 +5,11 @@ import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import {
-    BookOpen, Heart, Star, Share2, ExternalLink, Github,
-    Calendar, Users, Clock, CheckCircle, Circle,
-    ChevronRight, GitPullRequest, AlertCircle, Eye, Sparkles
+    BookOpen, Heart, Star, Share2, SquareArrowOutUpRight,
+    Calendar, Users, Clock, CircleCheck, Circle,
+    ChevronRight, GitPullRequest, CircleAlert, Eye, Sparkles
 } from "lucide-react";
+import { SiGithub } from "@icons-pack/react-simple-icons";
 import { ViewTracker } from "@/components/projects/ViewTracker";
 import { SimilarProjects } from "@/components/projects/SimilarProjects";
 import { StatusWorkflow } from "@/components/projects/StatusWorkflow";
@@ -165,7 +166,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                                     className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-colors shadow-md shadow-primary-600/20"
                                 >
                                     {t("visitProject")}
-                                    <ExternalLink className="w-4 h-4" />
+                                    <SquareArrowOutUpRight className="w-4 h-4" />
                                 </a>
                                 {project.externalOwnerContact && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(project.externalOwnerContact) && (
                                     <a
@@ -195,7 +196,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                                 </span>
                                 {isExternal && (
                                     <span className="px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-700 inline-flex items-center gap-1">
-                                        <ExternalLink className="w-3 h-3" />
+                                        <SquareArrowOutUpRight className="w-3 h-3" />
                                         {t("externalBadge")}
                                     </span>
                                 )}
@@ -221,7 +222,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                                     className="flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-colors shadow-md shadow-primary-600/20"
                                 >
                                     {t("visitProject")}
-                                    <ExternalLink className="w-4 h-4" />
+                                    <SquareArrowOutUpRight className="w-4 h-4" />
                                 </a>
                             ) : isOwner ? (
                                 <Link
@@ -270,7 +271,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                 <div className="max-w-[1280px] mx-auto px-6 pb-4">
                     <div className="p-5 rounded-2xl bg-amber-50 border border-amber-200">
                         <div className="flex items-start gap-3">
-                            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                            <CircleAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                             <div>
                                 <h3 className="font-bold text-amber-800 mb-1">
                                     {t("adminFeedbackTitle")}
@@ -374,7 +375,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                                 ].map((item, i) => (
                                     <div key={i} className="flex items-center gap-3">
                                         {item.done ? (
-                                            <CheckCircle className="w-5 h-5 text-primary-600 shrink-0" />
+                                            <CircleCheck className="w-5 h-5 text-primary-600 shrink-0" />
                                         ) : (
                                             <Circle className="w-5 h-5 text-secondary-300 shrink-0" />
                                         )}
@@ -408,7 +409,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                                 </div>
                                 <div className="flex items-start gap-3">
                                     <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
-                                        <AlertCircle className="w-4 h-4" />
+                                        <CircleAlert className="w-4 h-4" />
                                     </div>
                                     <div>
                                         <p className="text-sm text-secondary-900">
@@ -516,11 +517,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                                         rel="noopener noreferrer"
                                         className="flex items-center gap-3 p-3 rounded-xl border border-secondary-200 hover:border-primary-600/40 hover:bg-primary-50/50 transition-all group"
                                     >
-                                        <ExternalLink className="w-5 h-5 text-secondary-500 group-hover:text-primary-600" />
+                                        <SquareArrowOutUpRight className="w-5 h-5 text-secondary-500 group-hover:text-primary-600" />
                                         <span className="text-sm font-medium text-secondary-700 group-hover:text-primary-600">
                                             {t("visitProject")}
                                         </span>
-                                        <ExternalLink className="w-3.5 h-3.5 text-secondary-400 ms-auto" />
+                                        <SquareArrowOutUpRight className="w-3.5 h-3.5 text-secondary-400 ms-auto" />
                                     </a>
                                 )}
                                 {!isExternal && project.githubUrl && (
@@ -530,11 +531,11 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                                         rel="noopener noreferrer"
                                         className="flex items-center gap-3 p-3 rounded-xl border border-secondary-200 hover:border-primary-600/40 hover:bg-primary-50/50 transition-all group"
                                     >
-                                        <Github className="w-5 h-5 text-secondary-500 group-hover:text-primary-600" />
+                                        <SiGithub className="w-5 h-5 text-secondary-500 group-hover:text-primary-600" />
                                         <span className="text-sm font-medium text-secondary-700 group-hover:text-primary-600">
                                             {t("viewRepository")}
                                         </span>
-                                        <ExternalLink className="w-3.5 h-3.5 text-secondary-400 ms-auto" />
+                                        <SquareArrowOutUpRight className="w-3.5 h-3.5 text-secondary-400 ms-auto" />
                                     </a>
                                 )}
                             </div>

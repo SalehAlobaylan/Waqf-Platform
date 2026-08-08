@@ -1,7 +1,7 @@
 "use client";
 
 import { ApplicationStatus } from "@prisma/client";
-import { Clock, CheckCircle, XCircle, LogOut } from "lucide-react";
+import { Clock, CircleCheck, CircleX, LogOut } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 
 interface ApplicationStatusBadgeProps {
@@ -16,12 +16,12 @@ const statusConfig = {
         textClass: "text-amber-700",
     },
     ACCEPTED: {
-        icon: CheckCircle,
+        icon: CircleCheck,
         bgClass: "bg-green-100",
         textClass: "text-green-700",
     },
     REJECTED: {
-        icon: XCircle,
+        icon: CircleX,
         bgClass: "bg-red-100",
         textClass: "text-red-700",
     },

@@ -4,15 +4,15 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
     Plus,
-    ExternalLink,
+    SquareArrowOutUpRight,
     Pencil,
     Trash2,
     Loader2,
     Search,
     Star,
-    AlertCircle,
+    CircleAlert,
     ArrowLeft,
-    CheckCircle2,
+    CircleCheckBig,
     EyeOff
 } from "lucide-react";
 
@@ -182,7 +182,7 @@ export function CuratedProjectsList({ locale }: CuratedProjectsListProps) {
                 </div>
             ) : filtered.length === 0 ? (
                 <div className="text-center py-12 bg-white rounded-xl border border-secondary-200">
-                    <AlertCircle className="w-12 h-12 text-secondary-300 mx-auto mb-4" />
+                    <CircleAlert className="w-12 h-12 text-secondary-300 mx-auto mb-4" />
                     <p className="text-secondary-600 mb-4">
                         {searchQuery
                             ? isAr
@@ -238,7 +238,7 @@ export function CuratedProjectsList({ locale }: CuratedProjectsListProps) {
                                             <span className="font-medium text-secondary-700 truncate">{project.externalOwnerContact}</span>
                                         </div>
                                         <div className="flex items-center gap-1.5 sm:col-span-2 truncate">
-                                            <ExternalLink className="w-3.5 h-3.5 text-secondary-400 shrink-0" />
+                                            <SquareArrowOutUpRight className="w-3.5 h-3.5 text-secondary-400 shrink-0" />
                                             <a
                                                 href={project.externalUrl}
                                                 target="_blank"
@@ -280,7 +280,7 @@ export function CuratedProjectsList({ locale }: CuratedProjectsListProps) {
                                         target="_blank"
                                         className="flex items-center gap-1 px-3 py-2 bg-secondary-100 text-secondary-700 rounded-lg hover:bg-secondary-200 transition-colors text-sm"
                                     >
-                                        <ExternalLink className="w-4 h-4" />
+                                        <SquareArrowOutUpRight className="w-4 h-4" />
                                         {isAr ? "عرض" : "View"}
                                     </Link>
                                     {project.status === "DRAFT" ? (
@@ -292,7 +292,7 @@ export function CuratedProjectsList({ locale }: CuratedProjectsListProps) {
                                             {actionLoading === project.id ? (
                                                 <Loader2 className="w-4 h-4 animate-spin" />
                                             ) : (
-                                                <CheckCircle2 className="w-4 h-4" />
+                                                <CircleCheckBig className="w-4 h-4" />
                                             )}
                                             {isAr ? "نشر" : "Publish"}
                                         </button>

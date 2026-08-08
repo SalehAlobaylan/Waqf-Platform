@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { CircleCheck, CircleX, Loader2 } from "lucide-react";
 
 interface ApplicationActionsProps {
     applicationId: string;
@@ -53,7 +53,7 @@ export function ApplicationActions({ applicationId, currentStatus, onStatusChang
                     disabled={loading}
                     className="flex items-center gap-1.5 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
                 >
-                    {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
+                    {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CircleCheck className="w-3.5 h-3.5" />}
                     {t("accept")}
                 </button>
                 <button
@@ -61,7 +61,7 @@ export function ApplicationActions({ applicationId, currentStatus, onStatusChang
                     disabled={loading}
                     className="flex items-center gap-1.5 px-4 py-2 bg-red-50 text-red-600 text-sm font-medium rounded-lg border border-red-200 hover:bg-red-100 transition-colors disabled:opacity-50"
                 >
-                    {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <XCircle className="w-3.5 h-3.5" />}
+                    {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CircleX className="w-3.5 h-3.5" />}
                     {t("reject")}
                 </button>
             </div>

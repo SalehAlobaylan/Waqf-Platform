@@ -12,7 +12,7 @@ import {
     BarChart3,
     PieChart,
     Activity,
-    AlertCircle,
+    CircleAlert,
     Loader2
 } from "lucide-react";
 
@@ -91,7 +91,7 @@ export function AnalyticsDashboard({ locale }: AnalyticsDashboardProps) {
     if (!stats) {
         return (
             <div className="text-center py-12">
-                <AlertCircle className="w-12 h-12 text-secondary-400 mx-auto mb-4" />
+                <CircleAlert className="w-12 h-12 text-secondary-400 mx-auto mb-4" />
                 <p className="text-secondary-600">
                     {isAr ? "فشل في تحميل الإحصائيات" : "Failed to load statistics"}
                 </p>

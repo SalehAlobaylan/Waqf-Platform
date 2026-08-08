@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { X, Flag, Loader2, CheckCircle } from "lucide-react";
+import { X, Flag, Loader2, CircleCheck } from "lucide-react";
 
 interface ReportModalProps {
     targetType: "PROJECT" | "USER" | "APPLICATION";
@@ -75,7 +75,7 @@ export function ReportModal({ targetType, targetId, isOpen, onClose }: ReportMod
 
                 {submitted ? (
                     <div className="p-8 text-center">
-                        <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
+                        <CircleCheck className="w-12 h-12 text-green-500 mx-auto mb-3" />
                         <p className="text-lg font-medium text-secondary-900">{t("submitted")}</p>
                     </div>
                 ) : (

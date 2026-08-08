@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
-import { Loader2, X, Megaphone, Clock, CheckCircle, XCircle, Hourglass } from "lucide-react";
+import { Loader2, X, Megaphone, Clock, CircleCheck, CircleX, Hourglass } from "lucide-react";
 import { CampaignStatusBadge } from "@/components/campaigns/CampaignStatusBadge";
 
 export interface MyJoinItem {
@@ -145,9 +145,9 @@ export function DashboardCampaignJoinsClient({ joins }: Props) {
 function JoinStatusBadge({ status }: { status: MyJoinItem["status"] }) {
     const map: Record<MyJoinItem["status"], { icon: typeof Clock; color: string; label: string }> = {
         PENDING: { icon: Hourglass, color: "bg-amber-100 text-amber-700", label: "Pending" },
-        ACCEPTED: { icon: CheckCircle, color: "bg-emerald-100 text-emerald-700", label: "Accepted" },
-        REJECTED: { icon: XCircle, color: "bg-red-100 text-red-600", label: "Rejected" },
-        WITHDRAWN: { icon: XCircle, color: "bg-secondary-100 text-secondary-500", label: "Withdrawn" },
+        ACCEPTED: { icon: CircleCheck, color: "bg-emerald-100 text-emerald-700", label: "Accepted" },
+        REJECTED: { icon: CircleX, color: "bg-red-100 text-red-600", label: "Rejected" },
+        WITHDRAWN: { icon: CircleX, color: "bg-secondary-100 text-secondary-500", label: "Withdrawn" },
     };
     const m = map[status];
     const Icon = m.icon;

@@ -1,6 +1,6 @@
 "use client";
 
-import { GitPullRequest, CheckCircle, Clock } from "lucide-react";
+import { GitPullRequest, CircleCheck, Clock } from "lucide-react";
 
 interface WaqfTimelineProps {
     locale?: string;
@@ -91,7 +91,7 @@ export function WaqfTimeline({ locale = "en" }: WaqfTimelineProps) {
                                     <span className="flex items-center gap-1">
                                         {item.status === "merged" ? (
                                             <>
-                                                <CheckCircle className="w-3 h-3 text-primary-600" />
+                                                <CircleCheck className="w-3 h-3 text-primary-600" />
                                                 <span className="text-primary-600 font-medium">
                                                     {locale === "ar" ? "تم الدمج" : "Merged"}
                                                 </span>

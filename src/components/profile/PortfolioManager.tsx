@@ -18,7 +18,7 @@ import {
     useSortable
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Plus, Trash2, ExternalLink, Code } from "lucide-react";
+import { GripVertical, Plus, Trash2, SquareArrowOutUpRight, Code } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { PortfolioItem } from "@prisma/client";
@@ -56,7 +56,7 @@ function SortableItem({ id, item, onDelete }: { id: string; item: PortfolioItem;
                 <h4 className="font-bold text-secondary-900 flex items-center gap-2">
                     {item.title}
                     <a href={item.url} target="_blank" rel="noopener noreferrer" aria-label={item.title} className="text-secondary-400 hover:text-primary-600">
-                        <ExternalLink size={14} />
+                        <SquareArrowOutUpRight size={14} />
                     </a>
                 </h4>
                 {item.description && <p className="text-sm text-secondary-500 mt-1">{item.description}</p>}

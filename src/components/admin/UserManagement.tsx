@@ -9,7 +9,7 @@ import {
     User,
     Trash2,
     MoreVertical,
-    AlertCircle,
+    CircleAlert,
     Loader2,
     FolderKanban,
     FileCheck
@@ -192,7 +192,7 @@ export function UserManagement({ locale }: UserManagementProps) {
                 </div>
             ) : users.length === 0 ? (
                 <div className="text-center py-12 bg-white rounded-xl border border-secondary-200">
-                    <AlertCircle className="w-12 h-12 text-secondary-300 mx-auto mb-4" />
+                    <CircleAlert className="w-12 h-12 text-secondary-300 mx-auto mb-4" />
                     <p className="text-secondary-600">
                         {t("noUsers")}
                     </p>

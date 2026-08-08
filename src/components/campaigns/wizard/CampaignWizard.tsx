@@ -11,7 +11,7 @@ import {
     Save,
     Send,
     MapPin,
-    CheckCircle2,
+    CircleCheckBig,
     BookOpen,
     Globe,
     Users,
@@ -373,7 +373,7 @@ export function CampaignWizard({ locale, mode, initialData, organizations }: Cam
             )}
             {success && (
                 <div className="mt-4 flex items-start gap-2 rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-700">
-                    <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0" />
+                    <CircleCheckBig className="w-4 h-4 mt-0.5 shrink-0" />
                     <span>{success}</span>
                 </div>
             )}

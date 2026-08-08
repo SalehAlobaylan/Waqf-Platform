@@ -1,4 +1,4 @@
-import { ExternalLink, Folder } from "lucide-react";
+import { SquareArrowOutUpRight, Folder } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { PortfolioItem } from "@prisma/client";
 
@@ -28,7 +28,7 @@ export function PortfolioGrid({ items }: { items: PortfolioItem[]; locale: strin
                                     aria-label={item.title}
                                     className="text-secondary-400 hover:text-primary-600 p-1"
                                 >
-                                    <ExternalLink size={16} />
+                                    <SquareArrowOutUpRight size={16} />
                                 </a>
                             </h3>
                             {item.description && (
