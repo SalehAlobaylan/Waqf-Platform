@@ -2,14 +2,17 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { getTranslations } from "next-intl/server";
 import { ProjectForm } from "@/components/projects/ProjectForm";
 
 interface Props {
     params: Promise<{ locale: string }>;
 }
 
-export async function generateMetadata() {
-    return { title: "Create Project | Waqf" };
+export async function generateMetadata({ params }: Props) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "metadata" });
+    return { title: t("createProject") };
 }
 
 export default async function NewProjectPage({ params }: Props) {
@@ -20,7 +23,6 @@ export default async function NewProjectPage({ params }: Props) {
         redirect(`/${locale}/login`);
     }
 
-    // Fetch user's organizations for the dropdown
     const organizations = await prisma.organization.findMany({
         where: { userId: session.user.id },
         select: { id: true, name: true },

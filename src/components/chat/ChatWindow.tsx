@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { authClient } from "@/lib/auth-client";
+import { useTranslations } from "next-intl";
 import { Send, Loader2, ArrowDown } from "lucide-react";
 import { MessageBubble } from "./MessageBubble";
 
@@ -24,6 +25,7 @@ interface ChatWindowProps {
 }
 
 export function ChatWindow({ applicationId, initialMessages = [], recipientName }: ChatWindowProps) {
+    const t = useTranslations("chat");
     const { data: session } = authClient.useSession();
     const [messages, setMessages] = useState<Message[]>(initialMessages);
     const [newMessage, setNewMessage] = useState("");
@@ -133,7 +135,7 @@ export function ChatWindow({ applicationId, initialMessages = [], recipientName 
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-secondary-100 bg-secondary-50">
                 <h3 className="font-medium text-secondary-900">
-                    {recipientName ? `Chat with ${recipientName}` : "Conversation"}
+                    {recipientName ? t("chatWith", { name: recipientName }) : t("conversation")}
                 </h3>
             </div>
 
@@ -153,7 +155,7 @@ export function ChatWindow({ applicationId, initialMessages = [], recipientName 
                             <Send className="w-5 h-5 text-secondary-400" />
                         </div>
                         <p className="text-secondary-500 text-sm">
-                            No messages yet. Start the conversation!
+                            {t("noMessages")}. {t("startConversation")}
                         </p>
                     </div>
                 ) : (
@@ -199,7 +201,7 @@ export function ChatWindow({ applicationId, initialMessages = [], recipientName 
                                 handleSend(e);
                             }
                         }}
-                        placeholder="Type a message..."
+                        placeholder={t("typePlaceholder")}
                         rows={1}
                         className="flex-1 px-4 py-2.5 bg-secondary-50 border border-secondary-200 rounded-xl
                                    text-secondary-900 placeholder-secondary-400 resize-none

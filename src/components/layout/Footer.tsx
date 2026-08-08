@@ -2,12 +2,16 @@
 
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
+import { usePathname } from "next/navigation";
 import { Heart } from "lucide-react";
 
 export function Footer() {
     const t = useTranslations("footer");
     const tNav = useTranslations("nav");
     const locale = useLocale();
+    const pathname = usePathname();
+
+    if (pathname.includes("/admin")) return null;
 
     const currentYear = new Date().getFullYear();
 
@@ -29,8 +33,8 @@ export function Footer() {
                         </Link>
                         <p className="text-sm text-secondary-500 max-w-xs">
                             {locale === "ar"
-                                ? "بناء المستقبل الرقمي للأمة، بكل سطر كود."
-                                : "Building the digital future of the Ummah, one commit at a time."}
+                                ? "نبني التقنية ذات الأثر المستدام، سطر كود في كل مرة."
+                                : "Building technology with lasting impact, one commit at a time."}
                         </p>
                     </div>
 
@@ -55,11 +59,6 @@ export function Footer() {
                                 >
                                     {tNav("howItWorks")}
                                 </Link>
-                            </li>
-                            <li>
-                                <a href="#" className="hover:text-primary-600 transition-colors">
-                                    {locale === "ar" ? "لوحة المتصدرين" : "Leaderboard"}
-                                </a>
                             </li>
                         </ul>
                     </div>
@@ -88,16 +87,6 @@ export function Footer() {
                                     className="hover:text-primary-600 transition-colors"
                                 >
                                     Discord
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#" className="hover:text-primary-600 transition-colors">
-                                    {locale === "ar" ? "المدونة" : "Blog"}
-                                </a>
-                            </li>
-                            <li>
-                                <a href="#" className="hover:text-primary-600 transition-colors">
-                                    {locale === "ar" ? "الفعاليات" : "Events"}
                                 </a>
                             </li>
                         </ul>
@@ -143,7 +132,7 @@ export function Footer() {
                     <div className="flex items-center gap-2 text-sm text-secondary-400">
                         <span>{locale === "ar" ? "صُنع بـ" : "Made with"}</span>
                         <Heart className="w-4 h-4 text-red-500" fill="currentColor" />
-                        <span>{locale === "ar" ? "للأمة" : "for the Ummah"}</span>
+                        <span>{locale === "ar" ? "لمجتمع المطورين" : "for the developer community"}</span>
                     </div>
                 </div>
             </div>

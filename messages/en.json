@@ -1,10 +1,22 @@
 {
     "common": {
         "appName": "Waqf",
-        "tagline": "Contribute your skills as ongoing charity"
+        "tagline": "Contribute your skills to projects that matter",
+        "back": "Back",
+        "cancel": "Cancel",
+        "save": "Save",
+        "saving": "Saving...",
+        "edit": "Edit",
+        "delete": "Delete",
+        "loading": "Loading...",
+        "notFound": "Not Found",
+        "goBack": "Go Back",
+        "previous": "Previous",
+        "next": "Next"
     },
     "nav": {
         "explore": "Explore",
+        "campaigns": "Campaigns",
         "about": "About",
         "howItWorks": "How it Works",
         "login": "Log In",
@@ -12,16 +24,17 @@
         "myContributions": "My Contributions",
         "dashboard": "Dashboard",
         "profile": "Profile",
+        "settings": "Settings",
         "logout": "Log Out"
     },
     "hero": {
-        "title": "Contribute to Islamic Open Source Projects",
-        "subtitle": "Join the Muslim developer community and contribute your skills as sadaqah jariyah",
+        "title": "Contribute to Projects That Matter",
+        "subtitle": "Join the developer community and contribute your skills to projects with real impact",
         "ctaContribute": "Start Contributing",
         "ctaCreate": "Create a Project"
     },
     "footer": {
-        "madeWith": "Made with ❤️ for the Ummah",
+        "madeWith": "Made with care for the developer community",
         "quickLinks": "Quick Links",
         "community": "Community",
         "resources": "Resources",
@@ -29,6 +42,18 @@
         "privacy": "Privacy Policy",
         "terms": "Terms of Service",
         "contact": "Contact Us"
+    },
+    "quickActions": {
+        "createProject": "Create Project",
+        "explore": "Explore",
+        "messages": "Messages",
+        "toggle": "Quick actions"
+    },
+    "projectCard": {
+        "curatedExternalProject": "Curated external project",
+        "external": "External",
+        "activeRecently": "Active 2d ago",
+        "contribute": "Contribute →"
     },
     "categories": {
         "quran": "Quran",
@@ -45,41 +70,60 @@
     },
     "auth": {
         "welcomeBack": "Welcome Back",
-        "loginSubtitle": "Sign in to continue your journey of sadaqah jariyah",
+        "loginSubtitle": "Sign in to continue your contribution journey",
         "createYourAccount": "Create Your Account",
-        "signupSubtitle": "Join the Muslim developer community",
+        "signupSubtitle": "Join the developer community",
         "email": "Email Address",
-        "password": "Password",
-        "confirmPassword": "Confirm Password",
         "fullName": "Full Name",
         "fullNamePlaceholder": "Enter your name",
         "login": "Sign In",
         "loggingIn": "Signing in...",
         "createAccount": "Create Account",
         "creatingAccount": "Creating account...",
+        "sendLink": "Send sign-in link",
+        "sendSignInLink": "Send sign-in link",
+        "sendingLink": "Sending link...",
+        "signInWithEmail": "Sign in with email",
+        "signUpWithEmail": "Sign up with email",
         "continueWithGitHub": "Continue with GitHub",
+        "continueWithGoogle": "Continue with Google",
         "signupWithGitHub": "Sign up with GitHub",
+        "signupWithGoogle": "Sign up with Google",
         "orContinueWith": "or continue with email",
-        "forgotPassword": "Forgot password?",
+        "orUseAnotherMethod": "or use another method",
         "noAccount": "Don't have an account?",
         "alreadyHaveAccount": "Already have an account?",
-        "invalidCredentials": "Invalid email or password",
+        "signup": "Sign up",
+        "signupCta": "Sign up",
         "loginError": "An error occurred during login",
         "signupError": "An error occurred during signup",
-        "passwordRequirements": "Password does not meet requirements",
-        "passwordsMustMatch": "Passwords do not match",
         "acceptTermsRequired": "Please accept the terms to continue",
-        "minChars": "At least 8 characters",
-        "uppercase": "At least one uppercase letter",
-        "number": "At least one number",
         "agreeToTerms": "I agree to the",
         "termsOfService": "Terms of Service",
         "and": "and",
-        "privacyPolicy": "Privacy Policy"
+        "privacyPolicy": "Privacy Policy",
+        "checkYourInbox": "Check your inbox",
+        "checkYourInboxSubtitle": "We sent a sign-in link to {email}. The link expires in 10 minutes.",
+        "checkYourInboxSubtitleOtp": "We sent a 6-digit code to {email}. The code expires in 10 minutes.",
+        "didNotReceiveEmail": "Didn't receive the email?",
+        "useCodeInstead": "Use a 6-digit code instead",
+        "useLinkInstead": "Send a link instead",
+        "enterCode": "Enter your code",
+        "enter6DigitCode": "Enter the 6-digit code we sent",
+        "verifyCode": "Verify code",
+        "verifying": "Verifying...",
+        "resendCode": "Resend code",
+        "resendLink": "Resend link",
+        "useDifferentEmail": "Use a different email",
+        "magicLinkNotDelivered": "Check your spam folder, or try the code option below.",
+        "emailPlaceholder": "name@example.com",
+        "quickSignInError": "Could not sign in. Please try again.",
+        "devQuickSignIn": "Dev quick sign-in",
+        "devQuickSignInDescription": "Sign in as a seeded test user (development only)"
     },
     "search": {
         "placeholder": "Search projects...",
-        "searchPlaceholder": "Search for Islamic projects to contribute to...",
+        "searchPlaceholder": "Search for projects to contribute to...",
         "searching": "Searching...",
         "result": "result",
         "results": "results",
@@ -87,40 +131,41 @@
         "noResults": "No projects found",
         "noResultsDescription": "Try adjusting your search terms or browse all projects",
         "startSearching": "Search for projects",
-        "startSearchingDescription": "Find Islamic open-source projects that match your skills"
+        "startSearchingDescription": "Find projects that match your skills"
     },
     "applications": {
-        "applyTitle": "Apply to Contribute",
-        "whyContribute": "Why do you want to contribute?",
-        "whyContributePlaceholder": "Share your motivation and how you can help this project...",
-        "whyContributeHint": "Mention your relevant experience and what draws you to this project",
-        "portfolioUrl": "Portfolio or GitHub",
-        "hoursPerWeek": "Hours available per week",
-        "selectHours": "Select availability",
-        "hoursLabel": "hours",
-        "submitting": "Submitting...",
-        "submitApplication": "Submit Application",
-        "applicationNote": "Project owners will be notified of your application",
-        "incoming": "Incoming Applications",
-        "filterAll": "All",
-        "filterPending": "Pending",
-        "filterAccepted": "Accepted",
-        "filterRejected": "Rejected",
-        "accept": "Accept",
-        "reject": "Reject",
-        "acceptConfirm": "Are you sure you want to accept this application?",
-        "rejectConfirm": "Are you sure you want to reject this application?",
-        "accepted": "Application accepted!",
-        "rejected": "Application rejected",
-        "matchScore": "Match Score",
-        "skillMatch": "Skill Match",
-        "categoryMatch": "Category",
-        "languageMatch": "Language",
-        "recencyScore": "Recency",
-        "noApplications": "No applications yet",
-        "shareToAttract": "Share your project to attract contributors",
-        "loadMore": "Load More Projects",
-        "noMoreProjects": "No more projects to show"
+      "appliedTo": "Applied to",
+      "applicants": "applicants",
+      "hWeek": "h/week",
+      "messages": "messages",
+      "message_one": "message",
+      "message_other": "messages",
+      "noApplications": "No applications yet",
+      "shareToAttract": "Share your project to attract contributors",
+      "noApplicationsOwner": "No applications received yet",
+      "noApplicationsOwnerDescription": "When contributors apply, they'll appear here.",
+      "noApplicationsContributor": "You haven't applied to any projects yet",
+      "noApplicationsContributorDescription": "Browse projects and apply to start contributing.",
+      "filterAll": "All",
+      "filterPending": "Pending",
+      "filterAccepted": "Accepted",
+      "filterRejected": "Rejected",
+      "applyTitle": "Apply to Contribute",
+      "whyContribute": "Why do you want to contribute?",
+      "whyContributePlaceholder": "Tell the project owner about your skills, motivation, and what you'd like to work on...",
+      "whyContributeHint": "A thoughtful message increases your chances of being accepted.",
+      "portfolioUrl": "Portfolio or GitHub link",
+      "hoursPerWeek": "Hours per week",
+      "selectHours": "Select availability",
+      "hoursLabel": "hours",
+      "submitApplication": "Submit Application",
+      "submitting": "Submitting...",
+      "applicationNote": "The project owner will review your application and get back to you.",
+      "matchScore": "Match Score",
+      "skillMatch": "Skills",
+      "categoryMatch": "Category",
+      "languageMatch": "Language",
+      "recencyScore": "Recency"
     },
     "messages": {
         "noMessages": "No messages yet",
@@ -137,11 +182,12 @@
     },
     "landing": {
         "betaAvailable": "Beta Available",
-        "heroTitle": "Tech for the Ummah",
-        "heroArabic": "صدقة جارية عبر الكود",
-        "heroDescription": "Join the first open-source community building technology for the Muslim Ummah. Contribute your skills to projects that benefit millions—Sadaqah Jariyah through code.",
+        "heroTitle": "Tech for Good",
+        "heroArabic": "أوقف خبرتك التقنية",
+        "heroDescription": "Join developers building technology with real impact. Contribute your skills to projects that serve communities.",
         "startContributing": "Start Contributing",
         "listProject": "List a Project",
+        "startCampaign": "Start a Campaign",
         "joinContributors": "Join {count}+ contributors worldwide",
         "activeProjects": "Active Projects",
         "contributors": "Contributors",
@@ -152,20 +198,20 @@
         "exploreDescription": "Discover projects across various sectors needing your expertise.",
         "viewAllCategories": "View All Categories",
         "howItWorks": "How It Works",
-        "howItWorksDescription": "Your journey from code commit to eternal reward.",
+        "howItWorksDescription": "Your journey from code commit to lasting impact.",
         "discover": "1. Discover",
-        "discoverDescription": "Find open-source projects that match your tech stack and interests.",
+        "discoverDescription": "Find projects that match your tech stack and interests.",
         "contribute": "2. Contribute",
         "contributeDescription": "Submit pull requests, fix bugs, or add features to improve the codebase.",
-        "earnHasanat": "3. Earn Hasanat",
-        "earnHasanatDescription": "Benefit from Sadaqah Jariyah as your code serves the community continuously.",
+        "buildLastingImpact": "3. Build Lasting Impact",
+        "buildLastingImpactDescription": "Your code keeps serving the community long after the merge. Impact compounds over time.",
         "reward": "Reward",
         "featuredProjects": "Featured Projects",
         "openForContributions": "Open for contributions",
         "viewProject": "View Project",
         "applicants": "applicants",
         "readyToCode": "Ready to code for a cause?",
-        "ctaDescription": "Join thousands of developers turning their commits into Sadaqah Jariyah.",
+        "ctaDescription": "Join thousands of developers turning their commits into lasting impact.",
         "signUpNow": "Sign Up Now",
         "exploreProjects": "Explore Projects",
         "platform": "Platform",
@@ -178,14 +224,62 @@
         "termsOfService": "Terms of Service",
         "allRightsReserved": "All rights reserved.",
         "madeWith": "Made with",
-        "forTheUmmah": "for the Ummah",
-        "impact": "Impact",
-        "usersReached": "1.2M Users reached"
+        "forCommunity": "for the developer community",
+        "recentProjects": "Recent projects",
+        "twoMinAgo": "2 min ago",
+        "fiveMinAgo": "5 min ago",
+        "tenMinAgo": "10 min ago",
+        "domainCards": {
+            "quran": {
+                "title": "Quran & Sunnah",
+                "description": "APIs, reading apps, and memorization tools."
+            },
+            "charity": {
+                "title": "Charity & Zakat",
+                "description": "Donation platforms, Zakat calculators, and aid tracking."
+            },
+            "education": {
+                "title": "Education Tech",
+                "description": "LMS for schools, language learning, and educational apps."
+            },
+            "tools": {
+                "title": "Finance & Tools",
+                "description": "Ethical finance tools, investment calculators."
+            }
+        },
+        "testimonials": {
+            "title": "Voices from the Community",
+            "description": "Developers worldwide share their Waqf experience.",
+            "ahmed": {
+                "name": "Ahmed Khalid",
+                "role": "Full-Stack Developer",
+                "text": "Waqf helped me find projects with real impact. Now every line of code I write makes a lasting difference."
+            },
+            "fatima": {
+                "name": "Fatima Nour",
+                "role": "UX Designer",
+                "text": "The community here is amazing. I found a team that shares my vision of building technology that serves communities."
+            },
+            "omar": {
+                "name": "Omar Hassan",
+                "role": "Backend Engineer",
+                "text": "One of the best platforms for developer collaboration. Projects here serve communities around the world."
+            }
+        },
+        "trust": {
+            "builtByDevs": "Built by Developers",
+            "builtByDevsDescription": "Quality code and projects, maintained by people who care.",
+            "globalCommunity": "Global Community",
+            "globalCommunityDescription": "Developers from 40+ countries contributing together.",
+            "lastingImpact": "Lasting Impact",
+            "lastingImpactDescription": "Every contribution compounds over time."
+        }
     },
     "admin": {
         "panel": "Admin Panel",
         "dashboard": "Dashboard",
         "projects": "Projects",
+        "curatedProjects": "Curated Projects",
         "users": "Users",
         "analytics": "Analytics",
         "backToSite": "Back to Site",
@@ -194,6 +288,8 @@
         "reject": "Reject",
         "feature": "Feature",
         "unfeature": "Unfeature",
+        "publish": "Publish",
+        "unpublish": "Unpublish",
         "delete": "Delete",
         "makeAdmin": "Make Admin",
         "removeAdmin": "Remove Admin",
@@ -204,6 +300,7 @@
         "noUsers": "No users found",
         "totalUsers": "Total Users",
         "totalProjects": "Total Projects",
+        "totalApplications": "Total Applications",
         "activeProjects": "Active Projects",
         "acceptanceRate": "Acceptance Rate",
         "thisMonth": "this month",
@@ -213,23 +310,24 @@
         "welcome": "Welcome, {name}",
         "description": "How would you like to use the platform? Choose your primary path now (you can always switch roles later).",
         "contributor": "Contributor",
-        "contributorDescription": "I want to contribute my skills as sadaqah jariyah to Islamic open-source projects.",
+        "contributorDescription": "I want to contribute my skills to projects that matter.",
         "creator": "Creator",
-        "creatorDescription": "I want to create an open-source Islamic project and recruit volunteers.",
+        "creatorDescription": "I want to create a project and recruit contributors.",
         "orgNameLabel": "Organization or Team Name",
-        "orgNamePlaceholder": "e.g., Quran Tech Team",
+        "orgNamePlaceholder": "e.g., Tech Collective",
         "continue": "Continue",
         "orgNameRequired": "Please enter the organization name",
         "createProfile": "Create a developer profile",
         "findProjects": "Find projects matching your skills",
-        "buildHistory": "Build your waqf contribution history",
+        "buildHistory": "Build your contribution history",
         "registerOrg": "Register an organization",
         "listProjects": "List projects for contribution",
-        "manageApplications": "Manage volunteer applications"
+        "manageApplications": "Manage contributor applications"
     },
     "projects": {
         "createProject": "Create Project",
         "editProject": "Edit Project",
+        "back": "Back",
         "projectTitle": "Project Title",
         "projectTitlePlaceholder": "Enter a descriptive project title",
         "slug": "URL Slug",
@@ -240,8 +338,8 @@
         "selectCategory": "Select category",
         "language": "Language",
         "selectLanguage": "Select language",
-        "impact": "Sadaqah Jariyah Impact",
-        "impactPlaceholder": "Describe how this project benefits the Ummah...",
+        "impact": "Project Impact",
+        "impactPlaceholder": "Describe the impact of this project...",
         "timeCommitment": "Time Commitment",
         "timeCommitmentPlaceholder": "e.g. 5-10 hours/week",
         "duration": "Estimated Duration",
@@ -281,8 +379,13 @@
         "explore": "Explore",
         "breadcrumbProjects": "Projects",
         "organization": "Organization",
+        "organizationNotFound": "Organization Not Found",
         "selectOrganization": "Select organization (optional)",
-        "noOrganization": "No organization"
+        "noOrganization": "No organization",
+        "skillSearchPlaceholder": "Search for a skill...",
+        "notFoundTitle": "Project Not Found",
+        "notFoundDescription": "We couldn't find the project you're looking for. It may have been deleted or the link has changed.",
+        "backToExplore": "Back to Explore"
     },
     "reports": {
         "reportContent": "Report Content",
@@ -319,5 +422,626 @@
         "removeFromFeatured": "Remove from featured",
         "addToFeatured": "Feature this project",
         "noFeatured": "No featured projects yet"
+    },
+    "dashboard": {
+        "title": "Dashboard",
+        "welcomeBack": "Welcome back, {name}",
+        "greeting": "Hello, {name}",
+        "yourStats": "Your Activity",
+        "yourApplications": "Your Applications",
+        "yourProjects": "Your Projects",
+        "browseProjects": "Browse Projects",
+        "quickActions": "Quick Actions",
+        "createNewProject": "Create a new project",
+        "viewAllApplications": "View all applications",
+        "viewAllProjects": "View all projects",
+        "newApplication": "{count} new application",
+        "newApplications": "{count} new applications",
+        "unreadNotifications": "{count} unread",
+        "recentApplications": "Recent Applications",
+        "recentProjects": "Recent Projects",
+        "stats": {
+            "activeProjects": "Active Projects",
+            "applications": "Applications",
+            "contributors": "Contributors",
+            "openForContribution": "Open for contribution"
+        },
+        "empty": {
+            "noApplications": "No applications yet",
+            "noProjects": "No projects yet",
+            "noNotifications": "No notifications yet"
+        },
+        "status": {
+            "draft": "Draft",
+            "pending": "Pending Review",
+            "open": "Open",
+            "inProgress": "In Progress",
+            "completed": "Completed",
+            "cancelled": "Cancelled"
+        },
+        "applications": {
+            "title": "My Applications",
+            "subtitle": "Track your project applications",
+            "noApplications": "No applications yet",
+            "noApplicationsDescription": "Apply to a project to start contributing",
+            "appliedTo": "Applied to",
+            "appliedOn": "Applied on",
+            "status": "Status",
+            "viewProject": "View Project"
+        },
+        "projects": {
+            "title": "My Projects",
+            "subtitle": "Manage your project listings",
+            "noProjects": "No projects yet",
+            "noProjectsDescription": "Create your first project to start receiving contributions",
+            "createProject": "Create Project",
+            "viewApplications": "View Applications",
+            "editProject": "Edit Project",
+            "deleteProject": "Delete Project"
+        },
+        "messages": {
+            "title": "Messages",
+            "subtitle": "Conversations with project owners and contributors"
+        },
+        "notifications": {
+            "title": "Notifications",
+            "unread": "{count} unread",
+            "markAllRead": "Mark all read",
+            "noNotifications": "No notifications yet",
+            "view": "View"
+        }
+    },
+    "projectDetail": {
+        "breadcrumbs": {
+            "explore": "Explore"
+        },
+        "helpWanted": "Help Wanted",
+        "editProject": "Edit Project",
+        "contributeNow": "Contribute Now",
+        "viewApplication": "View Your Application",
+        "star": "Star",
+        "share": "Share",
+        "adminFeedbackTitle": "Admin Feedback",
+        "adminFeedbackDesc": "The admin has provided the following feedback on your project submission:",
+        "projectImpact": "Project Impact",
+        "aboutThisProject": "About this Project",
+        "requiredSkills": "Required Skills",
+        "required": "Required",
+        "niceToHave": "Nice to have",
+        "roadmap": "Project Roadmap",
+        "roadmapSteps": {
+            "infra": "Set up project infrastructure",
+            "design": "Initial API design & documentation",
+            "core": "Core feature development",
+            "deploy": "Testing & deployment"
+        },
+        "recentActivity": "Recent Activity",
+        "activity": {
+            "prMerged": "PR #42 merged:",
+            "prMergedTitle": "Add search functionality",
+            "prMergedTime": "2 days ago",
+            "issue": "Issue #15:",
+            "issueTitle": "Improve query performance",
+            "issueTime": "5 days ago"
+        },
+        "details": "Project Details",
+        "created": "Created",
+        "applicants": "Applicants",
+        "views": "Views",
+        "commitment": "Commitment",
+        "techStack": "Tech Stack",
+        "links": "Links",
+        "viewRepository": "View Repository",
+        "projectCreator": "Project Creator",
+        "viewProfile": "View Profile",
+        "contactCreator": "Contact Creator",
+        "similarProjects": "Similar Projects",
+        "curatedByWaqf": "Curated by Waqf",
+        "externalBadge": "External",
+        "externalProjectNotice": "This is an external project",
+        "externalProjectDescription": "Hosted on its own site. We are not accepting applications through Waqf. Visit the project page to learn more or get involved.",
+        "externalOwnerLabel": "Original owner",
+        "visitProject": "Visit project",
+        "contactOwner": "Contact owner",
+        "originalOwner": "Original project owner"
+    },
+    "applicationDetail": {
+        "back": "Back to applications",
+        "applicationFor": "Application for",
+        "submittedOn": "Submitted on",
+        "status": "Status",
+        "message": "Message",
+        "portfolio": "Portfolio",
+        "hoursPerWeek": "Hours per week",
+        "applicant": "Applicant",
+        "project": "Project",
+        "statusHistory": "Status History",
+        "accept": "Accept",
+        "reject": "Reject",
+        "pending": "Pending",
+        "accepted": "Accepted",
+        "rejected": "Rejected",
+        "withdrawn": "Withdrawn",
+        "viewProfile": "View Profile",
+        "viewProject": "View Project",
+        "hWeek": "h/week",
+        "messages": "messages",
+        "message_one": "message",
+        "message_other": "messages"
+    },
+    "chat": {
+        "noMessages": "No messages yet",
+        "startConversation": "Start the conversation!",
+        "you": "You",
+        "selectConversation": "Select a conversation",
+        "selectConversationDescription": "Choose a conversation from the list to start chatting",
+        "typePlaceholder": "Type a message...",
+        "sending": "Sending...",
+        "unread": "{count} unread",
+        "chatWith": "Chat with {name}",
+        "conversation": "Conversation"
+    },
+    "profile": {
+        "header": {
+            "shareProfile": "Share profile",
+            "shareOnLinkedin": "Share on LinkedIn",
+            "viewWebsite": "View website",
+            "editProfile": "Edit profile",
+            "availableForWork": "Available for work",
+            "notAvailable": "Not available",
+            "role": {
+                "user": "Contributor",
+                "admin": "Admin",
+                "owner": "Project owner"
+            }
+        },
+        "edit": {
+            "title": "Edit Profile",
+            "bio": "Bio",
+            "bioPlaceholder": "Tell others about yourself and what you can contribute...",
+            "intention": "Intention statement",
+            "intentionPlaceholder": "Why do you want to contribute?",
+            "discord": "Discord Username",
+            "discordPlaceholder": "username#1234",
+            "whatsapp": "WhatsApp Number",
+            "whatsappPlaceholder": "+1234567890",
+            "saveChanges": "Save Changes",
+            "cancel": "Cancel",
+            "saveSuccess": "Profile updated successfully",
+            "saveError": "Failed to update profile",
+            "skills": "Skills",
+            "skillsDescription": "Add skills to help projects find you",
+            "portfolio": "Portfolio",
+            "portfolioDescription": "Showcase your past work",
+            "addItem": "Add item",
+            "itemTitle": "Title",
+            "itemTitlePlaceholder": "E.g., Quran API wrapper",
+            "itemUrl": "URL",
+            "itemUrlPlaceholder": "https://github.com/...",
+            "itemDescription": "Description",
+            "itemDescriptionPlaceholder": "Brief description...",
+            "dragHandle": "Drag to reorder",
+            "deleteItem": "Delete item",
+            "removeSkill": "Remove skill",
+            "openSkills": "Open skill selector",
+            "closeSkills": "Close skill selector",
+            "searchSkillPlaceholder": "Search skills...",
+            "noSkills": "No skills selected yet"
+        }
+    },
+    "settings": {
+        "title": "Settings",
+        "general": "General",
+        "profile": "Profile",
+        "notifications": "Notifications",
+        "language": "Language",
+        "security": "Security",
+        "notificationsSection": {
+            "title": "Notifications",
+            "description": "Manage your notification preferences",
+            "emailNotifs": "Email Notifications",
+            "emailNotifsDescription": "Receive updates via email",
+            "appAccepted": "Application Accepted",
+            "appAcceptedDescription": "When your application is accepted",
+            "appRejected": "Application Rejected",
+            "appRejectedDescription": "When your application is rejected",
+            "newApplications": "New Applications",
+            "newApplicationsDescription": "When someone applies to your projects",
+            "messages": "Messages",
+            "messagesDescription": "When you receive new messages",
+            "save": "Save",
+            "saved": "Saved!"
+        },
+        "languageSection": {
+            "title": "Language",
+            "description": "Choose your preferred language",
+            "default": "Default",
+            "apply": "Apply"
+        },
+        "securitySection": {
+            "title": "Security",
+            "description": "Manage your password and security",
+            "email": "Email",
+            "currentPassword": "Current Password",
+            "newPassword": "New Password",
+            "confirmPassword": "Confirm New Password",
+            "changePassword": "Change Password",
+            "passwordTooShort": "Password must be at least 8 characters",
+            "passwordMismatch": "Passwords don't match",
+            "passwordChanged": "Password changed successfully",
+            "changeError": "Failed to change password"
+        }
+    },
+    "organizations": {
+        "notFound": "Organization not found",
+        "notFoundDescription": "We couldn't find the organization you're looking for.",
+        "verified": "Verified",
+        "website": "Website",
+        "noDescription": "No description provided.",
+        "openProjects": "Open Projects ({count})",
+        "noOpenProjects": "No open projects currently."
+    },
+    "metadata": {
+        "login": "Sign In | Waqf",
+        "signup": "Sign Up | Waqf",
+        "onboarding": "Welcome | Waqf",
+        "explore": "Explore Projects | Waqf",
+        "search": "Search | Waqf",
+        "dashboard": "Dashboard | Waqf",
+        "dashboardApplications": "My Applications | Waqf",
+        "dashboardProjects": "My Projects | Waqf",
+        "dashboardMessages": "Messages | Waqf",
+        "dashboardNotifications": "Notifications | Waqf",
+        "settingsGeneral": "Settings | Waqf",
+        "settingsProfile": "Edit Profile | Waqf",
+        "admin": "Admin | Waqf",
+        "adminUsers": "User Management | Waqf",
+        "adminProjects": "Project Review | Waqf",
+        "adminFeatured": "Featured Projects | Waqf",
+        "adminReports": "Reports | Waqf",
+        "adminAnalytics": "Analytics | Waqf",
+        "adminCuratedProjects": "Curated Projects | Waqf",
+        "adminNewCuratedProject": "New Curated Project | Waqf",
+        "adminEditCuratedProject": "Edit Curated Project | Waqf",
+        "createProject": "Create Project | Waqf",
+        "editProject": "Edit Project | Waqf",
+        "organization": "Organization | Waqf",
+        "campaigns": "Campaigns | Waqf",
+        "campaignDetail": "Campaign | Waqf",
+        "newCampaign": "Start a Campaign | Waqf",
+        "editCampaign": "Edit Campaign | Waqf",
+        "adminCampaigns": "Campaign Review | Waqf",
+        "dashboardCampaigns": "My Campaigns | Waqf",
+        "dashboardCampaignJoins": "My Joins | Waqf",
+        "privacy": "Privacy Policy | Waqf",
+        "terms": "Terms of Service | Waqf",
+        "contact": "Contact Us | Waqf"
+    },
+    "campaigns": {
+        "title": "Campaigns",
+        "subtitle": "Non-technical people and associations post ideas and gather the team they need.",
+        "browseAll": "Browse campaigns",
+        "startCampaign": "Start a campaign",
+        "noCampaigns": "No campaigns yet",
+        "noCampaignsDescription": "Be the first to share an idea and gather a team.",
+        "viewCampaign": "View campaign",
+        "exploreCampaigns": "Explore Campaigns",
+        "recruiting": "Recruiting",
+        "ready": "Team complete",
+        "completed": "Completed",
+        "cancelled": "Cancelled",
+        "draft": "Draft",
+        "pending": "Pending review",
+        "filters": {
+            "category": "Category",
+            "all": "All",
+            "search": "Search campaigns",
+            "searchPlaceholder": "Search by title, idea, or problem...",
+            "skills": "Skills",
+            "clear": "Clear filters"
+        },
+        "card": {
+            "by": "by",
+            "applicants": "applicants",
+            "rolesFilled": "{filled} of {total} roles filled",
+            "joinCampaign": "Join campaign",
+            "viewDetails": "View details"
+        },
+        "detail": {
+            "breadcrumbs": {
+                "campaigns": "Campaigns"
+            },
+            "about": "About this idea",
+            "problem": "The problem",
+            "outcome": "What success looks like",
+            "rolesHeading": "Roles we're recruiting",
+            "noRoles": "No roles listed yet.",
+            "milestonesHeading": "Milestones",
+            "noMilestones": "No milestones yet.",
+            "joinHeading": "Join the team",
+            "joinSubtitle": "Pick a role and tell us why you'd like to help.",
+            "promotedHeading": "This idea is now a project",
+            "promotedSubtitle": "The team is complete. Continue the work on the project page.",
+            "viewProject": "Open project",
+            "ownerHeading": "About the campaigner",
+            "organizationHeading": "Backed by",
+            "noTeamYet": "No team members yet",
+            "youAreOwner": "You own this campaign",
+            "edit": "Edit campaign",
+            "submit": "Submit for review",
+            "promote": "Promote to project",
+            "promoteHint": "All required roles are filled. Promote to create a project and carry the team over.",
+            "cancel": "Cancel campaign",
+            "reportLabel": "Report this campaign",
+            "viewCount": "{count, plural, =0 {no views} one {# view} other {# views}}"
+        },
+        "join": {
+            "title": "Join this campaign",
+            "pickRole": "Pick a role",
+            "message": "Why do you want to help?",
+            "messagePlaceholder": "Share a short note on what you'd bring to this role...",
+            "portfolio": "Portfolio or GitHub",
+            "hoursPerWeek": "Hours per week",
+            "submit": "Submit application",
+            "submitting": "Submitting...",
+            "submitted": "Application sent",
+            "alreadyJoined": "You have already applied to this role",
+            "roleFull": "This role is full",
+            "roleClosed": "This role is closed",
+            "mustSignIn": "Sign in to join this campaign",
+            "withdraw": "Withdraw",
+            "withdrew": "Withdrawn"
+        },
+        "wizard": {
+            "title": "Start a campaign",
+            "editTitle": "Edit campaign",
+            "step": "Step {current} of {total}",
+            "next": "Next",
+            "previous": "Back",
+            "saveDraft": "Save as draft",
+            "submit": "Submit for review",
+            "saving": "Saving...",
+            "submitting": "Submitting...",
+            "savedDraft": "Draft saved",
+            "submitted": "Campaign submitted for review",
+            "step1": {
+                "title": "The idea",
+                "description": "Tell us what you want to build. Plain language is fine.",
+                "titleLabel": "Campaign title",
+                "titlePlaceholder": "e.g., Map of Quran schools in our region",
+                "pitchLabel": "One-sentence pitch",
+                "pitchPlaceholder": "A single sentence describing the idea.",
+                "problemLabel": "What's the problem?",
+                "problemPlaceholder": "Describe the problem this would solve, in a few sentences.",
+                "outcomeLabel": "What does success look like? (optional)",
+                "outcomePlaceholder": "What would be true once this is shipped?"
+            },
+            "step2": {
+                "title": "Where and who",
+                "description": "Add a country, contact email, and (optionally) an organization to back the campaign.",
+                "country": "Country",
+                "countryPlaceholder": "e.g., Egypt",
+                "contactEmail": "Contact email",
+                "organization": "Organization (optional)",
+                "noOrganization": "No organization",
+                "language": "Working language"
+            },
+            "step3": {
+                "title": "Role title",
+                "description": "Description (optional)",
+                "addRole": "Add another role",
+                "removeRole": "Remove role",
+                "skill": "Skill",
+                "skillPlaceholder": "Search for a skill...",
+                "titlePlaceholder": "e.g., Frontend Engineer",
+                "descriptionPlaceholder": "What this person would do...",
+                "count": "Seats",
+                "seniority": "Seniority",
+                "seniorityOptions": {
+                    "JUNIOR": "Junior",
+                    "MID": "Mid-level",
+                    "SENIOR": "Senior",
+                    "ANY": "Any"
+                },
+                "required": "Required to start",
+                "noRoles": "Add at least one role before submitting."
+            },
+            "step4": {
+                "title": "Timeline and milestones",
+                "description": "Optional. Add a recruitment deadline and a few checkpoints.",
+                "startsAt": "Expected start",
+                "deadline": "Recruitment deadline",
+                "milestones": "Milestones",
+                "addMilestone": "Add milestone",
+                "milestoneTitle": "Milestone title",
+                "milestoneTitlePlaceholder": "e.g., Roles filled",
+                "milestoneDescription": "Description (optional)",
+                "milestoneDescriptionPlaceholder": "What defines this milestone as done?"
+            },
+            "step5": {
+                "title": "Review and submit",
+                "description": "Check the details, then submit for review.",
+                "review": "Review"
+            }
+        },
+        "roles": {
+            "filled": "Filled",
+            "open": "Open",
+            "closed": "Closed",
+            "seniority": "Seniority"
+        },
+        "status": {
+            "DRAFT": "Draft",
+            "PENDING": "Pending review",
+            "RECRUITING": "Recruiting",
+            "READY": "Team complete",
+            "COMPLETED": "Completed",
+            "CANCELLED": "Cancelled"
+        },
+        "errors": {
+            "loadFailed": "Could not load this campaign",
+            "saveFailed": "Could not save the campaign",
+            "joinFailed": "Could not join the campaign",
+            "promoteFailed": "Could not promote the campaign"
+        }
+    },
+    "dashboardCampaigns": {
+        "title": "My campaigns",
+        "subtitle": "Campaigns you have started",
+        "noCampaigns": "No campaigns yet",
+        "noCampaignsDescription": "Start a campaign to gather a team around your idea.",
+        "startCampaign": "Start a campaign",
+        "view": "Open",
+        "viewJoins": "Manage joins",
+        "edit": "Edit",
+        "submissions": "Join requests",
+        "noJoins": "No applications yet",
+        "approve": "Accept",
+        "reject": "Reject",
+        "approved": "Accepted",
+        "rejected": "Rejected",
+        "withdraw": "Withdraw",
+        "withdrawn": "Withdrawn"
+    },
+    "dashboardCampaignJoins": {
+        "title": "My campaign joins",
+        "subtitle": "Campaigns you have signed up to help",
+        "noJoins": "You have not joined any campaign yet",
+        "noJoinsDescription": "Browse campaigns to find one that matches your skills.",
+        "viewCampaign": "View campaign",
+        "withdraw": "Withdraw"
+    },
+    "adminCampaigns": {
+        "title": "Campaign review",
+        "subtitle": "Approve or send back campaign submissions",
+        "noCampaigns": "No campaigns to review",
+        "approve": "Approve",
+        "reject": "Send back",
+        "feedbackLabel": "Feedback (optional)",
+        "feedbackPlaceholder": "Tell the campaigner what to fix...",
+        "approved": "Campaign approved",
+        "rejected": "Campaign sent back",
+        "review": "Review",
+        "joins": "join requests",
+        "statusPending": "Pending",
+        "statusRecruiting": "Recruiting",
+        "statusDraft": "Draft",
+        "statusReady": "Promoted"
+    },
+    "legal": {
+        "privacy": {
+            "title": "Privacy Policy",
+            "updated": "Last updated: 2026",
+            "intro": "Waqf (\"we\", \"us\") is a contribution platform that matches developers with projects that need help. This policy explains what data we collect, why we collect it, and the choices you have.",
+            "sections": [
+                {
+                    "title": "1. Data we collect",
+                    "body": "Account information: name, email address, and a username when you register. Profile information: biography, skills, timezone, and links you choose to add. Contribution data: projects, applications, messages, and other activity on the platform. Technical data: IP address, browser type, and pages visited, collected automatically."
+                },
+                {
+                    "title": "2. How we use your data",
+                    "body": "We use your data to operate the platform: to authenticate you, match you with projects, deliver messages and notifications, moderate content, and improve our services. We do not sell your personal data."
+                },
+                {
+                    "title": "3. What is public",
+                    "body": "Your public profile — name, biography, skills, and portfolio — is visible to other users. Messages between contributors and project owners are visible to the participants. Project and campaign pages are public by design."
+                },
+                {
+                    "title": "4. Sharing with service providers",
+                    "body": "We share limited data with the providers we rely on to run the platform, such as hosting, email delivery, and file storage. These providers are bound by confidentiality and may only process data on our instructions."
+                },
+                {
+                    "title": "5. Data retention",
+                    "body": "We keep your data for as long as your account is active and for a reasonable period afterwards, and delete it sooner when you ask us to or when the law requires it."
+                },
+                {
+                    "title": "6. Your rights",
+                    "body": "You may access, correct, or delete your personal data at any time from your settings, or by contacting us. You may also export your data and close your account."
+                },
+                {
+                    "title": "7. Children",
+                    "body": "The platform is intended for developers aged 16 and over. We do not knowingly collect data from children."
+                },
+                {
+                    "title": "8. Changes to this policy",
+                    "body": "We may update this policy as the platform evolves. Material changes will be announced on the platform or by email."
+                },
+                {
+                    "title": "9. Contact",
+                    "body": "Questions about this policy? Reach us at privacy@waqf.dev."
+                }
+            ]
+        },
+        "terms": {
+            "title": "Terms of Service",
+            "updated": "Last updated: 2026",
+            "intro": "These terms govern your use of the Waqf platform. By creating an account, you agree to them.",
+            "sections": [
+                {
+                    "title": "1. The service",
+                    "body": "Waqf is a contribution platform for developers. It matches people who want to contribute time and skills with project owners who need help — whether the project is open-source, closed, or private."
+                },
+                {
+                    "title": "2. Eligibility",
+                    "body": "You must be at least 16 years old and capable of entering a binding agreement to use the platform."
+                },
+                {
+                    "title": "3. Your account",
+                    "body": "You are responsible for safeguarding your credentials and for everything done with your account. Notify us promptly of any unauthorized use."
+                },
+                {
+                    "title": "4. Your content",
+                    "body": "You retain ownership of the content you post. You grant the platform a license to store, display, and process it in order to operate the service. You are responsible for the accuracy and lawfulness of what you post."
+                },
+                {
+                    "title": "5. Contributions",
+                    "body": "When you contribute to a project, the licensing and ownership terms of that project apply. The platform is not a party to contributor–owner agreements and takes no responsibility for them."
+                },
+                {
+                    "title": "6. Acceptable use",
+                    "body": "You agree not to: post unlawful or infringing content, attempt to access other users' accounts or data, interfere with the platform's operation, or use it to spam, scam, or harass others."
+                },
+                {
+                    "title": "7. Moderation",
+                    "body": "Project owners moderate applications and contributions on their projects. Platform administrators may remove content and suspend accounts that violate these terms."
+                },
+                {
+                    "title": "8. Disclaimers",
+                    "body": "The platform is provided \"as is\" without warranties of any kind, express or implied. We do not guarantee that the service will be uninterrupted or error-free."
+                },
+                {
+                    "title": "9. Limitation of liability",
+                    "body": "To the maximum extent permitted by law, Waqf is not liable for indirect, incidental, or consequential damages arising from your use of the platform."
+                },
+                {
+                    "title": "10. Changes to these terms",
+                    "body": "We may revise these terms. Continued use of the platform after changes take effect constitutes acceptance."
+                },
+                {
+                    "title": "11. Contact",
+                    "body": "Questions about these terms? Reach us at legal@waqf.dev."
+                }
+            ]
+        },
+        "contact": {
+            "title": "Contact Us",
+            "intro": "We would love to hear from you — feedback, questions, or reports of abuse.",
+            "emailLabel": "Email",
+            "emailValue": "support@waqf.dev",
+            "reportLabel": "Report abuse",
+            "reportBody": "To report a project, campaign, or user, use the report button on the content, or email us directly.",
+            "responseNote": "We aim to respond within 48 hours."
+        }
+    },
+    "notFound": {
+        "title": "Page not found",
+        "description": "The page you are looking for does not exist. It may have been moved or deleted.",
+        "backHome": "Back to Home",
+        "exploreProjects": "Explore Projects"
+    },
+    "error": {
+        "title": "Something went wrong",
+        "description": "An unexpected error occurred while loading this page. Please try again.",
+        "retry": "Try Again"
     }
 }

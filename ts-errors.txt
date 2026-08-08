@@ -1,7 +1,0 @@
-.next/types/validator.ts(116,39): error TS2307: Cannot find module '../../src/app/api/auth/[...nextauth]/route.js' or its corresponding type declarations.
-.next/types/validator.ts(125,39): error TS2307: Cannot find module '../../src/app/api/auth/signup/route.js' or its corresponding type declarations.
-src/app/[locale]/profile/[id]/page.tsx(77,37): error TS2353: Object literal may only specify known properties, and 'avatar' does not exist in type '{ name: string; image?: string | null | undefined; role: string; bio?: string | null | undefined; timezone?: string | null | undefined; githubUsername?: string | null | undefined; createdAt: Date; isAvailable?: boolean | undefined; }'.
-src/app/api/projects/recommended/route.ts(108,11): error TS2322: Type '{ id: string; title: string; slug: string; description: string; category: ProjectCategory; language: ProjectLanguage; createdAt: Date; skills: { skillId: number; skillName: string; isRequired: boolean; }[]; owner: { ...; }; }[]' is not assignable to type 'ProjectMatchData[]'.
-  Type '{ id: string; title: string; slug: string; description: string; category: $Enums.ProjectCategory; language: $Enums.ProjectLanguage; createdAt: Date; skills: { skillId: number; skillName: string; isRequired: boolean; }[]; owner: { ...; }; }' is not assignable to type 'ProjectMatchData'.
-    Types of property 'owner' are incompatible.
-      Property 'image' is missing in type '{ id: string; name: string; avatar: string | null; }' but required in type '{ id: string; name: string; image: string | null; }'.

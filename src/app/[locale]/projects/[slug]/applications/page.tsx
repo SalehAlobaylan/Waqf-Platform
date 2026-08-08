@@ -25,12 +25,11 @@ export async function generateMetadata({ params }: ProjectApplicationsPageProps)
 }
 
 export default async function ProjectApplicationsPage({ params }: ProjectApplicationsPageProps) {
+    const { locale, slug } = await params;
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user?.id) {
-        redirect("/login");
+        redirect(`/${locale}/login`);
     }
-
-    const { locale, slug } = await params;
 
     // Get project with skills for matching
     const project = await prisma.project.findUnique({
@@ -68,6 +67,7 @@ export default async function ProjectApplicationsPage({ params }: ProjectApplica
             contributor: {
                 select: {
                     id: true,
+                    username: true,
                     name: true,
                     email: true,
                     image: true,

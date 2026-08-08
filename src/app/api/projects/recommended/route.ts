@@ -109,11 +109,13 @@ export async function GET(request: NextRequest) {
         skillName: ps.skill.name,
         isRequired: ps.isRequired,
       })),
-      owner: {
-        id: p.owner.id,
-        name: p.owner.name,
-        image: p.owner.image,
-      },
+      owner: p.owner
+        ? {
+            id: p.owner.id,
+            name: p.owner.name,
+            image: p.owner.image,
+          }
+        : null,
     }));
 
     // Get recommendations with scoring

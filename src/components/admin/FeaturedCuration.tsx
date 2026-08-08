@@ -11,7 +11,8 @@ interface FeaturedProject {
     category: string;
     featured: boolean;
     featuredUntil: string | null;
-    owner: { id: string; name: string };
+    source?: string;
+    owner: { id: string; name: string } | null;
 }
 
 interface SearchResult {
@@ -19,7 +20,8 @@ interface SearchResult {
     title: string;
     slug: string;
     category: string;
-    owner: { id: string; name: string };
+    source?: string;
+    owner: { id: string; name: string } | null;
 }
 
 export function FeaturedCuration() {
@@ -140,7 +142,9 @@ export function FeaturedCuration() {
                                 <span className="text-lg">{categoryEmojis[project.category] || "📦"}</span>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium text-secondary-900 truncate">{project.title}</p>
-                                    <p className="text-xs text-secondary-400">{project.owner.name}</p>
+                                    <p className="text-xs text-secondary-400">
+                                        {project.owner?.name ?? (project.source === "EXTERNAL" ? "Curated" : "—")}
+                                    </p>
                                 </div>
                                 <Star className="w-4 h-4 text-amber-400 shrink-0" />
                             </button>
@@ -169,7 +173,7 @@ export function FeaturedCuration() {
                                 <div className="flex-1 min-w-0">
                                     <p className="font-medium text-secondary-900 truncate">{project.title}</p>
                                     <div className="flex items-center gap-2 text-xs text-secondary-400 mt-0.5">
-                                        <span>{project.owner.name}</span>
+                                        <span>{project.owner?.name ?? (project.source === "EXTERNAL" ? "Curated" : "—")}</span>
                                         {project.featuredUntil && (
                                             <>
                                                 <span>•</span>

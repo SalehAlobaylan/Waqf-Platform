@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 import { reportUpdateSchema, routeIdParamSchema } from "@/lib/validation/schemas";
 import { parseBody, parseParams } from "@/lib/validation/parse";
 import { makeValidationError } from "@/lib/validation/errors";
+import { requireAdmin } from "@/lib/auth-helpers";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -16,10 +15,8 @@ interface RouteParams {
  */
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
     try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id || session.user.role !== "ADMIN") {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-        }
+        const { admin, response } = await requireAdmin();
+        if (response) return response;
 
         const parsedParams = parseParams(await params, routeIdParamSchema);
         if (!parsedParams.success) {
@@ -46,7 +43,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             where: { id },
             data: {
                 status,
-                resolvedBy: session.user.id,
+                resolvedBy: admin!.id,
                 resolvedAt: new Date(),
             },
         });

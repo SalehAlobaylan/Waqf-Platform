@@ -1,32 +1,28 @@
 import { test, expect } from "@playwright/test";
+import { signInAs, SEEDED_USERS } from "./auth-helpers";
+
+const OMAR_USERNAME = "amr-alfarsy";
 
 test.describe("Profile Flow", () => {
   test.describe("View Own Profile", () => {
     test("should display own profile page", async ({ page }) => {
-      await page.goto("/en/login");
-      await page.fill('input[type="email"]', "test@example.com");
-      await page.fill('input[type="password"]', "TestPass123");
-      await page.click('button[type="submit"]');
-      await page.waitForURL("/en/dashboard", { timeout: 15000 });
-      
+      await signInAs(page, SEEDED_USERS.omar);
+      await page.goto("/en");
+
       // Click on profile in user menu
-      await page.click("button:has(.user-menu-trigger)");
+      await page.click("button:has(svg.lucide-chevron-down)");
       await page.click('a:has-text("Profile")');
-      
+
       await page.waitForURL(/\/profile\//);
       await expect(page.locator("h1")).toBeVisible();
     });
 
     test("should display profile information", async ({ page }) => {
-      await page.goto("/en/login");
-      await page.fill('input[type="email"]', "test@example.com");
-      await page.fill('input[type="password"]', "TestPass123");
-      await page.click('button[type="submit"]');
-      await page.waitForURL("/en/dashboard", { timeout: 15000 });
-      
-      // Navigate to profile
-      await page.goto("/en/profile/test-user-id");
-      
+      await signInAs(page, SEEDED_USERS.omar);
+
+      // Navigate to profile via real username slug (id fallback also works)
+      await page.goto(`/en/profile/${OMAR_USERNAME}`);
+
       await page.waitForLoadState("networkidle");
       // Profile should show name and details
       const content = await page.content();
@@ -34,29 +30,21 @@ test.describe("Profile Flow", () => {
     });
 
     test("should display skills section", async ({ page }) => {
-      await page.goto("/en/login");
-      await page.fill('input[type="email"]', "test@example.com");
-      await page.fill('input[type="password"]', "TestPass123");
-      await page.click('button[type="submit"]');
-      await page.waitForURL("/en/dashboard", { timeout: 15000 });
-      
-      await page.goto("/en/profile/test-user-id");
+      await signInAs(page, SEEDED_USERS.omar);
+
+      await page.goto(`/en/profile/${OMAR_USERNAME}`);
       await page.waitForLoadState("networkidle");
-      
+
       // Should show skills section
       await expect(page.locator("text=Skills")).toBeVisible();
     });
 
     test("should display stats (projects, contributions)", async ({ page }) => {
-      await page.goto("/en/login");
-      await page.fill('input[type="email"]', "test@example.com");
-      await page.fill('input[type="password"]', "TestPass123");
-      await page.click('button[type="submit"]');
-      await page.waitForURL("/en/dashboard", { timeout: 15000 });
-      
-      await page.goto("/en/profile/test-user-id");
+      await signInAs(page, SEEDED_USERS.omar);
+
+      await page.goto(`/en/profile/${OMAR_USERNAME}`);
       await page.waitForLoadState("networkidle");
-      
+
       // Should show stats
       const statsSection = page.locator("text=Projects, text=Contributions");
     });
@@ -95,28 +83,21 @@ test.describe("Profile Flow", () => {
 
   test.describe("Edit Profile", () => {
     test("should have edit profile option for own profile", async ({ page }) => {
-      await page.goto("/en/login");
-      await page.fill('input[type="email"]', "test@example.com");
-      await page.fill('input[type="password"]', "TestPass123");
-      await page.click('button[type="submit"]');
-      await page.waitForURL("/en/dashboard", { timeout: 15000 });
-      
-      // Navigate to own profile via URL
-      await page.goto("/en/profile/test-user-id");
-      
+      await signInAs(page, SEEDED_USERS.omar);
+
+      // Navigate to own profile via real username slug
+      await page.goto(`/en/profile/${OMAR_USERNAME}`);
+
       // Should not show edit button (might be in settings)
     });
 
     test("should navigate to settings from profile", async ({ page }) => {
-      await page.goto("/en/login");
-      await page.fill('input[type="email"]', "test@example.com");
-      await page.fill('input[type="password"]', "TestPass123");
-      await page.click('button[type="submit"]');
-      await page.waitForURL("/en/dashboard", { timeout: 15000 });
-      
+      await signInAs(page, SEEDED_USERS.omar);
+      await page.goto("/en");
+
       // Click on user menu
-      await page.click("button:has(.user-menu-trigger), button:has-text('Test')");
-      
+      await page.click("button:has(svg.lucide-chevron-down)");
+
       // Look for settings link
       const settingsLink = page.locator('a:has-text("Settings")');
       if (await settingsLink.isVisible()) {
@@ -127,10 +108,10 @@ test.describe("Profile Flow", () => {
 
   test.describe("Access Control", () => {
     test("should show 404 for non-existent profile", async ({ page }) => {
-      await page.goto("/en/profile/non-existent-id-12345");
-      
-      // Should show not found
-      await expect(page.locator("text=Not Found, text=404")).toBeVisible();
+      await page.goto("/en/profile/non-existent-user-12345");
+
+      // Should show the translated not-found page
+      await expect(page.getByText(/page not found|الصفحة غير موجودة/i).first()).toBeVisible();
     });
   });
 });

@@ -1,20 +1,26 @@
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import {
-    Bell, CheckCheck, MessageSquare, UserPlus,
+    Bell, MessageSquare, UserPlus,
     FileCheck, FileX, ArrowLeft, Inbox
 } from "lucide-react";
+import { MarkAllReadButton } from "@/components/notifications/MarkAllReadButton";
 
 interface NotificationsPageProps {
     params: Promise<{ locale: string }>;
 }
 
-export const metadata = {
-    title: "Notifications | Waqf",
-};
+export async function generateMetadata({ params }: NotificationsPageProps) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "metadata" });
+    return {
+        title: t("dashboardNotifications"),
+    };
+}
 
 const typeIcons: Record<string, React.ElementType> = {
     NEW_APPLICATION: UserPlus,
@@ -33,12 +39,14 @@ const typeStyles: Record<string, string> = {
 };
 
 export default async function NotificationsPage({ params }: NotificationsPageProps) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "dashboard.notifications" });
+    const tCommon = await getTranslations({ locale, namespace: "common" });
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user?.id) {
-        redirect("/login");
+        redirect(`/${locale}/login`);
     }
 
-    const { locale } = await params;
     const isRtl = locale === "ar";
 
     const notifications = await prisma.notification.findMany({
@@ -52,42 +60,31 @@ export default async function NotificationsPage({ params }: NotificationsPagePro
     return (
         <div className="min-h-screen bg-secondary-50">
             <div className="container max-w-3xl mx-auto px-4 py-8">
-                {/* Back */}
                 <Link
                     href={`/${locale}/dashboard`}
                     className="inline-flex items-center gap-2 text-secondary-500 hover:text-secondary-700 mb-6 transition-colors"
                 >
-                    <ArrowLeft className="w-4 h-4" />
-                    {isRtl ? "العودة" : "Back"}
+                    <ArrowLeft className="w-4 h-4 rtl:rotate-180" />
+                    {tCommon("back")}
                 </Link>
 
-                {/* Header */}
                 <div className="flex items-center justify-between mb-6">
                     <div>
                         <h1 className="text-2xl font-bold text-secondary-900 flex items-center gap-3">
                             <Bell className="w-7 h-7 text-primary-600" />
-                            {isRtl ? "الإشعارات" : "Notifications"}
+                            {t("title")}
                         </h1>
                         {unreadCount > 0 && (
                             <p className="text-sm text-secondary-500 mt-1">
-                                {isRtl ? `${unreadCount} غير مقروءة` : `${unreadCount} unread`}
+                                {t("unread", { count: unreadCount })}
                             </p>
                         )}
                     </div>
                     {unreadCount > 0 && (
-                        <form action={`/api/notifications`} method="POST">
-                            <button
-                                type="button"
-                                className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-primary-600 bg-primary-50 rounded-xl hover:bg-primary-100 transition-colors"
-                            >
-                                <CheckCheck className="w-4 h-4" />
-                                {isRtl ? "قراءة الكل" : "Mark all read"}
-                            </button>
-                        </form>
+                        <MarkAllReadButton label={t("markAllRead")} />
                     )}
                 </div>
 
-                {/* Notifications List */}
                 {notifications.length > 0 ? (
                     <div className="bg-white rounded-2xl border border-secondary-100 shadow-sm overflow-hidden divide-y divide-secondary-50">
                         {notifications.map(notif => {
@@ -100,7 +97,7 @@ export default async function NotificationsPage({ params }: NotificationsPagePro
                                     className={`flex gap-4 p-5 transition-colors ${!notif.read ? "bg-primary-50/20" : "hover:bg-secondary-50/50"}`}
                                 >
                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${iconStyle}`}>
-                                        <Icon className="w-4.5 h-4.5" />
+                                        <Icon className="w-5 h-5" />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className={`text-sm ${!notif.read ? "font-semibold text-secondary-900" : "text-secondary-700"}`}>
@@ -121,7 +118,7 @@ export default async function NotificationsPage({ params }: NotificationsPagePro
                                                     href={`/${locale}${notif.link}`}
                                                     className="text-[10px] text-primary-600 hover:underline font-medium"
                                                 >
-                                                    {isRtl ? "عرض →" : "View →"}
+                                                    {t("view")}
                                                 </Link>
                                             )}
                                         </div>
@@ -139,7 +136,7 @@ export default async function NotificationsPage({ params }: NotificationsPagePro
                             <Inbox className="w-8 h-8 text-secondary-400" />
                         </div>
                         <h3 className="text-lg font-bold text-secondary-900 mb-2">
-                            {isRtl ? "لا توجد إشعارات" : "No notifications yet"}
+                            {t("noNotifications")}
                         </h3>
                         <p className="text-secondary-500 max-w-md mx-auto">
                             {isRtl

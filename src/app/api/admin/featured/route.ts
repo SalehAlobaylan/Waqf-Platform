@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 import { adminFeaturedUpdateSchema } from "@/lib/validation/schemas";
 import { parseBody } from "@/lib/validation/parse";
 import { makeValidationError } from "@/lib/validation/errors";
+import { requireAdmin } from "@/lib/auth-helpers";
 
 /**
  * GET /api/admin/featured
@@ -12,10 +11,8 @@ import { makeValidationError } from "@/lib/validation/errors";
  */
 export async function GET() {
     try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id || session.user.role !== "ADMIN") {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-        }
+        const { admin, response } = await requireAdmin();
+        if (response) return response;
 
         const featured = await prisma.project.findMany({
             where: { featured: true },
@@ -26,6 +23,7 @@ export async function GET() {
                 category: true,
                 featured: true,
                 featuredUntil: true,
+                source: true,
                 owner: { select: { id: true, name: true } },
             },
             orderBy: { featuredUntil: "desc" },
@@ -44,10 +42,8 @@ export async function GET() {
  */
 export async function PUT(request: NextRequest) {
     try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id || session.user.role !== "ADMIN") {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-        }
+        const { admin, response } = await requireAdmin();
+        if (response) return response;
 
         const parsedBody = await parseBody(request, adminFeaturedUpdateSchema);
         if (!parsedBody.success) {

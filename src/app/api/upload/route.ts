@@ -1,15 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
+import { UTApi } from "uploadthing/server";
 import { makeValidationError } from "@/lib/validation/errors";
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
+
+const utapi = new UTApi();
 
 export async function POST(request: NextRequest) {
     try {
         const session = await auth.api.getSession({ headers: await headers() });
         if (!session?.user?.id) {
             return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+        }
+
+        const today = new Date().toISOString().slice(0, 10);
+        if (!checkRateLimit(request, "upload", { limit: 20, windowMs: 24 * 60 * 60 * 1000 }, `${session.user.id}:${today}`)) {
+            return rateLimitedResponse();
         }
 
         const formData = await request.formData();
@@ -39,23 +46,16 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Create uploads directory if it doesn't exist
-        const uploadsDir = path.join(process.cwd(), "public", "uploads");
-        await mkdir(uploadsDir, { recursive: true });
+        const [upload] = await utapi.uploadFiles([file]);
 
-        // Generate unique filename
-        const ext = file.name.split(".").pop() || "jpg";
-        const filename = `${session.user.id}-${Date.now()}.${ext}`;
-        const filepath = path.join(uploadsDir, filename);
+        if (upload.error) {
+            return NextResponse.json(
+                { error: "Failed to upload file" },
+                { status: 500 }
+            );
+        }
 
-        // Write file
-        const bytes = await file.arrayBuffer();
-        const buffer = Buffer.from(bytes);
-        await writeFile(filepath, buffer);
-
-        const url = `/uploads/${filename}`;
-
-        return NextResponse.json({ url }, { status: 201 });
+        return NextResponse.json({ url: upload.data.url }, { status: 201 });
     } catch (error) {
         console.error("[API] Upload error:", error);
         return NextResponse.json({ error: "Failed to upload file" }, { status: 500 });

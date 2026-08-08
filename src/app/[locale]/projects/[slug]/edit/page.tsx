@@ -2,6 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { getTranslations } from "next-intl/server";
 import { ProjectForm } from "@/components/projects/ProjectForm";
 
 interface Props {
@@ -9,12 +10,9 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props) {
-    const { slug } = await params;
-    const project = await prisma.project.findUnique({
-        where: { slug },
-        select: { title: true },
-    });
-    return { title: project ? `Edit ${project.title} | Waqf` : "Edit Project | Waqf" };
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "metadata" });
+    return { title: t("editProject") };
 }
 
 export default async function EditProjectPage({ params }: Props) {

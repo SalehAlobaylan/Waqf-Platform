@@ -71,7 +71,7 @@ export interface ProjectMatchData {
     id: string;
     name: string;
     image: string | null;
-  };
+  } | null;
 }
 
 // ============================================

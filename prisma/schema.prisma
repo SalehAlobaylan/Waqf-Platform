@@ -54,18 +54,53 @@ enum ProjectLanguage {
   BOTH
 }
 
+enum CampaignStatus {
+  DRAFT
+  PENDING
+  RECRUITING
+  READY
+  COMPLETED
+  CANCELLED
+}
+
+enum CampaignRoleStatus {
+  OPEN
+  FILLED
+  CLOSED
+}
+
+enum CampaignJoinStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum CampaignSeniority {
+  JUNIOR
+  MID
+  SENIOR
+  ANY
+}
+
+enum ProjectSource {
+  INTERNAL
+  EXTERNAL
+}
+
 // ============ BETTER AUTH MODELS ============
 
 model User {
-  id                 String               @id @default(cuid())
-  name               String
-  email              String               @unique
-  emailVerified      Boolean              @default(false)
-  image              String?
-  role               String               @default("USER")
-  preferredLanguage  String               @default("ar")
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
+  id                String   @id @default(cuid())
+  name              String
+  username          String?  @unique
+  email             String   @unique
+  emailVerified     Boolean  @default(false)
+  image             String?
+  role              UserRole @default(USER)
+  preferredLanguage String   @default("ar")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   // App relations
   contributorProfile ContributorProfile?
@@ -74,13 +109,18 @@ model User {
   applications       Application[]
   sentMessages       Message[]
   notifications      Notification[]
+  campaigns          Campaign[]
+  campaignJoins      CampaignJoin[]
+
+  // Admin-curated projects this user has added
+  curatedProjects Project[] @relation("ProjectCuratedBy")
 
   // Better Auth relations
-  sessions           Session[]
-  accounts           Account[]
+  sessions Session[]
+  accounts Account[]
 
   // Reports
-  reportsSubmitted   Report[] @relation("ReportsSubmitted")
+  reportsSubmitted Report[] @relation("ReportsSubmitted")
 }
 
 model Session {
@@ -162,6 +202,7 @@ model Organization {
   whatsapp    String?
   verified    Boolean   @default(false)
   projects    Project[]
+  campaigns   Campaign[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 }
@@ -174,6 +215,7 @@ model Skill {
   aliases           String[]           @default([])
   contributorSkills ContributorSkill[]
   projectSkills     ProjectSkill[]
+  campaignRoles     CampaignRole[]
 }
 
 model ContributorSkill {
@@ -202,8 +244,8 @@ model PortfolioItem {
 
 model Project {
   id             String          @id @default(cuid())
-  ownerId        String
-  owner          User            @relation(fields: [ownerId], references: [id])
+  ownerId        String?
+  owner          User?           @relation(fields: [ownerId], references: [id], onDelete: SetNull)
   organizationId String?
   organization   Organization?   @relation(fields: [organizationId], references: [id])
   title          String
@@ -228,8 +270,22 @@ model Project {
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 
+  // Project origin: INTERNAL = on-platform owner, EXTERNAL = admin-curated on behalf of a non-onboarded owner
+  source             ProjectSource @default(INTERNAL)
+  externalOwnerName  String?
+  externalOwnerContact String?
+  externalUrl        String?
+  curatorNotes       String?
+  addedByAdminId     String?
+  addedByAdmin       User?         @relation("ProjectCuratedBy", fields: [addedByAdminId], references: [id], onDelete: SetNull)
+
+  promotedFromCampaign Campaign? @relation("CampaignToProject")
+
+  search_vector Unsupported("tsvector")?
+
   @@index([status, category])
   @@index([featured, featuredUntil])
+  @@index([source, status])
 }
 
 model ProjectSkill {
@@ -270,6 +326,9 @@ model Message {
   content       String
   readAt        DateTime?
   createdAt     DateTime    @default(now())
+
+  @@index([applicationId])
+  @@index([senderId])
 }
 
 model Notification {
@@ -297,7 +356,7 @@ model Report {
   id         String       @id @default(cuid())
   reporterId String
   reporter   User         @relation("ReportsSubmitted", fields: [reporterId], references: [id])
-  targetType String       // "PROJECT" | "USER" | "APPLICATION"
+  targetType String // "PROJECT" | "USER" | "APPLICATION"
   targetId   String
   reason     String
   details    String?
@@ -308,4 +367,93 @@ model Report {
 
   @@index([targetType, targetId])
   @@index([status])
+}
+
+// ============ CAMPAIGNS ============
+
+model Campaign {
+  id                  String           @id @default(cuid())
+  ownerId             String
+  owner               User             @relation(fields: [ownerId], references: [id])
+  organizationId      String?
+  organization        Organization?    @relation(fields: [organizationId], references: [id])
+  title               String
+  slug                String           @unique
+  pitch               String
+  problem             String
+  outcome             String?
+  category            ProjectCategory
+  language            ProjectLanguage  @default(BOTH)
+  country             String?
+  status              CampaignStatus   @default(DRAFT)
+  startsAt            DateTime?
+  recruitmentDeadline DateTime?
+  contactEmail        String?
+  coverImage          String?
+  tags                String[]         @default([])
+  viewCount           Int              @default(0)
+  promotedProjectId   String?          @unique
+  promotedProject     Project?         @relation("CampaignToProject", fields: [promotedProjectId], references: [id])
+  adminFeedback       String?
+  roles               CampaignRole[]
+  joins               CampaignJoin[]
+  milestones          CampaignMilestone[]
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  @@index([status, category])
+  @@index([ownerId])
+}
+
+model CampaignRole {
+  id          String              @id @default(cuid())
+  campaignId  String
+  campaign    Campaign            @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  skillId     Int
+  skill       Skill               @relation(fields: [skillId], references: [id])
+  title       String
+  description String?
+  count       Int
+  filledCount Int                 @default(0)
+  seniority   CampaignSeniority   @default(ANY)
+  isRequired  Boolean             @default(true)
+  status      CampaignRoleStatus  @default(OPEN)
+  joins       CampaignJoin[]
+  createdAt   DateTime            @default(now())
+
+  @@index([campaignId])
+}
+
+model CampaignJoin {
+  id             String              @id @default(cuid())
+  campaignId     String
+  campaign       Campaign            @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaignRoleId String
+  role           CampaignRole        @relation(fields: [campaignRoleId], references: [id], onDelete: Cascade)
+  contributorId  String
+  contributor    User                @relation(fields: [contributorId], references: [id])
+  message        String?
+  portfolioUrl   String?
+  hoursPerWeek   Int?
+  status         CampaignJoinStatus  @default(PENDING)
+  decidedAt      DateTime?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  @@unique([campaignRoleId, contributorId])
+  @@index([campaignId, status])
+}
+
+model CampaignMilestone {
+  id          String    @id @default(cuid())
+  campaignId  String
+  campaign    Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  title       String
+  description String?
+  order       Int       @default(0)
+  isDone      Boolean   @default(false)
+  doneAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([campaignId, order])
 }

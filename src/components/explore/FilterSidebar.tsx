@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { ProjectCategory } from "@prisma/client";
 import { X, Package, Code, Globe, Calendar } from "lucide-react";
 
@@ -20,26 +19,23 @@ const categories: { value: ProjectCategory; label: { en: string; ar: string } }[
     { value: "QURAN", label: { en: "Quran Apps", ar: "تطبيقات القرآن" } },
     { value: "PRAYER", label: { en: "Prayer & Salah", ar: "الصلاة" } },
     { value: "CHARITY", label: { en: "Charity & Zakat", ar: "الصدقات والزكاة" } },
-    { value: "EDUCATION", label: { en: "Islamic Education", ar: "التعليم الإسلامي" } },
+    { value: "EDUCATION", label: { en: "Education", ar: "التعليم" } },
     { value: "COMMUNITY", label: { en: "Community", ar: "المجتمع" } },
     { value: "TOOLS", label: { en: "Tools & Utilities", ar: "الأدوات" } },
 ];
 
 const timeCommitments = [
-    { value: "1-5", label: { en: "< 2 hrs/week", ar: "أقل من ٢ ساعة/أسبوع" } },
-    { value: "one-time", label: { en: "One-time task", ar: "مهمة واحدة" } },
+    { value: "1-5", label: { en: "Up to 5 hrs/week", ar: "حتى ٥ ساعات/أسبوع" } },
     { value: "5-10", label: { en: "5-10 hours/week", ar: "٥-١٠ ساعات/أسبوع" } },
     { value: "10+", label: { en: "10+ hours/week", ar: "+١٠ ساعة/أسبوع" } },
 ];
 
-const projectTypes = [
-    { value: "verified", label: { en: "Verified Organization", ar: "منظمة موثقة" } },
-    { value: "community", label: { en: "Community Driven", ar: "مبادرة مجتمعية" } },
+const languages = [
+    { value: "ENGLISH", label: { en: "English", ar: "الإنجليزية" } },
+    { value: "ARABIC", label: { en: "Arabic", ar: "العربية" } },
 ];
 
 export function FilterSidebar({ filters, onFilterChange, skills, locale = "en" }: FilterSidebarProps) {
-    const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
-
     const updateFilter = (key: keyof FilterSidebarProps["filters"], value: string | string[] | undefined) => {
         onFilterChange({ ...filters, [key]: value });
     };
@@ -53,10 +49,9 @@ export function FilterSidebar({ filters, onFilterChange, skills, locale = "en" }
 
     const clearFilters = () => {
         onFilterChange({ skills: [] });
-        setSelectedTypes([]);
     };
 
-    const hasFilters = filters.category || filters.skills.length > 0 || filters.language || filters.timeCommitment || selectedTypes.length > 0;
+    const hasFilters = filters.category || filters.skills.length > 0 || filters.language || filters.timeCommitment;
 
     return (
         <aside className="w-72 hidden lg:flex flex-col border-r border-waqf-border bg-white h-[calc(100vh-65px)] sticky top-[65px] overflow-y-auto">
@@ -124,29 +119,25 @@ export function FilterSidebar({ filters, onFilterChange, skills, locale = "en" }
                     </div>
                 </div>
 
-                {/* Project Type */}
+                {/* Language Filter */}
                 <div className="mb-8">
                     <h3 className="text-sm font-semibold text-secondary-900 mb-3 flex items-center gap-2">
                         <Globe className="w-4 h-4 text-waqf-muted" />
-                        {locale === "ar" ? "نوع المشروع" : "Project Type"}
+                        {locale === "ar" ? "اللغة" : "Language"}
                     </h3>
                     <div className="space-y-2">
-                        {projectTypes.map((type) => (
-                            <label key={type.value} className="flex items-center gap-3 cursor-pointer group">
+                        {languages.map((lang) => (
+                            <label key={lang.value} className="flex items-center gap-3 cursor-pointer group">
                                 <input
                                     type="checkbox"
                                     className="w-4 h-4 rounded border-secondary-300 text-primary-600 focus:ring-primary-600"
-                                    checked={selectedTypes.includes(type.value)}
-                                    onChange={(e) => {
-                                        if (e.target.checked) {
-                                            setSelectedTypes([...selectedTypes, type.value]);
-                                        } else {
-                                            setSelectedTypes(selectedTypes.filter((t) => t !== type.value));
-                                        }
-                                    }}
+                                    checked={filters.language === lang.value}
+                                    onChange={() =>
+                                        updateFilter("language", filters.language === lang.value ? undefined : lang.value)
+                                    }
                                 />
                                 <span className="text-sm text-secondary-600 group-hover:text-primary-600 transition-colors">
-                                    {type.label[locale === "ar" ? "ar" : "en"]}
+                                    {lang.label[locale === "ar" ? "ar" : "en"]}
                                 </span>
                             </label>
                         ))}

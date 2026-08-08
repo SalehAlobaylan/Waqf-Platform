@@ -61,8 +61,10 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
         if (action === "approve") {
             updateData.status = "OPEN";
+            updateData.adminFeedback = null;
         } else if (action === "reject") {
-            updateData.status = "CANCELLED";
+            updateData.status = "DRAFT";
+            updateData.adminFeedback = feedback || null;
         } else if (action === "feature") {
             updateData.featured = true;
         } else if (action === "unfeature") {
@@ -84,14 +86,14 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             data: updateData,
         });
 
-        // Create notification for project owner
-        if (action === "approve" || action === "reject") {
+        // Create notification for project owner (skip for ownerless external projects)
+        if ((action === "approve" || action === "reject") && project.ownerId) {
             await prisma.notification.create({
                 data: {
                     userId: project.ownerId,
                     type: action === "approve" ? "PROJECT_APPROVED" : "PROJECT_REJECTED",
                     title: action === "approve" ? "Project Approved" : "Project Rejected",
-                    content: feedback || (action === "approve" 
+                    content: feedback || (action === "approve"
                         ? "Your project has been approved and is now visible to contributors."
                         : "Your project was not approved. Please review the feedback and resubmit."),
                     link: `/projects/${project.slug}`,

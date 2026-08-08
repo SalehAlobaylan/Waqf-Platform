@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import {
     CheckCircle2,
     XCircle,
@@ -13,7 +14,8 @@ import {
     Filter,
     Search,
     AlertCircle,
-    Loader2
+    Loader2,
+    X
 } from "lucide-react";
 
 interface Project {
@@ -30,7 +32,7 @@ interface Project {
         name: string;
         email: string;
         image: string | null;
-    };
+    } | null;
     skills: Array<{
         skill: { name: string };
     }>;
@@ -63,6 +65,9 @@ export function ProjectReviewQueue({ locale }: ProjectReviewQueueProps) {
     } | null>(null);
     const [feedback, setFeedback] = useState("");
 
+    const t = useTranslations("admin");
+    const tCommon = useTranslations("common");
+    const tProjects = useTranslations("projects");
     const isAr = locale === "ar";
 
     const fetchProjects = useCallback(async () => {
@@ -93,6 +98,18 @@ export function ProjectReviewQueue({ locale }: ProjectReviewQueueProps) {
     useEffect(() => {
         fetchProjects();
     }, [fetchProjects]);
+
+    useEffect(() => {
+        if (!feedbackModal) return;
+        const handleKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape") {
+                setFeedbackModal(null);
+                setFeedback("");
+            }
+        };
+        document.addEventListener("keydown", handleKey);
+        return () => document.removeEventListener("keydown", handleKey);
+    }, [feedbackModal]);
 
     const handleAction = async (projectId: string, action: string, extraData?: Record<string, unknown>) => {
         try {
@@ -138,17 +155,17 @@ export function ProjectReviewQueue({ locale }: ProjectReviewQueueProps) {
 
     const statusOptions = [
         { value: "", label: isAr ? "الكل" : "All" },
-        { value: "PENDING", label: isAr ? "قيد المراجعة" : "Pending" },
-        { value: "OPEN", label: isAr ? "مفتوح" : "Open" },
-        { value: "DRAFT", label: isAr ? "مسودة" : "Draft" },
-        { value: "IN_PROGRESS", label: isAr ? "قيد التنفيذ" : "In Progress" },
-        { value: "COMPLETED", label: isAr ? "مكتمل" : "Completed" },
-        { value: "CANCELLED", label: isAr ? "ملغي" : "Cancelled" },
+        { value: "PENDING", label: tProjects("statusPending") },
+        { value: "OPEN", label: tProjects("statusOpen") },
+        { value: "DRAFT", label: tProjects("statusDraft") },
+        { value: "IN_PROGRESS", label: tProjects("statusInProgress") },
+        { value: "COMPLETED", label: tProjects("statusCompleted") },
+        { value: "CANCELLED", label: tProjects("statusCancelled") },
     ];
 
     const filteredProjects = projects.filter(project =>
         project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        project.owner.name.toLowerCase().includes(searchQuery.toLowerCase())
+        (project.owner?.name.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
     );
 
     return (
@@ -156,7 +173,7 @@ export function ProjectReviewQueue({ locale }: ProjectReviewQueueProps) {
             {/* Header */}
             <div>
                 <h1 className="text-2xl font-bold text-secondary-900">
-                    {isAr ? "إدارة المشاريع" : "Project Management"}
+                    {t("projects")}
                 </h1>
                 <p className="text-secondary-500 mt-1">
                     {isAr ? "مراجعة وإدارة جميع المشاريع" : "Review and manage all projects"}
@@ -205,7 +222,7 @@ export function ProjectReviewQueue({ locale }: ProjectReviewQueueProps) {
                 <div className="text-center py-12 bg-white rounded-xl border border-secondary-200">
                     <AlertCircle className="w-12 h-12 text-secondary-300 mx-auto mb-4" />
                     <p className="text-secondary-600">
-                        {isAr ? "لا توجد مشاريع" : "No projects found"}
+                        {t("noProjects")}
                     </p>
                 </div>
             ) : (
@@ -234,7 +251,7 @@ export function ProjectReviewQueue({ locale }: ProjectReviewQueueProps) {
                                         {project.description}
                                     </p>
                                     <div className="flex items-center gap-4 text-xs text-secondary-500">
-                                        <span>{isAr ? "المالك:" : "Owner:"} {project.owner.name}</span>
+                                        <span>{isAr ? "المالك:" : "Owner:"} {project.owner?.name ?? "—"}</span>
                                         <span>{project.category}</span>
                                         <span>{project._count.applications} {isAr ? "طلب" : "applications"}</span>
                                         <span>{new Date(project.createdAt).toLocaleDateString()}</span>
@@ -263,7 +280,7 @@ export function ProjectReviewQueue({ locale }: ProjectReviewQueueProps) {
                                                 className="flex items-center gap-1 px-3 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors disabled:opacity-50"
                                             >
                                                 <CheckCircle2 className="w-4 h-4" />
-                                                {isAr ? "موافقة" : "Approve"}
+                                                {t("approve")}
                                             </button>
                                             <button
                                                 onClick={() => setFeedbackModal({ projectId: project.id, action: "reject" })}
@@ -271,7 +288,7 @@ export function ProjectReviewQueue({ locale }: ProjectReviewQueueProps) {
                                                 className="flex items-center gap-1 px-3 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors disabled:opacity-50"
                                             >
                                                 <XCircle className="w-4 h-4" />
-                                                {isAr ? "رفض" : "Reject"}
+                                                {t("reject")}
                                             </button>
                                         </>
                                     )}
@@ -287,12 +304,12 @@ export function ProjectReviewQueue({ locale }: ProjectReviewQueueProps) {
                                         {project.featured ? (
                                             <>
                                                 <StarOff className="w-4 h-4" />
-                                                {isAr ? "إلغاء التمييز" : "Unfeature"}
+                                                {t("unfeature")}
                                             </>
                                         ) : (
                                             <>
                                                 <Star className="w-4 h-4" />
-                                                {isAr ? "تمييز" : "Feature"}
+                                                {t("feature")}
                                             </>
                                         )}
                                     </button>
@@ -309,6 +326,7 @@ export function ProjectReviewQueue({ locale }: ProjectReviewQueueProps) {
                                     <button
                                         onClick={() => handleDelete(project.id)}
                                         disabled={actionLoading === project.id}
+                                        aria-label={t("delete")}
                                         className="flex items-center gap-1 px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
                                     >
                                         <Trash2 className="w-4 h-4" />
@@ -326,9 +344,10 @@ export function ProjectReviewQueue({ locale }: ProjectReviewQueueProps) {
                     <button
                         onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
                         disabled={pagination.page === 1}
+                        aria-label={tCommon("previous")}
                         className="px-4 py-2 border border-secondary-200 rounded-lg disabled:opacity-50"
                     >
-                        {isAr ? "السابق" : "Previous"}
+                        {tCommon("previous")}
                     </button>
                     <span className="text-sm text-secondary-600">
                         {pagination.page} / {pagination.totalPages}
@@ -336,27 +355,48 @@ export function ProjectReviewQueue({ locale }: ProjectReviewQueueProps) {
                     <button
                         onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
                         disabled={pagination.page === pagination.totalPages}
+                        aria-label={tCommon("next")}
                         className="px-4 py-2 border border-secondary-200 rounded-lg disabled:opacity-50"
                     >
-                        {isAr ? "التالي" : "Next"}
+                        {tCommon("next")}
                     </button>
                 </div>
             )}
 
             {/* Feedback Modal */}
             {feedbackModal && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl p-6 max-w-md w-full">
-                        <h3 className="text-lg font-semibold text-secondary-900 mb-4">
+                <div
+                    className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+                    onClick={() => {
+                        setFeedbackModal(null);
+                        setFeedback("");
+                    }}
+                >
+                    <div
+                        className="bg-white rounded-2xl p-6 max-w-md w-full relative"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setFeedbackModal(null);
+                                setFeedback("");
+                            }}
+                            aria-label={tCommon("cancel")}
+                            className="absolute top-3 end-3 p-2 text-secondary-400 hover:text-secondary-600 hover:bg-secondary-100 rounded-lg transition-colors"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                        <h3 className="text-lg font-semibold text-secondary-900 mb-4 pr-8">
                             {feedbackModal.action === "approve"
-                                ? (isAr ? "تأكيد الموافقة" : "Confirm Approval")
-                                : (isAr ? "تأكيد الرفض" : "Confirm Rejection")
+                                ? t("confirmApproval")
+                                : t("confirmRejection")
                             }
                         </h3>
                         <textarea
                             value={feedback}
                             onChange={(e) => setFeedback(e.target.value)}
-                            placeholder={isAr ? "أضف ملاحظات (اختياري)..." : "Add feedback (optional)..."}
+                            placeholder={t("addFeedback")}
                             className="w-full p-3 border border-secondary-200 rounded-xl resize-none h-24 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                         />
                         <div className="flex gap-3 mt-4">
@@ -367,7 +407,7 @@ export function ProjectReviewQueue({ locale }: ProjectReviewQueueProps) {
                                 }}
                                 className="flex-1 px-4 py-2 border border-secondary-200 rounded-lg hover:bg-secondary-50"
                             >
-                                {isAr ? "إلغاء" : "Cancel"}
+                                {tCommon("cancel")}
                             </button>
                             <button
                                 onClick={() => handleAction(feedbackModal.projectId, feedbackModal.action, { feedback })}
@@ -380,8 +420,8 @@ export function ProjectReviewQueue({ locale }: ProjectReviewQueueProps) {
                                 {actionLoading === feedbackModal.projectId ? (
                                     <Loader2 className="w-5 h-5 animate-spin mx-auto" />
                                 ) : feedbackModal.action === "approve"
-                                    ? (isAr ? "موافقة" : "Approve")
-                                    : (isAr ? "رفض" : "Reject")
+                                    ? t("approve")
+                                    : t("reject")
                                 }
                             </button>
                         </div>

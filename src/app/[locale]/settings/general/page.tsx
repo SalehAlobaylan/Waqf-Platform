@@ -1,11 +1,20 @@
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { GeneralSettings } from "@/components/settings/GeneralSettings";
 
-export const metadata = {
-    title: "General Settings | Waqf",
-};
+export async function generateMetadata({
+    params,
+}: {
+    params: Promise<{ locale: string }>;
+}) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "metadata" });
+    return {
+        title: t("settingsGeneral"),
+    };
+}
 
 export default async function SettingsGeneralPage({
     params,

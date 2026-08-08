@@ -5,12 +5,13 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
     Upload, X, Loader2, Link as LinkIcon, Github,
-    Clock, Calendar, Sparkles, AlertTriangle, Save, Send
+    Clock, Calendar, Sparkles, AlertTriangle, Save, Send, ArrowLeft, Globe, Mail, User, FileText
 } from "lucide-react";
+import Link from "next/link";
 
 interface ProjectFormProps {
     locale: string;
-    mode: "create" | "edit";
+    mode: "create" | "edit" | "curate";
     initialData?: {
         id: string;
         title: string;
@@ -26,6 +27,10 @@ interface ProjectFormProps {
         organizationId: string | null;
         status: string;
         adminFeedback: string | null;
+        externalUrl?: string | null;
+        externalOwnerName?: string | null;
+        externalOwnerContact?: string | null;
+        curatorNotes?: string | null;
         skills: Array<{ skillId: number; skill: { id: number; name: string; nameAr: string | null }; isRequired: boolean }>;
     };
     organizations?: Array<{ id: string; name: string }>;
@@ -46,6 +51,7 @@ function slugify(text: string) {
 export function ProjectForm({ locale, mode, initialData, organizations }: ProjectFormProps) {
     const t = useTranslations("projects");
     const router = useRouter();
+    const isCurate = mode === "curate";
 
     const [title, setTitle] = useState(initialData?.title || "");
     const [slug, setSlug] = useState(initialData?.slug || "");
@@ -59,10 +65,15 @@ export function ProjectForm({ locale, mode, initialData, organizations }: Projec
     const [githubUrl, setGithubUrl] = useState(initialData?.githubUrl || "");
     const [featuredImage, setFeaturedImage] = useState(initialData?.featuredImage || "");
     const [organizationId, setOrganizationId] = useState(initialData?.organizationId || "");
+    const [externalUrl, setExternalUrl] = useState(initialData?.externalUrl || "");
+    const [externalOwnerName, setExternalOwnerName] = useState(initialData?.externalOwnerName || "");
+    const [externalOwnerContact, setExternalOwnerContact] = useState(initialData?.externalOwnerContact || "");
+    const [curatorNotes, setCuratorNotes] = useState(initialData?.curatorNotes || "");
     const [imageUploading, setImageUploading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
+    const [saveAsDraft, setSaveAsDraft] = useState(initialData?.status === "DRAFT");
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Skills state
@@ -75,7 +86,7 @@ export function ProjectForm({ locale, mode, initialData, organizations }: Projec
 
     // Auto-generate slug from title
     useEffect(() => {
-        if (!slugEdited && mode === "create") {
+        if (!slugEdited && (mode === "create" || mode === "curate")) {
             setSlug(slugify(title));
         }
     }, [title, slugEdited, mode]);
@@ -126,7 +137,7 @@ export function ProjectForm({ locale, mode, initialData, organizations }: Projec
         }
     }, [handleImageUpload]);
 
-    const handleSubmit = async (submitForReview: boolean) => {
+    const handleSubmit = async (submitForReview = false) => {
         setError("");
         setSuccess("");
 
@@ -135,8 +146,62 @@ export function ProjectForm({ locale, mode, initialData, organizations }: Projec
             return;
         }
 
+        if (isCurate) {
+            if (!externalUrl.trim() || !externalOwnerName.trim() || !externalOwnerContact.trim()) {
+                setError(t("requiredField"));
+                return;
+            }
+        }
+
         setSaving(true);
         try {
+            if (isCurate) {
+                const payload = {
+                    title: title.trim(),
+                    description: description.trim(),
+                    category,
+                    language,
+                    impact: impact.trim() || null,
+                    timeCommitment: timeCommitment.trim() || null,
+                    duration: duration.trim() || null,
+                    featuredImage: featuredImage || null,
+                    externalUrl: externalUrl.trim(),
+                    externalOwnerName: externalOwnerName.trim(),
+                    externalOwnerContact: externalOwnerContact.trim(),
+                    curatorNotes: curatorNotes.trim() || null,
+                    skills: selectedSkills.map(s => ({ skillId: s.skillId, isRequired: s.isRequired })),
+                    ...(!initialData
+                        ? { customSlug: slug || undefined }
+                        : {}),
+                    ...(!initialData || saveAsDraft !== (initialData.status === "DRAFT")
+                        ? { status: saveAsDraft ? "DRAFT" : "OPEN" }
+                        : {}),
+                };
+
+                const res = initialData
+                    ? await fetch(`/api/admin/curated-projects/${initialData.id}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload),
+                    })
+                    : await fetch("/api/admin/curated-projects", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(payload),
+                    });
+
+                if (!res.ok) {
+                    const data = await res.json();
+                    throw new Error(data.error || "Failed to save curated project");
+                }
+
+                const curatedProject = await res.json();
+                setSuccess(initialData ? t("projectUpdated") : t("projectCreated"));
+                setTimeout(() => router.push(`/${locale}/admin/projects/curated`), 1200);
+                void curatedProject;
+                return;
+            }
+
             const payload = {
                 title: title.trim(),
                 description: description.trim(),
@@ -150,6 +215,7 @@ export function ProjectForm({ locale, mode, initialData, organizations }: Projec
                 organizationId: organizationId || null,
                 skills: selectedSkills.map(s => ({ skillId: s.skillId, isRequired: s.isRequired })),
                 ...(mode === "create" ? { customSlug: slug || undefined } : { slug: slug || undefined }),
+                ...(submitForReview ? { status: "PENDING" } : {}),
             };
 
             let res: Response;
@@ -174,15 +240,6 @@ export function ProjectForm({ locale, mode, initialData, organizations }: Projec
 
             const project = await res.json();
 
-            // If submit for review, change status
-            if (submitForReview && (mode === "create" || initialData?.status === "DRAFT")) {
-                await fetch(`/api/projects/${project.id}/status`, {
-                    method: "PATCH",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ status: "PENDING" }),
-                });
-            }
-
             setSuccess(mode === "create" ? t("projectCreated") : t("projectUpdated"));
             setTimeout(() => router.push(`/${locale}/projects/${project.slug}`), 1200);
         } catch (err) {
@@ -196,11 +253,43 @@ export function ProjectForm({ locale, mode, initialData, organizations }: Projec
     return (
         <div className="min-h-screen bg-waqf-bg">
             <div className="max-w-[900px] mx-auto px-6 py-8">
+                {/* Back Link */}
+                <Link
+                    href={
+                        isCurate
+                            ? `/${locale}/admin/projects/curated`
+                            : mode === "edit" && initialData?.slug
+                                ? `/${locale}/projects/${initialData.slug}`
+                                : `/${locale}/explore`
+                    }
+                    className="inline-flex items-center gap-1.5 text-sm text-secondary-500 hover:text-primary-600 transition-colors mb-4"
+                >
+                    <ArrowLeft className="w-4 h-4 rtl:rotate-180" />
+                    {t("back")}
+                </Link>
+
                 {/* Header */}
                 <div className="mb-8">
+                    {isCurate && (
+                        <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold mb-2">
+                            <Globe className="w-3.5 h-3.5" />
+                            {locale === "ar" ? "مشروع منتقى خارجي" : "External Curated Project"}
+                        </div>
+                    )}
                     <h1 className="text-3xl font-bold text-secondary-900">
-                        {mode === "create" ? t("createProject") : t("editProject")}
+                        {mode === "create"
+                            ? t("createProject")
+                            : isCurate
+                                ? (locale === "ar" ? "تعديل مشروع منتقى" : "Edit Curated Project")
+                                : t("editProject")}
                     </h1>
+                    {isCurate && (
+                        <p className="text-secondary-500 mt-2 text-sm">
+                            {locale === "ar"
+                                ? "سيظهر هذا المشروع للزوار مع رابط للموقع الأصلي، ولن يكون متاحًا للتقديم من خلال المنصة."
+                                : "This project will be shown to visitors with a link to the original site. It will not be open to applications through the platform."}
+                        </p>
+                    )}
                 </div>
 
                 {/* Admin Feedback Banner */}
@@ -269,7 +358,7 @@ export function ProjectForm({ locale, mode, initialData, organizations }: Projec
 
                     {/* Category + Language + Organization */}
                     <div className="bg-white rounded-2xl border border-waqf-border p-6">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className={`grid grid-cols-1 ${isCurate ? "md:grid-cols-2" : "md:grid-cols-3"} gap-4`}>
                             <div>
                                 <label className="block text-sm font-semibold text-secondary-900 mb-2">{t("category")} *</label>
                                 <select
@@ -295,19 +384,21 @@ export function ProjectForm({ locale, mode, initialData, organizations }: Projec
                                     ))}
                                 </select>
                             </div>
-                            <div>
-                                <label className="block text-sm font-semibold text-secondary-900 mb-2">{t("organization")}</label>
-                                <select
-                                    value={organizationId}
-                                    onChange={e => setOrganizationId(e.target.value)}
-                                    className="w-full px-4 py-3 rounded-xl border border-secondary-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                                >
-                                    <option value="">{t("noOrganization")}</option>
-                                    {organizations?.map(org => (
-                                        <option key={org.id} value={org.id}>{org.name}</option>
-                                    ))}
-                                </select>
-                            </div>
+                            {!isCurate && (
+                                <div>
+                                    <label className="block text-sm font-semibold text-secondary-900 mb-2">{t("organization")}</label>
+                                    <select
+                                        value={organizationId}
+                                        onChange={e => setOrganizationId(e.target.value)}
+                                        className="w-full px-4 py-3 rounded-xl border border-secondary-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                    >
+                                        <option value="">{t("noOrganization")}</option>
+                                        {organizations?.map(org => (
+                                            <option key={org.id} value={org.id}>{org.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -328,7 +419,7 @@ export function ProjectForm({ locale, mode, initialData, organizations }: Projec
 
                     {/* Time + Duration + GitHub */}
                     <div className="bg-white rounded-2xl border border-waqf-border p-6">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className={`grid grid-cols-1 ${isCurate ? "md:grid-cols-2" : "md:grid-cols-3"} gap-4`}>
                             <div>
                                 <label className="block text-sm font-semibold text-secondary-900 mb-2 flex items-center gap-1.5">
                                     <Clock className="w-4 h-4 text-secondary-400" />
@@ -355,21 +446,97 @@ export function ProjectForm({ locale, mode, initialData, organizations }: Projec
                                     className="w-full px-4 py-3 rounded-xl border border-secondary-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                                 />
                             </div>
+                            {!isCurate && (
+                                <div>
+                                    <label className="block text-sm font-semibold text-secondary-900 mb-2 flex items-center gap-1.5">
+                                        <Github className="w-4 h-4 text-secondary-400" />
+                                        {t("githubUrl")}
+                                    </label>
+                                    <input
+                                        type="url"
+                                        value={githubUrl}
+                                        onChange={e => setGithubUrl(e.target.value)}
+                                        placeholder={t("githubUrlPlaceholder")}
+                                        className="w-full px-4 py-3 rounded-xl border border-secondary-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                    />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* External Project Details (curate mode only) */}
+                    {isCurate && (
+                        <div className="bg-purple-50/50 rounded-2xl border border-purple-200 p-6 space-y-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <Globe className="w-5 h-5 text-purple-700" />
+                                <h2 className="text-lg font-bold text-purple-900">
+                                    {locale === "ar" ? "تفاصيل المشروع الخارجي" : "External Project Details"}
+                                </h2>
+                            </div>
+
                             <div>
                                 <label className="block text-sm font-semibold text-secondary-900 mb-2 flex items-center gap-1.5">
-                                    <Github className="w-4 h-4 text-secondary-400" />
-                                    {t("githubUrl")}
+                                    <LinkIcon className="w-4 h-4 text-purple-600" />
+                                    {locale === "ar" ? "رابط المشروع الأصلي" : "Original Project URL"} *
                                 </label>
                                 <input
                                     type="url"
-                                    value={githubUrl}
-                                    onChange={e => setGithubUrl(e.target.value)}
-                                    placeholder={t("githubUrlPlaceholder")}
-                                    className="w-full px-4 py-3 rounded-xl border border-secondary-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                    value={externalUrl}
+                                    onChange={e => setExternalUrl(e.target.value)}
+                                    placeholder="https://example.com"
+                                    className="w-full px-4 py-3 rounded-xl border border-secondary-200 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                                />
+                                <p className="text-xs text-secondary-500 mt-1">
+                                    {locale === "ar"
+                                        ? "الرابط الذي سيُرسل إليه الزوار عند الضغط على زر \"زيارة المشروع\""
+                                        : "Visitors will be directed to this URL when they click \"Visit project\""}
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-semibold text-secondary-900 mb-2 flex items-center gap-1.5">
+                                        <User className="w-4 h-4 text-purple-600" />
+                                        {locale === "ar" ? "اسم المالك الأصلي" : "Original Owner Name"} *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={externalOwnerName}
+                                        onChange={e => setExternalOwnerName(e.target.value)}
+                                        placeholder={locale === "ar" ? "مثال: فريق حرم بلر" : "e.g. Haramblur Team"}
+                                        className="w-full px-4 py-3 rounded-xl border border-secondary-200 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-secondary-900 mb-2 flex items-center gap-1.5">
+                                        <Mail className="w-4 h-4 text-purple-600" />
+                                        {locale === "ar" ? "تواصل المالك" : "Owner Contact"} *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={externalOwnerContact}
+                                        onChange={e => setExternalOwnerContact(e.target.value)}
+                                        placeholder={locale === "ar" ? "بريد، رابط، أو @handle" : "email, URL, or @handle"}
+                                        className="w-full px-4 py-3 rounded-xl border border-secondary-200 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-semibold text-secondary-900 mb-2 flex items-center gap-1.5">
+                                    <FileText className="w-4 h-4 text-purple-600" />
+                                    {locale === "ar" ? "ملاحظات المنتقى (داخلية)" : "Curator Notes (internal)"}
+                                </label>
+                                <textarea
+                                    value={curatorNotes}
+                                    onChange={e => setCuratorNotes(e.target.value)}
+                                    placeholder={locale === "ar" ? "ملاحظات للإدارة فقط — لن تُعرض للزوار" : "Notes for admin reference only — not shown to visitors"}
+                                    rows={4}
+                                    className="w-full px-4 py-3 rounded-xl border border-secondary-200 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-y"
                                 />
                             </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Featured Image Upload */}
                     <div className="bg-white rounded-2xl border border-waqf-border p-6">
@@ -445,7 +612,7 @@ export function ProjectForm({ locale, mode, initialData, organizations }: Projec
                                 value={skillSearch}
                                 onChange={e => { setSkillSearch(e.target.value); setShowSkillDropdown(true); }}
                                 onFocus={() => setShowSkillDropdown(true)}
-                                placeholder={locale === "ar" ? "ابحث عن مهارة..." : "Search for a skill..."}
+                                placeholder={t("skillSearchPlaceholder")}
                                 className="w-full px-4 py-3 rounded-xl border border-secondary-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                             />
                             {showSkillDropdown && skillResults.length > 0 && (
@@ -469,16 +636,33 @@ export function ProjectForm({ locale, mode, initialData, organizations }: Projec
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex flex-wrap gap-3 justify-end pt-2">
+                    <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
+                        {isCurate && (
+                            <label className="flex items-center gap-2 text-sm text-secondary-600 cursor-pointer me-auto">
+                                <input
+                                    type="checkbox"
+                                    checked={saveAsDraft}
+                                    onChange={(e) => setSaveAsDraft(e.target.checked)}
+                                    className="w-4 h-4 rounded border-secondary-300 text-primary-600 focus:ring-primary-500"
+                                />
+                                {locale === "ar" ? "حفظ كمسودة (إخفاء عن الزوار)" : "Save as draft (hidden from visitors)"}
+                            </label>
+                        )}
                         <button
-                            onClick={() => handleSubmit(false)}
+                            onClick={() => handleSubmit()}
                             disabled={saving}
                             className="flex items-center gap-2 px-6 py-3 bg-white border border-secondary-200 text-secondary-700 font-medium rounded-xl hover:bg-secondary-50 transition-colors disabled:opacity-50"
                         >
                             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                            {mode === "create" ? t("saveDraft") : t("saveChanges")}
+                            {isCurate
+                                ? (initialData
+                                    ? (locale === "ar" ? "حفظ التغييرات" : "Save Changes")
+                                    : (saveAsDraft
+                                        ? (locale === "ar" ? "حفظ كمسودة" : "Save as Draft")
+                                        : (locale === "ar" ? "نشر" : "Publish")))
+                                : (mode === "create" ? t("saveDraft") : t("saveChanges"))}
                         </button>
-                        {(mode === "create" || initialData?.status === "DRAFT") && (
+                        {!isCurate && (mode === "create" || initialData?.status === "DRAFT") && (
                             <button
                                 onClick={() => handleSubmit(true)}
                                 disabled={saving}

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
+import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { LanguageSwitcher } from "./LanguageSwitcher";
@@ -11,7 +12,10 @@ import { NotificationBell } from "@/components/notifications/NotificationBell";
 export function Navbar() {
     const t = useTranslations("nav");
     const locale = useLocale();
+    const pathname = usePathname();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+    if (pathname.includes("/admin")) return null;
 
     const logo = (
         <Link href={`/${locale}`} className="flex items-center gap-3">
@@ -23,9 +27,6 @@ export function Navbar() {
             <div className="flex flex-col">
                 <span className="text-secondary-900 text-xl font-bold leading-none tracking-[-0.015em]">
                     {locale === "ar" ? "وقف" : "Waqf"}
-                </span>
-                <span className="text-[10px] text-primary-600 font-bold uppercase tracking-widest leading-none mt-0.5">
-                    {locale === "ar" ? "مفتوح المصدر" : "Open Source"}
                 </span>
             </div>
         </Link>
@@ -43,6 +44,12 @@ export function Navbar() {
                         className="text-secondary-900 hover:text-primary-600 transition-colors text-sm font-medium"
                     >
                         {t("explore")}
+                    </Link>
+                    <Link
+                        href={`/${locale}/campaigns`}
+                        className="text-secondary-900 hover:text-primary-600 transition-colors text-sm font-medium"
+                    >
+                        {t("campaigns")}
                     </Link>
                     <Link
                         href={`/${locale}#how-it-works`}
@@ -85,6 +92,13 @@ export function Navbar() {
                             onClick={() => setIsMenuOpen(false)}
                         >
                             {t("explore")}
+                        </Link>
+                        <Link
+                            href={`/${locale}/campaigns`}
+                            className="text-secondary-900 hover:text-primary-600 transition-colors text-base font-medium py-2"
+                            onClick={() => setIsMenuOpen(false)}
+                        >
+                            {t("campaigns")}
                         </Link>
                         <Link
                             href={`/${locale}#how-it-works`}

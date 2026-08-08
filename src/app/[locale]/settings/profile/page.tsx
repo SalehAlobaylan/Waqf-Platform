@@ -1,13 +1,22 @@
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
 import { EditProfileForm } from "@/components/profile/EditProfileForm";
 import type { ContributorProfile, ContributorSkill, PortfolioItem } from "@prisma/client";
 
-export const metadata = {
-    title: "Edit Profile | Waqf",
-};
+export async function generateMetadata({
+    params,
+}: {
+    params: Promise<{ locale: string }>;
+}) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "metadata" });
+    return {
+        title: t("settingsProfile"),
+    };
+}
 
 export default async function SettingsProfilePage({
     params,
@@ -32,7 +41,6 @@ export default async function SettingsProfilePage({
     });
 
     if (!profile) {
-        // They haven't created a contributor profile (might be mutawalli). Render basic error or message.
         return (
             <div className="p-8 text-center text-secondary-500">
                 {locale === "ar"
@@ -45,12 +53,19 @@ export default async function SettingsProfilePage({
     const { skills, portfolioItems, ...mainProfile } = profile;
     const transformedSkills = skills.map(sk => ({ skillId: sk.skillId, level: sk.level, yearsExperience: sk.yearsExperience }));
 
+    const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { username: true, id: true },
+    });
+    const userHandle = user?.username ?? user?.id ?? session.user.id;
+
     return (
         <EditProfileForm
             initialProfile={mainProfile as ContributorProfile}
             initialSkills={transformedSkills as ContributorSkill[]}
             initialPortfolio={portfolioItems as PortfolioItem[]}
             locale={locale}
+            userHandle={userHandle}
         />
     );
 }

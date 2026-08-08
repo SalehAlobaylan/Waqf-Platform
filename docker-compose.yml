@@ -1,3 +1,7 @@
+# Waqf Platform - Docker Compose
+# Requires a Neon database. Set DATABASE_URL in your .env file.
+# Example: DATABASE_URL="postgresql://user:pass@ep-xxx.us-east-2.aws.neon.tech/waqf?sslmode=require"
+
 services:
   app:
     build:
@@ -10,21 +14,4 @@ services:
       - BETTER_AUTH_URL=${BETTER_AUTH_URL:-http://localhost:3000}
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
       - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL:-http://localhost:3000}
-    depends_on:
-      - db
     restart: unless-stopped
-
-  db:
-    image: postgres:16-alpine
-    environment:
-      - POSTGRES_USER=waqf
-      - POSTGRES_PASSWORD=waqf_secret
-      - POSTGRES_DB=waqf
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5433:5432"
-    restart: unless-stopped
-
-volumes:
-  postgres_data:

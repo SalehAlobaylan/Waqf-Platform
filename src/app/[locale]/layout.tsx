@@ -4,6 +4,9 @@ import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing, type Locale } from "@/lib/i18n/routing";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import { Navbar } from "@/components/layout/Navbar";
+import { Footer } from "@/components/layout/Footer";
+import { FloatingQuickActions } from "@/components/layout/FloatingQuickActions";
 import "@/app/globals.css";
 
 export const metadata: Metadata = {
@@ -12,15 +15,15 @@ export const metadata: Metadata = {
         template: "%s | Waqf",
     },
     description:
-        "Connect with Islamic open-source projects and contribute your skills as sadaqah jariyah",
+        "Waqf is a contribution platform for developers. Match your skills with projects that need help — open, closed, or private.",
     keywords: [
-        "Islamic",
-        "open source",
         "waqf",
-        "sadaqah jariyah",
-        "Muslim developers",
-        "charity",
-        "contribution",
+        "contribution platform",
+        "developers",
+        "open source",
+        "tech for good",
+        "volunteering",
+        "project collaboration",
     ],
 };
 
@@ -70,7 +73,12 @@ export default async function LocaleLayout({ children, params }: Props) {
                 <AuthProvider>
                     <NextIntlClientProvider messages={messages}>
                         <div className="flex flex-col min-h-screen">
-                            {children}
+                            <Navbar />
+                            <main className="flex-1">
+                                {children}
+                            </main>
+                            <Footer />
+                            <FloatingQuickActions />
                         </div>
                     </NextIntlClientProvider>
                 </AuthProvider>

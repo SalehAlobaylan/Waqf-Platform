@@ -5,6 +5,8 @@ const withNextIntl = createNextIntlPlugin("./src/lib/i18n/request.ts");
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
+  // Keep Prisma engine external so Turbopack builds don't break DB connections
+  serverExternalPackages: ["@prisma/client", "prisma"],
   // Enable standalone output for Docker
   output: "standalone",
   // Allow images from external sources (avatars, etc.)
@@ -17,6 +19,14 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "github.com",
+      },
+      {
+        protocol: "https",
+        hostname: "utfs.io",
+      },
+      {
+        protocol: "https",
+        hostname: "*.ufs.sh",
       },
     ],
   },

@@ -1,11 +1,12 @@
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import {
-    Briefcase, FolderGit2, MessageSquare, Bell, Users, TrendingUp,
-    ArrowRight, Clock, CheckCircle, GitPullRequest, Eye, Plus,
+    Briefcase, FolderGit2, MessageSquare, Bell, Users,
+    ArrowRight, Clock, CheckCircle, GitPullRequest, Plus,
     BookOpen, Star
 } from "lucide-react";
 
@@ -13,22 +14,27 @@ interface DashboardPageProps {
     params: Promise<{ locale: string }>;
 }
 
-export const metadata = {
-    title: "Dashboard | Waqf",
-    description: "Your personal dashboard for managing projects and contributions",
-};
+export async function generateMetadata({ params }: DashboardPageProps) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "metadata" });
+    return {
+        title: t("dashboard"),
+    };
+}
 
 export default async function DashboardPage({ params }: DashboardPageProps) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "dashboard" });
+    const tNav = await getTranslations({ locale, namespace: "nav" });
+    const tProjects = await getTranslations({ locale, namespace: "projects" });
+    const tProfile = await getTranslations({ locale, namespace: "profile" });
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user?.id) {
-        redirect("/login");
+        redirect(`/${locale}/login`);
     }
-
-    const { locale } = await params;
     const userId = session.user.id;
     const isRtl = locale === "ar";
 
-    // Fetch data in parallel
     const [
         profile,
         myApplications,
@@ -80,7 +86,6 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
         <div className="min-h-screen bg-gradient-to-br from-secondary-50 via-white to-primary-50/30">
             <div className="container max-w-6xl mx-auto px-4 py-8">
 
-                {/* Welcome Header */}
                 <div className="mb-8">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div>
@@ -99,26 +104,25 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                                 className="flex items-center gap-2 px-4 py-2.5 bg-white border border-secondary-200 rounded-xl text-sm font-medium text-secondary-700 hover:bg-secondary-50 transition-all shadow-sm"
                             >
                                 <BookOpen className="w-4 h-4" />
-                                {isRtl ? "استكشف" : "Explore"}
+                                {tNav("explore")}
                             </Link>
                             <Link
                                 href={`/${locale}/projects/new`}
                                 className="flex items-center gap-2 px-4 py-2.5 bg-primary-600 rounded-xl text-sm font-bold text-white hover:bg-primary-700 transition-all shadow-md shadow-primary-600/20"
                             >
                                 <Plus className="w-4 h-4" />
-                                {isRtl ? "مشروع جديد" : "New Project"}
+                                {tProjects("createProject")}
                             </Link>
                         </div>
                     </div>
                 </div>
 
-                {/* Stats Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                     <StatCard
                         icon={<Briefcase className="w-5 h-5 text-blue-600" />}
                         bgClass="bg-blue-50"
                         value={totalApplications}
-                        label={isRtl ? "طلباتي" : "My Applications"}
+                        label={t("yourApplications")}
                         href={`/${locale}/dashboard/applications`}
                     />
                     <StatCard
@@ -131,7 +135,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                         icon={<FolderGit2 className="w-5 h-5 text-purple-600" />}
                         bgClass="bg-purple-50"
                         value={totalProjects}
-                        label={isRtl ? "مشاريعي" : "My Projects"}
+                        label={t("yourProjects")}
                         href={`/${locale}/dashboard/projects`}
                     />
                     <StatCard
@@ -143,26 +147,23 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                     />
                 </div>
 
-                {/* Main Content */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-                    {/* Left Column — 2/3 */}
                     <div className="lg:col-span-2 space-y-6">
 
-                        {/* My Projects (Creator Section) */}
                         {isCreator && (
                             <section className="bg-white rounded-2xl border border-secondary-100 shadow-sm overflow-hidden">
                                 <div className="flex items-center justify-between px-6 py-4 border-b border-secondary-100">
                                     <h2 className="font-bold text-secondary-900 flex items-center gap-2">
                                         <FolderGit2 className="w-5 h-5 text-primary-600" />
-                                        {isRtl ? "مشاريعي" : "My Projects"}
+                                        {t("yourProjects")}
                                     </h2>
                                     <Link
                                         href={`/${locale}/dashboard/projects`}
                                         className="text-xs font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1"
                                     >
-                                        {isRtl ? "عرض الكل" : "View all"}
-                                        <ArrowRight className="w-3.5 h-3.5" />
+                                        {t("viewAllProjects")}
+                                        <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" />
                                     </Link>
                                 </div>
                                 <div className="divide-y divide-secondary-50">
@@ -184,14 +185,14 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                                                     </span>
                                                 </div>
                                             </div>
-                                            <ArrowRight className="w-4 h-4 text-secondary-300 group-hover:text-primary-500 transition-colors" />
+                                            <ArrowRight className="w-4 h-4 text-secondary-300 group-hover:text-primary-500 transition-colors rtl:rotate-180" />
                                         </Link>
                                     ))}
                                     {totalProjects === 0 && (
                                         <div className="px-6 py-8 text-center">
                                             <FolderGit2 className="w-10 h-10 text-secondary-300 mx-auto mb-2" />
                                             <p className="text-sm text-secondary-500">
-                                                {isRtl ? "لم تنشئ أي مشاريع بعد" : "You haven't created any projects yet"}
+                                                {t("empty.noProjects")}
                                             </p>
                                         </div>
                                     )}
@@ -199,19 +200,18 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                             </section>
                         )}
 
-                        {/* My Applications */}
                         <section className="bg-white rounded-2xl border border-secondary-100 shadow-sm overflow-hidden">
                             <div className="flex items-center justify-between px-6 py-4 border-b border-secondary-100">
                                 <h2 className="font-bold text-secondary-900 flex items-center gap-2">
                                     <Briefcase className="w-5 h-5 text-blue-600" />
-                                    {isRtl ? "طلباتي الأخيرة" : "Recent Applications"}
+                                    {t("recentApplications")}
                                 </h2>
                                 <Link
                                     href={`/${locale}/dashboard/applications`}
                                     className="text-xs font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1"
                                 >
-                                    {isRtl ? "عرض الكل" : "View all"}
-                                    <ArrowRight className="w-3.5 h-3.5" />
+                                    {t("viewAllApplications")}
+                                    <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" />
                                 </Link>
                             </div>
                             <div className="divide-y divide-secondary-50">
@@ -236,14 +236,14 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                                                 </span>
                                             </div>
                                         </div>
-                                        <ArrowRight className="w-4 h-4 text-secondary-300 group-hover:text-primary-500 transition-colors" />
+                                        <ArrowRight className="w-4 h-4 text-secondary-300 group-hover:text-primary-500 transition-colors rtl:rotate-180" />
                                     </Link>
                                 ))}
                                 {totalApplications === 0 && (
                                     <div className="px-6 py-8 text-center">
                                         <Briefcase className="w-10 h-10 text-secondary-300 mx-auto mb-2" />
                                         <p className="text-sm text-secondary-500 mb-3">
-                                            {isRtl ? "لم تتقدم لأي مشروع بعد" : "You haven't applied to any projects yet"}
+                                            {t("empty.noApplications")}
                                         </p>
                                         <Link
                                             href={`/${locale}/explore`}
@@ -257,44 +257,41 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                         </section>
                     </div>
 
-                    {/* Right Column — 1/3 */}
                     <div className="space-y-6">
 
-                        {/* Quick Actions */}
                         <section className="bg-white rounded-2xl border border-secondary-100 shadow-sm p-5">
                             <h3 className="font-bold text-secondary-900 mb-4 text-sm">
-                                {isRtl ? "إجراءات سريعة" : "Quick Actions"}
+                                {t("quickActions")}
                             </h3>
                             <div className="space-y-2">
                                 <QuickAction
                                     icon={<BookOpen className="w-4 h-4" />}
-                                    label={isRtl ? "استكشف المشاريع" : "Explore Projects"}
+                                    label={t("browseProjects")}
                                     href={`/${locale}/explore`}
                                 />
                                 <QuickAction
                                     icon={<Plus className="w-4 h-4" />}
-                                    label={isRtl ? "أنشئ مشروعًا" : "Create a Project"}
+                                    label={t("createNewProject")}
                                     href={`/${locale}/projects/new`}
                                 />
                                 <QuickAction
                                     icon={<MessageSquare className="w-4 h-4" />}
-                                    label={isRtl ? "الرسائل" : "Messages"}
+                                    label={t("messages.title")}
                                     href={`/${locale}/dashboard/messages`}
                                 />
                                 <QuickAction
                                     icon={<Star className="w-4 h-4" />}
-                                    label={isRtl ? "تعديل الملف الشخصي" : "Edit Profile"}
+                                    label={tProfile("header.editProfile")}
                                     href={`/${locale}/settings/profile`}
                                 />
                             </div>
                         </section>
 
-                        {/* Notifications Feed */}
                         <section className="bg-white rounded-2xl border border-secondary-100 shadow-sm overflow-hidden">
                             <div className="flex items-center justify-between px-5 py-4 border-b border-secondary-100">
                                 <h3 className="font-bold text-secondary-900 flex items-center gap-2 text-sm">
                                     <Bell className="w-4 h-4 text-amber-500" />
-                                    {isRtl ? "الإشعارات" : "Notifications"}
+                                    {t("notifications.title")}
                                     {unreadNotifications > 0 && (
                                         <span className="px-1.5 py-0.5 text-[10px] bg-red-100 text-red-600 rounded-full font-bold">
                                             {unreadNotifications}
@@ -305,7 +302,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                                     href={`/${locale}/dashboard/notifications`}
                                     className="text-xs font-medium text-primary-600 hover:text-primary-700"
                                 >
-                                    {isRtl ? "عرض الكل" : "View all"}
+                                    {t("notifications.view")}
                                 </Link>
                             </div>
                             <div className="divide-y divide-secondary-50">
@@ -329,14 +326,13 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                                 ) : (
                                     <div className="px-5 py-6 text-center">
                                         <p className="text-xs text-secondary-400">
-                                            {isRtl ? "لا توجد إشعارات" : "No notifications yet"}
+                                            {t("empty.noNotifications")}
                                         </p>
                                     </div>
                                 )}
                             </div>
                         </section>
 
-                        {/* Profile Completion Nudge */}
                         {!profile?.bio && (
                             <section className="bg-gradient-to-br from-primary-50 to-primary-100/50 rounded-2xl border border-primary-200/50 p-5">
                                 <h3 className="font-bold text-primary-900 text-sm mb-2">
@@ -352,7 +348,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                                     className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary-600 text-white text-xs font-medium rounded-lg hover:bg-primary-700 transition-colors"
                                 >
                                     {isRtl ? "إعداد الملف" : "Set Up Profile"}
-                                    <ArrowRight className="w-3 h-3" />
+                                    <ArrowRight className="w-3 h-3 rtl:rotate-180" />
                                 </Link>
                             </section>
                         )}
@@ -362,8 +358,6 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
         </div>
     );
 }
-
-// --- Helper Components ---
 
 function StatCard({ icon, bgClass, value, label, href }: {
     icon: React.ReactNode;

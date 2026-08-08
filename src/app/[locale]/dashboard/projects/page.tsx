@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
@@ -12,18 +13,23 @@ interface MyProjectsPageProps {
     params: Promise<{ locale: string }>;
 }
 
-export const metadata = {
-    title: "My Projects | Waqf",
-    description: "Manage your projects on Waqf",
-};
+export async function generateMetadata({ params }: MyProjectsPageProps) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "metadata" });
+    return {
+        title: t("dashboardProjects"),
+    };
+}
 
 export default async function MyProjectsPage({ params }: MyProjectsPageProps) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "dashboard.projects" });
+    const tCommon = await getTranslations({ locale, namespace: "common" });
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user?.id) {
-        redirect("/login");
+        redirect(`/${locale}/login`);
     }
 
-    const { locale } = await params;
     const isRtl = locale === "ar";
 
     const projects = await prisma.project.findMany({
@@ -62,12 +68,11 @@ export default async function MyProjectsPage({ params }: MyProjectsPageProps) {
     return (
         <div className="min-h-screen bg-secondary-50">
             <div className="container max-w-5xl mx-auto px-4 py-8">
-                {/* Header */}
                 <div className="flex items-center justify-between mb-8">
                     <div>
                         <h1 className="text-2xl font-bold text-secondary-900 flex items-center gap-3">
                             <FolderGit2 className="w-7 h-7 text-primary-600" />
-                            {isRtl ? "مشاريعي" : "My Projects"}
+                            {t("title")}
                         </h1>
                         <p className="text-secondary-500 mt-1">
                             {isRtl
@@ -80,11 +85,10 @@ export default async function MyProjectsPage({ params }: MyProjectsPageProps) {
                         className="flex items-center gap-2 px-5 py-2.5 bg-primary-600 text-white font-bold text-sm rounded-xl hover:bg-primary-700 transition-all shadow-md shadow-primary-600/20"
                     >
                         <Plus className="w-4 h-4" />
-                        {isRtl ? "مشروع جديد" : "New Project"}
+                        {t("createProject")}
                     </Link>
                 </div>
 
-                {/* Projects List */}
                 {projects.length > 0 ? (
                     <div className="space-y-4">
                         {projects.map(project => (
@@ -127,7 +131,6 @@ export default async function MyProjectsPage({ params }: MyProjectsPageProps) {
                                         </div>
                                     </div>
 
-                                    {/* Skills */}
                                     {project.skills.length > 0 && (
                                         <div className="flex flex-wrap gap-1.5 mt-3">
                                             {project.skills.slice(0, 5).map((ps, i) => (
@@ -143,20 +146,19 @@ export default async function MyProjectsPage({ params }: MyProjectsPageProps) {
                                         </div>
                                     )}
 
-                                    {/* Actions */}
                                     <div className="flex gap-3 mt-4 pt-4 border-t border-secondary-50">
                                         <Link
                                             href={`/${locale}/projects/${project.slug}`}
                                             className="text-sm font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1"
                                         >
                                             {isRtl ? "عرض" : "View"}
-                                            <ArrowRight className="w-3.5 h-3.5" />
+                                            <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" />
                                         </Link>
                                         <Link
                                             href={`/${locale}/projects/${project.slug}/edit`}
                                             className="text-sm font-medium text-secondary-500 hover:text-secondary-700"
                                         >
-                                            {isRtl ? "تعديل" : "Edit"}
+                                            {tCommon("edit")}
                                         </Link>
                                         {project._count.applications > 0 && (
                                             <Link
@@ -178,19 +180,17 @@ export default async function MyProjectsPage({ params }: MyProjectsPageProps) {
                             <Inbox className="w-8 h-8 text-secondary-400" />
                         </div>
                         <h3 className="text-lg font-bold text-secondary-900 mb-2">
-                            {isRtl ? "لم تنشئ أي مشروع بعد" : "No projects yet"}
+                            {t("noProjects")}
                         </h3>
                         <p className="text-secondary-500 mb-6 max-w-md mx-auto">
-                            {isRtl
-                                ? "ابدأ بإنشاء مشروعك الأول وشارك مهاراتك كصدقة جارية"
-                                : "Start by creating your first project and share your skills as sadaqah jariyah"}
+                            {t("noProjectsDescription")}
                         </p>
                         <Link
                             href={`/${locale}/projects/new`}
                             className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-colors shadow-md"
                         >
                             <Plus className="w-5 h-5" />
-                            {isRtl ? "أنشئ مشروعًا" : "Create a Project"}
+                            {t("createProject")}
                         </Link>
                     </div>
                 )}

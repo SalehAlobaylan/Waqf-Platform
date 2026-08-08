@@ -46,7 +46,7 @@ export const pagePaginationSchema = z.object({
     limit: z.coerce.number().int().min(1).max(50).default(20),
 });
 
-export const sortSchema = z.enum(["newest", "oldest"]).default("newest");
+export const sortSchema = z.enum(["recommended", "newest", "oldest"]).default("newest");
 
 export const userRoleSchema = z.enum(["USER", "ADMIN"]);
 
@@ -79,10 +79,69 @@ export const projectCategorySchema = z.enum([
 
 export const projectLanguageSchema = z.enum(["ARABIC", "ENGLISH", "BOTH"]);
 
+export const projectSourceSchema = z.enum(["INTERNAL", "EXTERNAL"]);
+
 export const projectSkillSchema = z.object({
     skillId: z.coerce.number().int().positive(),
     isRequired: z.boolean().optional(),
 });
+
+const externalContactSchema = z
+    .string()
+    .min(2, "Contact is required")
+    .max(160)
+    .refine(
+        (value) =>
+            /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ||
+            /^https?:\/\/.+/.test(value) ||
+            /^@\w{2,30}$/.test(value),
+        "Contact must be an email, URL, or @handle"
+    );
+
+export const projectCurateSchema = z
+    .object({
+        title: z.string().min(3).max(120),
+        customSlug: slugSchema.optional().nullable(),
+        description: z.string().min(20).max(5000),
+        category: projectCategorySchema,
+        language: projectLanguageSchema.optional(),
+        impact: z.string().max(500).optional().nullable(),
+        timeCommitment: z.string().max(120).optional().nullable(),
+        duration: z.string().max(120).optional().nullable(),
+        featuredImage: z.string().url().optional().nullable(),
+        externalUrl: z.string().url("Must be a valid URL"),
+        externalOwnerName: z.string().min(2).max(80),
+        externalOwnerContact: externalContactSchema,
+        curatorNotes: z.string().max(2000).optional().nullable(),
+        status: projectStatusSchema.optional(),
+        featured: z.boolean().optional(),
+        skills: z.array(projectSkillSchema).optional(),
+    })
+    .strip();
+
+export const projectCurateUpdateSchema = z
+    .object({
+        title: z.string().min(3).max(120).optional(),
+        description: z.string().min(20).max(5000).optional(),
+        category: projectCategorySchema.optional(),
+        language: projectLanguageSchema.optional(),
+        impact: z.string().max(500).optional().nullable(),
+        timeCommitment: z.string().max(120).optional().nullable(),
+        duration: z.string().max(120).optional().nullable(),
+        featuredImage: z.string().url().optional().nullable(),
+        externalUrl: z.string().url().optional(),
+        externalOwnerName: z.string().min(2).max(80).optional(),
+        externalOwnerContact: externalContactSchema.optional(),
+        curatorNotes: z.string().max(2000).optional().nullable(),
+        status: projectStatusSchema.optional(),
+        featured: z.boolean().optional(),
+        skills: z.array(projectSkillSchema).optional(),
+    })
+    .refine((data) => Object.keys(data).length > 0, {
+        message: "At least one field is required",
+        path: ["title"],
+    })
+    .strip();
 
 export const projectCreateSchema = z
     .object({
@@ -98,6 +157,7 @@ export const projectCreateSchema = z
         organizationId: idSchema.optional().nullable(),
         customSlug: slugSchema.optional().nullable(),
         skills: z.array(projectSkillSchema).optional(),
+        status: z.enum(["PENDING"]).optional(),
     })
     .strip();
 
@@ -115,10 +175,167 @@ export const projectUpdateSchema = z
         organizationId: idSchema.optional().nullable(),
         slug: slugSchema.optional(),
         skills: z.array(projectSkillSchema).optional(),
+        status: z.enum(["PENDING"]).optional(),
     })
     .refine((data) => Object.keys(data).length > 0, {
         message: "At least one field is required",
         path: ["title"],
+    })
+    .strip();
+
+export const campaignStatusSchema = z.enum([
+    "DRAFT",
+    "PENDING",
+    "RECRUITING",
+    "READY",
+    "COMPLETED",
+    "CANCELLED",
+]);
+
+export const campaignRoleStatusSchema = z.enum(["OPEN", "FILLED", "CLOSED"]);
+
+export const campaignJoinStatusSchema = z.enum([
+    "PENDING",
+    "ACCEPTED",
+    "REJECTED",
+    "WITHDRAWN",
+]);
+
+export const campaignSenioritySchema = z.enum(["JUNIOR", "MID", "SENIOR", "ANY"]);
+
+export const campaignRoleCreateSchema = z
+    .object({
+        skillId: z.coerce.number().int().positive(),
+        title: z.string().min(1).max(120),
+        description: z.string().max(1000).optional().nullable(),
+        count: z.coerce.number().int().min(1).max(50),
+        seniority: campaignSenioritySchema.optional(),
+        isRequired: z.boolean().optional(),
+    })
+    .strip();
+
+export const campaignRoleUpdateSchema = z
+    .object({
+        title: z.string().min(1).max(120).optional(),
+        description: z.string().max(1000).optional().nullable(),
+        count: z.coerce.number().int().min(1).max(50).optional(),
+        seniority: campaignSenioritySchema.optional(),
+        isRequired: z.boolean().optional(),
+        status: campaignRoleStatusSchema.optional(),
+    })
+    .refine((data) => Object.keys(data).length > 0, {
+        message: "At least one field is required",
+        path: ["title"],
+    })
+    .strip();
+
+export const campaignCreateSchema = z
+    .object({
+        title: z.string().min(2).max(120),
+        pitch: z.string().min(10).max(500),
+        problem: z.string().min(10).max(5000),
+        outcome: z.string().max(2000).optional().nullable(),
+        category: projectCategorySchema.optional().nullable(),
+        language: projectLanguageSchema.optional(),
+        country: z.string().max(80).optional().nullable(),
+        startsAt: z.coerce.date().optional().nullable(),
+        recruitmentDeadline: z.coerce.date().optional().nullable(),
+        contactEmail: z.string().email().max(200).optional().nullable(),
+        coverImage: z.string().url().optional().nullable(),
+        organizationId: idSchema.optional().nullable(),
+        customSlug: slugSchema.optional().nullable(),
+        tags: z.array(z.string().min(1).max(40)).max(20).optional(),
+        roles: z.array(campaignRoleCreateSchema).max(20).optional(),
+    })
+    .strip();
+
+export const campaignUpdateSchema = z
+    .object({
+        title: z.string().min(2).max(120).optional(),
+        pitch: z.string().min(10).max(500).optional(),
+        problem: z.string().min(10).max(5000).optional(),
+        outcome: z.string().max(2000).optional().nullable(),
+        category: projectCategorySchema.optional(),
+        language: projectLanguageSchema.optional(),
+        country: z.string().max(80).optional().nullable(),
+        startsAt: z.coerce.date().optional().nullable(),
+        recruitmentDeadline: z.coerce.date().optional().nullable(),
+        contactEmail: z.string().email().max(200).optional().nullable(),
+        coverImage: z.string().url().optional().nullable(),
+        organizationId: idSchema.optional().nullable(),
+        slug: slugSchema.optional(),
+        tags: z.array(z.string().min(1).max(40)).max(20).optional(),
+    })
+    .refine((data) => Object.keys(data).length > 0, {
+        message: "At least one field is required",
+        path: ["title"],
+    })
+    .strip();
+
+export const campaignJoinCreateSchema = z
+    .object({
+        roleId: idSchema,
+        message: z.string().max(2000).optional().nullable(),
+        portfolioUrl: z.string().url().optional().nullable(),
+        hoursPerWeek: z.coerce.number().int().min(0).max(168).optional().nullable(),
+    })
+    .strip();
+
+export const campaignJoinUpdateSchema = z
+    .object({
+        status: z.enum(["ACCEPTED", "REJECTED", "WITHDRAWN"]),
+    })
+    .strip();
+
+export const campaignMilestoneCreateSchema = z
+    .object({
+        title: z.string().min(1).max(160),
+        description: z.string().max(1000).optional().nullable(),
+        order: z.coerce.number().int().min(0).max(100).optional(),
+    })
+    .strip();
+
+export const campaignMilestoneUpdateSchema = z
+    .object({
+        title: z.string().min(1).max(160).optional(),
+        description: z.string().max(1000).optional().nullable(),
+        order: z.coerce.number().int().min(0).max(100).optional(),
+        isDone: z.boolean().optional(),
+    })
+    .refine((data) => Object.keys(data).length > 0, {
+        message: "At least one field is required",
+        path: ["title"],
+    })
+    .strip();
+
+export const adminCampaignActionSchema = z
+    .object({
+        feedback: z.string().max(1000).optional().nullable(),
+    })
+    .strip();
+
+export const campaignsQuerySchema = z
+    .object({
+        limit: z.coerce.number().int().min(1).max(50).default(20),
+        offset: z.coerce.number().int().min(0).default(0),
+        category: projectCategorySchema.optional(),
+        status: z
+            .preprocess(
+                (value) => (typeof value === "string" ? value.trim().toUpperCase() : value),
+                z.enum(["ALL", "DRAFT", "PENDING", "RECRUITING", "READY", "COMPLETED", "CANCELLED"])
+            )
+            .optional()
+            .default("RECRUITING"),
+        search: optionalTrimmedString(undefined, 120).optional(),
+        skills: optionalTrimmedString(undefined, 200).optional(),
+    })
+    .strip();
+
+export const adminCampaignsQuerySchema = z
+    .object({
+        status: z.enum(["PENDING", "RECRUITING", "READY", "DRAFT"]).optional(),
+        page: z.coerce.number().int().min(1).default(1),
+        limit: z.coerce.number().int().min(1).max(50).default(20),
     })
     .strip();
 
@@ -339,6 +556,15 @@ export const projectsQuerySchema = z
         status: projectListStatusSchema.optional().default("OPEN"),
         search: optionalTrimmedString(undefined, 120).optional(),
         sortBy: sortSchema.optional(),
+        skills: z.preprocess(
+            (value) => {
+                if (typeof value !== "string" || !value.trim()) return undefined;
+                return value.split(",").map((s) => s.trim()).filter(Boolean);
+            },
+            z.array(z.coerce.number().int().positive()).optional()
+        ),
+        language: projectLanguageSchema.optional(),
+        timeCommitment: z.enum(["1-5", "5-10", "10+"]).optional(),
     })
     .strip();
 

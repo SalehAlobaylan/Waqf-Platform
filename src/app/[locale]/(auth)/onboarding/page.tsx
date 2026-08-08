@@ -1,13 +1,21 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { OnboardingFlow } from "@/components/auth/OnboardingFlow";
 import { prisma } from "@/lib/prisma";
 
-export const metadata = {
-    title: "Welcome to Waqf | Choose Your Path",
-    description: "Complete your profile setup to get started",
-};
+export async function generateMetadata({
+    params,
+}: {
+    params: Promise<{ locale: string }>;
+}) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "metadata" });
+    return {
+        title: t("onboarding"),
+    };
+}
 
 export default async function OnboardingPage({
     params,
@@ -16,7 +24,6 @@ export default async function OnboardingPage({
 }) {
     const { locale } = await params;
 
-    // Server-side auth check
     const session = await auth.api.getSession({
         headers: await headers(),
     });
@@ -25,7 +32,6 @@ export default async function OnboardingPage({
         redirect(`/${locale}/login`);
     }
 
-    // Check if user already has a contributor profile or an organization
     const hasContributorProfile = await prisma.contributorProfile.findUnique({
         where: { userId: session.user.id },
     });
@@ -35,14 +41,13 @@ export default async function OnboardingPage({
     });
 
     if (hasContributorProfile || hasOrganization) {
-        // They already picked a path, send them to dashboard
         redirect(`/${locale}/explore`);
     }
 
     return (
         <div className="min-h-screen bg-secondary-50 flex items-center justify-center p-4">
             <div className="w-full max-w-4xl">
-                <OnboardingFlow locale={locale} userId={session.user.id} userName={session.user.name} />
+                <OnboardingFlow locale={locale} userName={session.user.name} />
             </div>
         </div>
     );

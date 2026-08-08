@@ -9,6 +9,8 @@ import {
 } from "@/lib/validation/schemas";
 import { parseBody, parseQuery } from "@/lib/validation/parse";
 import { makeValidationError } from "@/lib/validation/errors";
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
+import { sendEventEmail } from "@/lib/event-email";
 
 /**
  * GET /api/applications
@@ -133,6 +135,10 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
+        if (!checkRateLimit(request, "application-create", { limit: 10, windowMs: 60_000 }, session.user.id)) {
+            return rateLimitedResponse();
+        }
+
         const parsedBody = await parseBody(request, applicationCreateSchema);
         if (!parsedBody.success) {
             return NextResponse.json(parsedBody.error, { status: 400 });
@@ -143,7 +149,7 @@ export async function POST(request: NextRequest) {
         // Check if project exists and is open
         const project = await prisma.project.findUnique({
             where: { id: projectId },
-            select: { id: true, status: true, ownerId: true },
+            select: { id: true, status: true, ownerId: true, source: true },
         });
 
         if (!project) {
@@ -156,6 +162,14 @@ export async function POST(request: NextRequest) {
         if (project.status !== "OPEN") {
             return NextResponse.json(
                 makeValidationError("Project is not accepting applications", "projectId"),
+                { status: 400 }
+            );
+        }
+
+        // Block applications to external/curated projects (no owner to manage them)
+        if (project.source === "EXTERNAL") {
+            return NextResponse.json(
+                makeValidationError("Cannot apply to external projects", "projectId"),
                 { status: 400 }
             );
         }
@@ -205,16 +219,27 @@ export async function POST(request: NextRequest) {
             },
         });
 
-        // Create notification for project owner
-        await prisma.notification.create({
-            data: {
-                userId: project.ownerId,
-                type: "NEW_APPLICATION",
-                title: "New Application Received",
-                content: `${session.user.name} has applied to your project`,
-                link: `/projects/${application.project.slug}/applications`,
-            },
-        });
+        // Create notification for project owner (skip for ownerless external projects)
+        if (project.ownerId) {
+            await prisma.notification.create({
+                data: {
+                    userId: project.ownerId,
+                    type: "NEW_APPLICATION",
+                    title: "New Application Received",
+                    content: `${session.user.name} has applied to your project`,
+                    link: `/projects/${application.project.slug}/applications`,
+                },
+            });
+
+            // Event email to the project owner
+            await sendEventEmail(project.ownerId, {
+                kind: "NEW_APPLICATION",
+                actorName: session.user.name ?? undefined,
+                projectTitle: application.project.title,
+                projectSlug: application.project.slug,
+                applicationId: application.id,
+            });
+        }
 
         return NextResponse.json({ application }, { status: 201 });
     } catch (error) {

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Github, Globe, Linkedin, Share2, Calendar, UserPlus, MessageSquare, Phone } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface ProfileHeaderProps {
     user: {
@@ -20,6 +21,8 @@ interface ProfileHeaderProps {
 }
 
 export function ProfileHeader({ user, isOwnProfile, locale = "en" }: ProfileHeaderProps) {
+    const t = useTranslations("profile.header");
+    const tCommon = useTranslations("common");
     return (
         <div className="bg-white rounded-2xl border border-waqf-border overflow-hidden shadow-sm">
             {/* Gradient Banner */}
@@ -57,7 +60,7 @@ export function ProfileHeader({ user, isOwnProfile, locale = "en" }: ProfileHead
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-600"></span>
                         </span>
-                        {locale === "ar" ? "متاح للوقف" : "Available for Waqf"}
+                        {t("availableForWork")}
                     </div>
                 )}
 
@@ -85,7 +88,7 @@ export function ProfileHeader({ user, isOwnProfile, locale = "en" }: ProfileHead
                             href="/settings/profile"
                             className="flex-1 px-4 py-2.5 text-sm font-medium text-secondary-700 border border-secondary-200 rounded-xl hover:bg-secondary-50 transition-colors text-center"
                         >
-                            {locale === "ar" ? "تعديل الملف" : "Edit Profile"}
+                            {t("editProfile")}
                         </Link>
                     ) : (
                         <>
@@ -93,7 +96,10 @@ export function ProfileHeader({ user, isOwnProfile, locale = "en" }: ProfileHead
                                 <UserPlus className="w-4 h-4" />
                                 {locale === "ar" ? "دعوة لمشروع" : "Invite to Project"}
                             </button>
-                            <button className="px-3 py-2.5 text-sm border border-secondary-200 rounded-xl hover:bg-secondary-50 transition-colors text-secondary-600">
+                            <button
+                                aria-label={t("shareProfile")}
+                                className="px-3 py-2.5 text-sm border border-secondary-200 rounded-xl hover:bg-secondary-50 transition-colors text-secondary-600"
+                            >
                                 <Share2 className="w-4 h-4" />
                             </button>
                         </>
@@ -107,6 +113,7 @@ export function ProfileHeader({ user, isOwnProfile, locale = "en" }: ProfileHead
                             href={`https://github.com/${user.githubUsername}`}
                             target="_blank"
                             rel="noopener noreferrer"
+                            aria-label={tCommon("view")}
                             className="w-9 h-9 rounded-lg bg-secondary-100 hover:bg-secondary-200 flex items-center justify-center text-secondary-600 transition-colors"
                         >
                             <Github className="w-4 h-4" />
@@ -117,6 +124,7 @@ export function ProfileHeader({ user, isOwnProfile, locale = "en" }: ProfileHead
                             href={`https://discord.com/users/${user.discord}`}
                             target="_blank"
                             rel="noopener noreferrer"
+                            aria-label="Discord"
                             className="w-9 h-9 rounded-lg bg-[#5865F2]/10 hover:bg-[#5865F2]/20 flex items-center justify-center text-[#5865F2] transition-colors"
                         >
                             <MessageSquare className="w-4 h-4" />
@@ -127,15 +135,22 @@ export function ProfileHeader({ user, isOwnProfile, locale = "en" }: ProfileHead
                             href={user.whatsapp}
                             target="_blank"
                             rel="noopener noreferrer"
+                            aria-label="WhatsApp"
                             className="w-9 h-9 rounded-lg bg-[#25D366]/10 hover:bg-[#25D366]/20 flex items-center justify-center text-[#25D366] transition-colors"
                         >
                             <Phone className="w-4 h-4" />
                         </a>
                     )}
-                    <button className="w-9 h-9 rounded-lg bg-secondary-100 hover:bg-secondary-200 flex items-center justify-center text-secondary-600 transition-colors">
+                    <button
+                        aria-label={t("shareOnLinkedin")}
+                        className="w-9 h-9 rounded-lg bg-secondary-100 hover:bg-secondary-200 flex items-center justify-center text-secondary-600 transition-colors"
+                    >
                         <Linkedin className="w-4 h-4" />
                     </button>
-                    <button className="w-9 h-9 rounded-lg bg-secondary-100 hover:bg-secondary-200 flex items-center justify-center text-secondary-600 transition-colors">
+                    <button
+                        aria-label={t("viewWebsite")}
+                        className="w-9 h-9 rounded-lg bg-secondary-100 hover:bg-secondary-200 flex items-center justify-center text-secondary-600 transition-colors"
+                    >
                         <Globe className="w-4 h-4" />
                     </button>
                 </div>

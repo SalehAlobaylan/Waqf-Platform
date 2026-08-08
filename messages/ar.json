@@ -1,10 +1,22 @@
 {
     "common": {
         "appName": "وقف",
-        "tagline": "ساهم بمهاراتك كصدقة جارية"
+        "tagline": "ساهم بمهاراتك في مشاريع ذات أثر",
+        "back": "رجوع",
+        "cancel": "إلغاء",
+        "save": "حفظ",
+        "saving": "جاري الحفظ...",
+        "edit": "تعديل",
+        "delete": "حذف",
+        "loading": "جاري التحميل...",
+        "notFound": "غير موجود",
+        "goBack": "العودة",
+        "previous": "السابق",
+        "next": "التالي"
     },
     "nav": {
         "explore": "استكشف",
+        "campaigns": "الحملات",
         "about": "عن المنصة",
         "howItWorks": "كيف تعمل",
         "login": "تسجيل الدخول",
@@ -12,16 +24,17 @@
         "myContributions": "مساهماتي",
         "dashboard": "لوحة التحكم",
         "profile": "الملف الشخصي",
-        "logout": "تسجيل الخروج"
+        "logout": "تسجيل الخروج",
+        "settings": "الإعدادات"
     },
     "hero": {
-        "title": "ساهم في المشاريع الإسلامية مفتوحة المصدر",
-        "subtitle": "انضم إلى مجتمع المطورين المسلمين وساهم بمهاراتك كصدقة جارية",
+        "title": "ساهم في مشاريع ذات أثر",
+        "subtitle": "انضم إلى مجتمع المطورين وساهم بمهاراتك في مشاريع تُحدث فرقًا حقيقيًا",
         "ctaContribute": "ابدأ المساهمة",
         "ctaCreate": "أنشئ مشروعًا"
     },
     "footer": {
-        "madeWith": "صُنع بـ ❤️ للأمة",
+        "madeWith": "صُنع بعناية لمجتمع المطورين",
         "quickLinks": "روابط سريعة",
         "community": "المجتمع",
         "resources": "الموارد",
@@ -30,11 +43,23 @@
         "terms": "شروط الاستخدام",
         "contact": "تواصل معنا"
     },
+    "quickActions": {
+        "createProject": "أنشئ مشروعًا",
+        "explore": "استكشف",
+        "messages": "الرسائل",
+        "toggle": "إجراءات سريعة"
+    },
+    "projectCard": {
+        "curatedExternalProject": "مشروع منتقى خارجي",
+        "external": "خارجي",
+        "activeRecently": "نشط مؤخراً",
+        "contribute": "ساهم ←"
+    },
     "categories": {
         "quran": "القرآن الكريم",
         "prayer": "الصلاة",
         "charity": "الزكاة والصدقات",
-        "education": "التعليم الإسلامي",
+        "education": "التعليم",
         "community": "المجتمع",
         "tools": "الأدوات"
     },
@@ -45,41 +70,60 @@
     },
     "auth": {
         "welcomeBack": "مرحبًا بعودتك",
-        "loginSubtitle": "سجّل دخولك لمتابعة رحلة الصدقة الجارية",
+        "loginSubtitle": "سجّل دخولك لمتابعة مساهمتك",
         "createYourAccount": "أنشئ حسابك",
-        "signupSubtitle": "انضم إلى مجتمع المطورين المسلمين",
+        "signupSubtitle": "انضم إلى مجتمع المطورين",
         "email": "البريد الإلكتروني",
-        "password": "كلمة المرور",
-        "confirmPassword": "تأكيد كلمة المرور",
         "fullName": "الاسم الكامل",
         "fullNamePlaceholder": "أدخل اسمك",
         "login": "تسجيل الدخول",
         "loggingIn": "جاري تسجيل الدخول...",
         "createAccount": "إنشاء حساب",
         "creatingAccount": "جاري إنشاء الحساب...",
+        "sendLink": "إرسال رابط الدخول",
+        "sendSignInLink": "إرسال رابط الدخول",
+        "sendingLink": "جاري إرسال الرابط...",
+        "signInWithEmail": "تسجيل الدخول بالبريد",
+        "signUpWithEmail": "التسجيل بالبريد",
         "continueWithGitHub": "المتابعة باستخدام GitHub",
+        "continueWithGoogle": "المتابعة باستخدام Google",
         "signupWithGitHub": "التسجيل باستخدام GitHub",
+        "signupWithGoogle": "التسجيل باستخدام Google",
         "orContinueWith": "أو المتابعة بالبريد الإلكتروني",
-        "forgotPassword": "نسيت كلمة المرور؟",
+        "orUseAnotherMethod": "أو استخدم طريقة أخرى",
         "noAccount": "ليس لديك حساب؟",
         "alreadyHaveAccount": "لديك حساب بالفعل؟",
-        "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة",
+        "signup": "إنشاء حساب",
+        "signupCta": "إنشاء حساب",
         "loginError": "حدث خطأ أثناء تسجيل الدخول",
         "signupError": "حدث خطأ أثناء إنشاء الحساب",
-        "passwordRequirements": "كلمة المرور لا تستوفي المتطلبات",
-        "passwordsMustMatch": "كلمتا المرور غير متطابقتين",
         "acceptTermsRequired": "يرجى الموافقة على الشروط للمتابعة",
-        "minChars": "8 أحرف على الأقل",
-        "uppercase": "حرف كبير واحد على الأقل",
-        "number": "رقم واحد على الأقل",
         "agreeToTerms": "أوافق على",
         "termsOfService": "شروط الاستخدام",
         "and": "و",
-        "privacyPolicy": "سياسة الخصوصية"
+        "privacyPolicy": "سياسة الخصوصية",
+        "checkYourInbox": "تحقق من بريدك",
+        "checkYourInboxSubtitle": "أرسلنا رابط تسجيل الدخول إلى {email}. ينتهي الرابط خلال ١٠ دقائق.",
+        "checkYourInboxSubtitleOtp": "أرسلنا رمزًا مكوّنًا من ٦ أرقام إلى {email}. ينتهي الرمز خلال ١٠ دقائق.",
+        "didNotReceiveEmail": "لم يصلك البريد؟",
+        "useCodeInstead": "استخدم رمزًا من ٦ أرقام بدلًا من ذلك",
+        "useLinkInstead": "أرسل رابطًا بدلًا من ذلك",
+        "enterCode": "أدخل الرمز",
+        "enter6DigitCode": "أدخل الرمز المكوّن من ٦ أرقام الذي أرسلناه",
+        "verifyCode": "تحقق من الرمز",
+        "verifying": "جاري التحقق...",
+        "resendCode": "إعادة إرسال الرمز",
+        "resendLink": "إعادة إرسال الرابط",
+        "useDifferentEmail": "استخدم بريدًا آخر",
+        "magicLinkNotDelivered": "تحقق من مجلد البريد العشوائي، أو جرّب خيار الرمز أدناه.",
+        "emailPlaceholder": "name@example.com",
+        "quickSignInError": "تعذّر تسجيل الدخول. يرجى المحاولة مرة أخرى.",
+        "devQuickSignIn": "تسجيل دخول سريع للمطورين",
+        "devQuickSignInDescription": "سجّل دخولك كمستخدم اختباري (وضع التطوير فقط)"
     },
     "search": {
         "placeholder": "ابحث عن مشاريع...",
-        "searchPlaceholder": "ابحث عن مشاريع إسلامية للمساهمة فيها...",
+        "searchPlaceholder": "ابحث عن مشاريع للمساهمة فيها...",
         "searching": "جاري البحث...",
         "result": "نتيجة",
         "results": "نتائج",
@@ -87,40 +131,41 @@
         "noResults": "لم يتم العثور على مشاريع",
         "noResultsDescription": "جرب تعديل كلمات البحث أو تصفح جميع المشاريع",
         "startSearching": "ابحث عن مشاريع",
-        "startSearchingDescription": "اعثر على مشاريع إسلامية مفتوحة المصدر تناسب مهاراتك"
+        "startSearchingDescription": "اعثر على مشاريع تناسب مهاراتك"
     },
     "applications": {
-        "applyTitle": "تقديم طلب المساهمة",
-        "whyContribute": "لماذا تريد المساهمة؟",
-        "whyContributePlaceholder": "شارك دافعك وكيف يمكنك المساعدة في هذا المشروع...",
-        "whyContributeHint": "اذكر خبرتك ذات الصلة وما الذي يجذبك لهذا المشروع",
-        "portfolioUrl": "ملفك الشخصي أو GitHub",
-        "hoursPerWeek": "الساعات المتاحة أسبوعيًا",
-        "selectHours": "اختر التوفر",
-        "hoursLabel": "ساعات",
-        "submitting": "جاري الإرسال...",
-        "submitApplication": "إرسال الطلب",
-        "applicationNote": "سيتم إخطار أصحاب المشروع بطلبك",
-        "incoming": "الطلبات الواردة",
-        "filterAll": "الكل",
-        "filterPending": "قيد الانتظار",
-        "filterAccepted": "مقبول",
-        "filterRejected": "مرفوض",
-        "accept": "قبول",
-        "reject": "رفض",
-        "acceptConfirm": "هل أنت متأكد من قبول هذا الطلب؟",
-        "rejectConfirm": "هل أنت متأكد من رفض هذا الطلب؟",
-        "accepted": "تم قبول الطلب!",
-        "rejected": "تم رفض الطلب",
-        "matchScore": "نقاط التوافق",
-        "skillMatch": "توافق المهارات",
-        "categoryMatch": "التصنيف",
-        "languageMatch": "اللغة",
-        "recencyScore": "الحداثة",
-        "noApplications": "لا توجد طلبات بعد",
-        "shareToAttract": "شارك مشروعك لجذب المساهمين",
-        "loadMore": "تحميل المزيد",
-        "noMoreProjects": "لا توجد مشاريع أخرى"
+      "appliedTo": "تقدمت إلى",
+      "applicants": "متقدمين",
+      "hWeek": "س/الأسبوع",
+      "messages": "رسائل",
+      "message_one": "رسالة",
+      "message_other": "رسائل",
+      "noApplications": "لا توجد طلبات بعد",
+      "shareToAttract": "شارك مشروعك لجذب المساهمين",
+      "noApplicationsOwner": "لا توجد طلبات مستلمة بعد",
+      "noApplicationsOwnerDescription": "عندما يتقدم المساهمون، ستظهر طلباتهم هنا.",
+      "noApplicationsContributor": "لم تتقدم إلى أي مشروع بعد",
+      "noApplicationsContributorDescription": "تصفح المشاريع وتقدم لبدء المساهمة.",
+      "filterAll": "الكل",
+      "filterPending": "قيد الانتظار",
+      "filterAccepted": "مقبول",
+      "filterRejected": "مرفوض",
+      "applyTitle": "التقدم للمساهمة",
+      "whyContribute": "لماذا تريد المساهمة؟",
+      "whyContributePlaceholder": "أخبر صاحب المشروع عن مهاراتك ودوافعك وما ترغب في العمل عليه...",
+      "whyContributeHint": "رسالة مدروسة تزيد من فرص قبولك.",
+      "portfolioUrl": "رابط أعمالك أو GitHub",
+      "hoursPerWeek": "ساعات في الأسبوع",
+      "selectHours": "اختر التفرغ",
+      "hoursLabel": "ساعات",
+      "submitApplication": "إرسال الطلب",
+      "submitting": "جاري الإرسال...",
+      "applicationNote": "سيراجع صاحب المشروع طلبك ويعاود التواصل معك.",
+      "matchScore": "درجة التوافق",
+      "skillMatch": "المهارات",
+      "categoryMatch": "الفئة",
+      "languageMatch": "اللغة",
+      "recencyScore": "الحداثة"
     },
     "messages": {
         "noMessages": "لا توجد رسائل بعد",
@@ -137,11 +182,12 @@
     },
     "landing": {
         "betaAvailable": "نسخة تجريبية",
-        "heroTitle": "Tech for the Ummah",
-        "heroArabic": "صدقة جارية عبر الكود",
-        "heroDescription": "انضم إلى أول مجتمع مفتوح المصدر يبني التقنية للأمة الإسلامية. ساهم بمهاراتك في مشاريع تفيد الملايين—صدقة جارية من خلال الكود.",
+        "heroTitle": "Tech for Good",
+        "heroArabic": "أوقف خبرتك التقنية",
+        "heroDescription": "انضم إلى مطورين يبنيون تقنية ذات أثر حقيقي. ساهم بمهاراتك في مشاريع تخدم المجتمع.",
         "startContributing": "ابدأ المساهمة",
         "listProject": "أضف مشروعاً",
+        "startCampaign": "ابدأ حملة",
         "joinContributors": "انضم إلى {count}+ مساهم حول العالم",
         "activeProjects": "مشاريع نشطة",
         "contributors": "مساهمين",
@@ -152,20 +198,20 @@
         "exploreDescription": "اكتشف المشاريع في مختلف القطاعات التي تحتاج خبرتك.",
         "viewAllCategories": "عرض جميع الفئات",
         "howItWorks": "كيف يعمل",
-        "howItWorksDescription": "رحلتك من كتابة الكود إلى الأجر المستمر.",
+        "howItWorksDescription": "رحلتك من كتابة الكود إلى أثر يدوم.",
         "discover": "1. اكتشف",
-        "discoverDescription": "اعثر على مشاريع مفتوحة المصدر تناسب مهاراتك واهتماماتك.",
+        "discoverDescription": "اعثر على مشاريع تناسب مهاراتك واهتماماتك.",
         "contribute": "2. ساهم",
         "contributeDescription": "أرسل طلبات سحب، أصلح الأخطاء، أو أضف ميزات لتحسين الكود.",
-        "earnHasanat": "3. اكسب الحسنات",
-        "earnHasanatDescription": "استفد من الصدقة الجارية كلما خدم كودك المجتمع باستمرار.",
+        "buildLastingImpact": "3. اصنع أثرًا يدوم",
+        "buildLastingImpactDescription": "يظل كودك يخدم المجتمع بعد الدمج. أثر يتراكم مع الوقت.",
         "reward": "مكافأة",
         "featuredProjects": "المشاريع المميزة",
         "openForContributions": "مفتوح للمساهمة",
         "viewProject": "عرض المشروع",
         "applicants": "متقدم",
-        "readyToCode": "هل أنت مستعد للبرمجة من أجل قضية؟",
-        "ctaDescription": "انضم إلى آلاف المطورين الذين يحولون أكوادهم إلى صدقة جارية.",
+        "readyToCode": "هل أنت مستعد للمساهمة في مشاريع ذات أثر؟",
+        "ctaDescription": "انضم إلى آلاف المطورين الذين يحولون أكوادهم إلى أثر يدوم.",
         "signUpNow": "سجل الآن",
         "exploreProjects": "استكشف المشاريع",
         "platform": "المنصة",
@@ -178,34 +224,85 @@
         "termsOfService": "شروط الاستخدام",
         "allRightsReserved": "جميع الحقوق محفوظة.",
         "madeWith": "صُنع بـ",
-        "forTheUmmah": "للأمة",
-        "impact": "التأثير",
-        "usersReached": "ملايين المستخدمين"
+        "forCommunity": "لمجتمع المطورين",
+        "recentProjects": "أحدث المشاريع",
+        "twoMinAgo": "قبل دقيقتين",
+        "fiveMinAgo": "قبل 5 دقائق",
+        "tenMinAgo": "قبل 10 دقائق",
+        "domainCards": {
+            "quran": {
+                "title": "القرآن والسنة",
+                "description": "واجهات برمجية، تطبيقات قراءة، وأدوات حفظ."
+            },
+            "charity": {
+                "title": "الزكاة والصدقات",
+                "description": "منصات تبرع، حاسبات زكاة، وتتبع المساعدات."
+            },
+            "education": {
+                "title": "تكنولوجيا التعليم",
+                "description": "أنظمة إدارة تعليم، تطبيقات لغات، ومنصات تعليمية."
+            },
+            "tools": {
+                "title": "المالية والأدوات",
+                "description": "أدوات مالية أخلاقية، حاسبات استثمارية."
+            }
+        },
+        "testimonials": {
+            "title": "أصوات من المجتمع",
+            "description": "مطورون من حول العالم يشاركون تجربتهم مع وقف.",
+            "ahmed": {
+                "name": "أحمد خالد",
+                "role": "مطور Full-Stack",
+                "text": "ساعدتني منصة وقف على إيجاد مشاريع ذات أثر حقيقي. الآن كل سطر كود أكتبه يصنع فرقًا يدوم."
+            },
+            "fatima": {
+                "name": "فاطمة نور",
+                "role": "مصممة UX",
+                "text": "المجتمع هنا مذهل. وجدت فريقاً يشاركني نفس الرؤية لبناء تقنية تخدم المجتمع."
+            },
+            "omar": {
+                "name": "عمر حسن",
+                "role": "مهندس Backend",
+                "text": "من أفضل المنصات للتعاون بين المطورين. المشاريع هنا تخدم المجتمعات حول العالم."
+            }
+        },
+        "trust": {
+            "builtByDevs": "من تطوير المطورين",
+            "builtByDevsDescription": "كود ومشاريع عالية الجودة، من مطورين يهتمون بالتفاصيل.",
+            "globalCommunity": "مجتمع عالمي",
+            "globalCommunityDescription": "مطورون من أكثر من 40 دولة يساهمون معاً.",
+            "lastingImpact": "أثر يدوم",
+            "lastingImpactDescription": "كل مساهمة تصنع أثرًا يتراكم مع الوقت."
+        }
     },
     "admin": {
         "panel": "لوحة الإدارة",
         "dashboard": "لوحة التحكم",
         "projects": "المشاريع",
-        "users": "المستخدمين",
+        "curatedProjects": "مشاريع منتقاة",
+        "users": "المستخدمون",
         "analytics": "الإحصائيات",
         "backToSite": "العودة للموقع",
         "pendingReview": "قيد المراجعة",
         "approve": "موافقة",
         "reject": "رفض",
-        "feature": "تمييز",
-        "unfeature": "إلغاء التمييز",
+        "feature": "إبراز",
+        "unfeature": "إلغاء الإبراز",
+        "publish": "نشر",
+        "unpublish": "إلغاء النشر",
         "delete": "حذف",
-        "makeAdmin": "ترقية لمدير",
-        "removeAdmin": "تحويل لمستخدم",
+        "makeAdmin": "ترقية لمسؤول",
+        "removeAdmin": "إلغاء صلاحية المسؤول",
         "confirmApproval": "تأكيد الموافقة",
         "confirmRejection": "تأكيد الرفض",
-        "addFeedback": "أضف ملاحظات (اختياري)...",
+        "addFeedback": "إضافة ملاحظة (اختياري)...",
         "noProjects": "لا توجد مشاريع",
-        "noUsers": "لا يوجد مستخدمين",
+        "noUsers": "لا يوجد مستخدمون",
         "totalUsers": "إجمالي المستخدمين",
         "totalProjects": "إجمالي المشاريع",
-        "activeProjects": "مشاريع نشطة",
-        "acceptanceRate": "معدل القبول",
+        "totalApplications": "إجمالي الطلبات",
+        "activeProjects": "المشاريع النشطة",
+        "acceptanceRate": "نسبة القبول",
         "thisMonth": "هذا الشهر",
         "thisWeek": "هذا الأسبوع"
     },
@@ -213,23 +310,24 @@
         "welcome": "مرحباً بك، {name}",
         "description": "كيف ترغب في استخدام المنصة؟ اختر مسارك الأساسي الآن (يمكنك دائماً تغيير الأدوار لاحقاً).",
         "contributor": "مساهم",
-        "contributorDescription": "أريد المساهمة بمهاراتي كصدقة جارية في مشاريع إسلامية مفتوحة المصدر.",
+        "contributorDescription": "أريد المساهمة بمهاراتي في مشاريع ذات الأثر.",
         "creator": "منشئ مشاريع",
-        "creatorDescription": "أريد إنشاء مشروع إسلامي مفتوح المصدر واستقطاب المتطوعين.",
+        "creatorDescription": "أريد إنشاء مشروع واستقطاب المساهمين.",
         "orgNameLabel": "اسم المنظمة أو الفريق",
-        "orgNamePlaceholder": "مثال: فريق القرآن التقني",
+        "orgNamePlaceholder": "مثال: فريق تقني",
         "continue": "متابعة",
         "orgNameRequired": "يرجى إدخال اسم المنظمة",
         "createProfile": "إنشاء ملف تقني خاص بك",
         "findProjects": "البحث عن مشاريع تناسب مهاراتك",
-        "buildHistory": "بناء سجل مساهمات وقفي",
+        "buildHistory": "بناء سجل مساهماتك",
         "registerOrg": "تسجيل منظمة أو فريق",
         "listProjects": "طرح مشاريع للمساهمة",
-        "manageApplications": "إدارة طلبات التطوع"
+        "manageApplications": "إدارة طلبات المساهمة"
     },
     "projects": {
         "createProject": "إنشاء مشروع",
         "editProject": "تعديل المشروع",
+        "back": "رجوع",
         "projectTitle": "عنوان المشروع",
         "projectTitlePlaceholder": "أدخل عنوانًا وصفيًا للمشروع",
         "slug": "الرابط المختصر",
@@ -240,8 +338,8 @@
         "selectCategory": "اختر التصنيف",
         "language": "اللغة",
         "selectLanguage": "اختر اللغة",
-        "impact": "أثر الصدقة الجارية",
-        "impactPlaceholder": "صِف كيف يخدم هذا المشروع الأمة...",
+        "impact": "أثر المشروع",
+        "impactPlaceholder": "صِف أثر هذا المشروع...",
         "timeCommitment": "الالتزام الزمني",
         "timeCommitmentPlaceholder": "مثال: ٥-١٠ ساعات أسبوعيًا",
         "duration": "المدة المتوقعة",
@@ -281,8 +379,13 @@
         "explore": "استكشاف",
         "breadcrumbProjects": "المشاريع",
         "organization": "المنظمة",
+        "organizationNotFound": "المنظمة غير موجودة",
         "selectOrganization": "اختر المنظمة (اختياري)",
-        "noOrganization": "بدون منظمة"
+        "noOrganization": "بدون منظمة",
+        "skillSearchPlaceholder": "ابحث عن مهارة...",
+        "notFoundTitle": "المشروع غير موجود",
+        "notFoundDescription": "تعذّر العثور على المشروع الذي تبحث عنه. ربما تم حذفه أو تغيّر الرابط.",
+        "backToExplore": "العودة إلى الاستكشاف"
     },
     "reports": {
         "reportContent": "الإبلاغ عن محتوى",
@@ -319,5 +422,626 @@
         "removeFromFeatured": "إزالة من المميز",
         "addToFeatured": "عرض هذا المشروع",
         "noFeatured": "لا توجد مشاريع مميزة بعد"
+    },
+    "dashboard": {
+        "title": "لوحة التحكم",
+        "welcomeBack": "مرحبًا بعودتك يا {name}",
+        "greeting": "أهلاً، {name}",
+        "yourStats": "نشاطك",
+        "yourApplications": "طلباتك",
+        "yourProjects": "مشاريعك",
+        "browseProjects": "تصفح المشاريع",
+        "quickActions": "إجراءات سريعة",
+        "createNewProject": "إنشاء مشروع جديد",
+        "viewAllApplications": "عرض جميع الطلبات",
+        "viewAllProjects": "عرض جميع المشاريع",
+        "newApplication": "{count} طلب جديد",
+        "newApplications": "{count} طلبات جديدة",
+        "unreadNotifications": "{count} غير مقروءة",
+        "recentApplications": "أحدث الطلبات",
+        "recentProjects": "أحدث المشاريع",
+        "stats": {
+            "activeProjects": "مشاريع نشطة",
+            "applications": "الطلبات",
+            "contributors": "المساهمون",
+            "openForContribution": "مفتوح للمساهمة"
+        },
+        "empty": {
+            "noApplications": "لا توجد طلبات بعد",
+            "noProjects": "لا توجد مشاريع بعد",
+            "noNotifications": "لا توجد إشعارات بعد"
+        },
+        "status": {
+            "draft": "مسودة",
+            "pending": "قيد المراجعة",
+            "open": "مفتوح",
+            "inProgress": "قيد التنفيذ",
+            "completed": "مكتمل",
+            "cancelled": "ملغى"
+        },
+        "applications": {
+            "title": "طلباتي",
+            "subtitle": "تتبع طلباتك على المشاريع",
+            "noApplications": "لا توجد طلبات بعد",
+            "noApplicationsDescription": "تقدم إلى مشروع لبدء المساهمة",
+            "appliedTo": "تقدمت إلى",
+            "appliedOn": "تاريخ التقديم",
+            "status": "الحالة",
+            "viewProject": "عرض المشروع"
+        },
+        "projects": {
+            "title": "مشاريعي",
+            "subtitle": "إدارة مشاريعك",
+            "noProjects": "لا توجد مشاريع بعد",
+            "noProjectsDescription": "أنشئ مشروعك الأول لاستقبال المساهمات",
+            "createProject": "إنشاء مشروع",
+            "viewApplications": "عرض الطلبات",
+            "editProject": "تعديل المشروع",
+            "deleteProject": "حذف المشروع"
+        },
+        "messages": {
+            "title": "الرسائل",
+            "subtitle": "محادثاتك مع أصحاب المشاريع والمساهمين"
+        },
+        "notifications": {
+            "title": "الإشعارات",
+            "unread": "{count} غير مقروءة",
+            "markAllRead": "قراءة الكل",
+            "noNotifications": "لا توجد إشعارات بعد",
+            "view": "عرض"
+        }
+    },
+    "projectDetail": {
+        "breadcrumbs": {
+            "explore": "استكشف"
+        },
+        "helpWanted": "نبحث عن مساهمين",
+        "editProject": "تعديل المشروع",
+        "contributeNow": "ساهم الآن",
+        "viewApplication": "عرض طلبك",
+        "star": "تمييز",
+        "share": "مشاركة",
+        "adminFeedbackTitle": "ملاحظات الإدارة",
+        "adminFeedbackDesc": "قدمت الإدارة الملاحظات التالية على مشروعك:",
+        "projectImpact": "أثر المشروع",
+        "aboutThisProject": "عن هذا المشروع",
+        "requiredSkills": "المهارات المطلوبة",
+        "required": "مطلوبة",
+        "niceToHave": "مستحسنة",
+        "roadmap": "خارطة الطريق",
+        "roadmapSteps": {
+            "infra": "تجهيز البنية التحتية",
+            "design": "تصميم وتوثيق API الأولى",
+            "core": "تطوير الميزات الأساسية",
+            "deploy": "الاختبار والنشر"
+        },
+        "recentActivity": "النشاط الأخير",
+        "activity": {
+            "prMerged": "دمج PR #42:",
+            "prMergedTitle": "إضافة وظيفة البحث",
+            "prMergedTime": "منذ يومين",
+            "issue": "قضية #15:",
+            "issueTitle": "تحسين أداء الاستعلامات",
+            "issueTime": "منذ 5 أيام"
+        },
+        "details": "تفاصيل المشروع",
+        "created": "أُنشئ",
+        "applicants": "المتقدمون",
+        "views": "المشاهدات",
+        "commitment": "الوقت المطلوب",
+        "techStack": "التقنيات المستخدمة",
+        "links": "الروابط",
+        "viewRepository": "عرض المستودع",
+        "projectCreator": "صاحب المشروع",
+        "viewProfile": "عرض الملف",
+        "contactCreator": "تواصل مع المالك",
+        "similarProjects": "مشاريع مشابهة",
+        "curatedByWaqf": "منتقى من وقف",
+        "externalBadge": "خارجي",
+        "externalProjectNotice": "هذا مشروع خارجي",
+        "externalProjectDescription": "مستضاف على موقعه الخاص. لا نقبل طلبات التقديم عبر وقف. قم بزيارة صفحة المشروع لمعرفة المزيد أو للمشاركة.",
+        "externalOwnerLabel": "المالك الأصلي",
+        "visitProject": "زيارة المشروع",
+        "contactOwner": "تواصل مع المالك",
+        "originalOwner": "مالك المشروع الأصلي"
+    },
+    "applicationDetail": {
+        "back": "العودة للطلبات",
+        "applicationFor": "طلب لـ",
+        "submittedOn": "تاريخ التقديم",
+        "status": "الحالة",
+        "message": "الرسالة",
+        "portfolio": "المعرض",
+        "hoursPerWeek": "ساعات أسبوعيًا",
+        "applicant": "المتقدم",
+        "project": "المشروع",
+        "statusHistory": "سجل الحالات",
+        "accept": "قبول",
+        "reject": "رفض",
+        "pending": "قيد الانتظار",
+        "accepted": "مقبول",
+        "rejected": "مرفوض",
+        "withdrawn": "تم السحب",
+        "viewProfile": "الملف الشخصي",
+        "viewProject": "عرض المشروع",
+        "hWeek": "س/الأسبوع",
+        "messages": "رسائل",
+        "message_one": "رسالة",
+        "message_other": "رسائل"
+    },
+    "chat": {
+        "noMessages": "لا توجد رسائل بعد",
+        "startConversation": "ابدأ المحادثة!",
+        "you": "أنا",
+        "selectConversation": "اختر محادثة",
+        "selectConversationDescription": "اختر محادثة من القائمة لبدء الدردشة",
+        "typePlaceholder": "اكتب رسالة...",
+        "sending": "جاري الإرسال...",
+        "unread": "{count} غير مقروءة",
+        "chatWith": "محادثة مع {name}",
+        "conversation": "المحادثة"
+    },
+    "profile": {
+        "header": {
+            "shareProfile": "مشاركة الملف",
+            "shareOnLinkedin": "مشاركة على LinkedIn",
+            "viewWebsite": "عرض الموقع",
+            "editProfile": "تعديل الملف",
+            "availableForWork": "متاح للعمل",
+            "notAvailable": "غير متاح",
+            "role": {
+                "user": "مساهم",
+                "admin": "مسؤول",
+                "owner": "صاحب مشروع"
+            }
+        },
+        "edit": {
+            "title": "تعديل الملف الشخصي",
+            "bio": "نبذة",
+            "bioPlaceholder": "أخبر الآخرين عن نفسك وما يمكنك المساهمة به...",
+            "intention": "بيان النية",
+            "intentionPlaceholder": "لماذا تريد المساهمة؟",
+            "discord": "اسم مستخدم Discord",
+            "discordPlaceholder": "username#1234",
+            "whatsapp": "رقم WhatsApp",
+            "whatsappPlaceholder": "+1234567890",
+            "saveChanges": "حفظ التغييرات",
+            "cancel": "إلغاء",
+            "saveSuccess": "تم تحديث الملف بنجاح",
+            "saveError": "فشل تحديث الملف",
+            "skills": "المهارات",
+            "skillsDescription": "أضف مهاراتك لتساعد المشاريع في إيجادها",
+            "portfolio": "المعرض",
+            "portfolioDescription": "استعرض أعمالك السابقة",
+            "addItem": "إضافة عنصر",
+            "itemTitle": "العنوان",
+            "itemTitlePlaceholder": "مثال: واجهة برمجة تطبيقات للقرآن",
+            "itemUrl": "الرابط",
+            "itemUrlPlaceholder": "https://github.com/...",
+            "itemDescription": "الوصف",
+            "itemDescriptionPlaceholder": "وصف مختصر...",
+            "dragHandle": "اسحب لإعادة الترتيب",
+            "deleteItem": "حذف العنصر",
+            "removeSkill": "إزالة المهارة",
+            "openSkills": "فتح قائمة المهارات",
+            "closeSkills": "إغلاق قائمة المهارات",
+            "searchSkillPlaceholder": "ابحث عن مهارة...",
+            "noSkills": "لم يتم اختيار مهارات بعد"
+        }
+    },
+    "settings": {
+        "title": "الإعدادات",
+        "general": "عام",
+        "profile": "الملف الشخصي",
+        "notifications": "الإشعارات",
+        "language": "اللغة",
+        "security": "الأمان",
+        "notificationsSection": {
+            "title": "الإشعارات",
+            "description": "إدارة تفضيلات الإشعارات",
+            "emailNotifs": "إشعارات البريد الإلكتروني",
+            "emailNotifsDescription": "استلم تحديثات عبر البريد",
+            "appAccepted": "قبول الطلبات",
+            "appAcceptedDescription": "عند قبول طلبك",
+            "appRejected": "رفض الطلبات",
+            "appRejectedDescription": "عند رفض طلبك",
+            "newApplications": "طلبات جديدة",
+            "newApplicationsDescription": "عند استلام طلبات على مشاريعك",
+            "messages": "الرسائل",
+            "messagesDescription": "عند استلام رسائل جديدة",
+            "save": "حفظ",
+            "saved": "تم الحفظ!"
+        },
+        "languageSection": {
+            "title": "اللغة",
+            "description": "اختر لغة الواجهة",
+            "default": "افتراضي",
+            "apply": "تطبيق"
+        },
+        "securitySection": {
+            "title": "الأمان",
+            "description": "إدارة كلمة المرور والأمان",
+            "email": "البريد الإلكتروني",
+            "currentPassword": "كلمة المرور الحالية",
+            "newPassword": "كلمة المرور الجديدة",
+            "confirmPassword": "تأكيد كلمة المرور",
+            "changePassword": "تغيير كلمة المرور",
+            "passwordTooShort": "كلمة المرور يجب أن تكون 8 أحرف على الأقل",
+            "passwordMismatch": "كلمتا المرور غير متطابقتين",
+            "passwordChanged": "تم تغيير كلمة المرور بنجاح",
+            "changeError": "فشل تغيير كلمة المرور"
+        }
+    },
+    "organizations": {
+        "notFound": "المنظمة غير موجودة",
+        "notFoundDescription": "لم نعثر على المنظمة التي تبحث عنها.",
+        "verified": "منظمة موثقة",
+        "website": "الموقع الإلكتروني",
+        "noDescription": "لا يوجد وصف حالياً.",
+        "openProjects": "مشاريع مفتوحة ({count})",
+        "noOpenProjects": "لا توجد مشاريع مفتوحة حالياً."
+    },
+    "metadata": {
+        "login": "تسجيل الدخول | وقف",
+        "signup": "إنشاء حساب | وقف",
+        "onboarding": "أهلاً بك | وقف",
+        "explore": "استكشاف المشاريع | وقف",
+        "search": "بحث | وقف",
+        "dashboard": "لوحة التحكم | وقف",
+        "dashboardApplications": "طلباتي | وقف",
+        "dashboardProjects": "مشاريعي | وقف",
+        "dashboardMessages": "الرسائل | وقف",
+        "dashboardNotifications": "الإشعارات | وقف",
+        "settingsGeneral": "الإعدادات | وقف",
+        "settingsProfile": "تعديل الملف | وقف",
+        "admin": "الإدارة | وقف",
+        "adminUsers": "إدارة المستخدمين | وقف",
+        "adminProjects": "مراجعة المشاريع | وقف",
+        "adminFeatured": "المشاريع المميزة | وقف",
+        "adminReports": "البلاغات | وقف",
+        "adminAnalytics": "التحليلات | وقف",
+        "adminCuratedProjects": "مشاريع منتقاة | وقف",
+        "adminNewCuratedProject": "مشروع منتقى جديد | وقف",
+        "adminEditCuratedProject": "تعديل مشروع منتقى | وقف",
+        "createProject": "إنشاء مشروع | وقف",
+        "editProject": "تعديل مشروع | وقف",
+        "organization": "المنظمة | وقف",
+        "campaigns": "الحملات | وقف",
+        "campaignDetail": "الحملة | وقف",
+        "newCampaign": "ابدأ حملة | وقف",
+        "editCampaign": "تعديل الحملة | وقف",
+        "adminCampaigns": "مراجعة الحملات | وقف",
+        "dashboardCampaigns": "حملاتي | وقف",
+        "dashboardCampaignJoins": "انضماماتي | وقف",
+        "privacy": "سياسة الخصوصية | وقف",
+        "terms": "شروط الخدمة | وقف",
+        "contact": "تواصل معنا | وقف"
+    },
+    "campaigns": {
+        "title": "الحملات",
+        "subtitle": "أشخاص غير تقنيين وجمعيات ينشرون أفكارهم ويجمعون الفريق الذي يحتاجونه.",
+        "browseAll": "استعراض الحملات",
+        "startCampaign": "ابدأ حملة",
+        "noCampaigns": "لا توجد حملات بعد",
+        "noCampaignsDescription": "كن أول من يشارك فكرة ويجمع فريقًا.",
+        "viewCampaign": "عرض الحملة",
+        "exploreCampaigns": "استكشاف الحملات",
+        "recruiting": "قيد التجنيد",
+        "ready": "اكتمل الفريق",
+        "completed": "مكتملة",
+        "cancelled": "ملغاة",
+        "draft": "مسودة",
+        "pending": "قيد المراجعة",
+        "filters": {
+            "category": "الفئة",
+            "all": "الكل",
+            "search": "البحث في الحملات",
+            "searchPlaceholder": "ابحث بالعنوان أو الفكرة أو المشكلة...",
+            "skills": "المهارات",
+            "clear": "مسح الفلاتر"
+        },
+        "card": {
+            "by": "بواسطة",
+            "applicants": "متقدمين",
+            "rolesFilled": "تم شغل {filled} من {total} أدوار",
+            "joinCampaign": "انضم للحملة",
+            "viewDetails": "عرض التفاصيل"
+        },
+        "detail": {
+            "breadcrumbs": {
+                "campaigns": "الحملات"
+            },
+            "about": "عن الفكرة",
+            "problem": "المشكلة",
+            "outcome": "كيف يبدو النجاح",
+            "rolesHeading": "الأدوار التي نبحث عنها",
+            "noRoles": "لم تُضف أدوار بعد.",
+            "milestonesHeading": "المراحل",
+            "noMilestones": "لا توجد مراحل بعد.",
+            "joinHeading": "انضم إلى الفريق",
+            "joinSubtitle": "اختر دورًا وأخبرنا لماذا تود المساعدة.",
+            "promotedHeading": "أصبحت الفكرة مشروعًا",
+            "promotedSubtitle": "اكتمل الفريق. تابع العمل في صفحة المشروع.",
+            "viewProject": "فتح المشروع",
+            "ownerHeading": "عن صاحب الحملة",
+            "organizationHeading": "مدعومة من",
+            "noTeamYet": "لا يوجد أعضاء فريق بعد",
+            "youAreOwner": "أنت صاحب هذه الحملة",
+            "edit": "تعديل الحملة",
+            "submit": "إرسال للمراجعة",
+            "promote": "تحويل إلى مشروع",
+            "promoteHint": "تم شغل جميع الأدوار المطلوبة. حوّلها إلى مشروع وحافظ على الفريق.",
+            "cancel": "إلغاء الحملة",
+            "reportLabel": "الإبلاغ عن هذه الحملة",
+            "viewCount": "{count, plural, =0 {لا مشاهدات} one {# مشاهدة} two {# مشاهدتان} few {# مشاهدات} many {# مشاهدة} other {# مشاهدة}}"
+        },
+        "join": {
+            "title": "انضم إلى هذه الحملة",
+            "pickRole": "اختر دورًا",
+            "message": "لماذا تريد المساعدة؟",
+            "messagePlaceholder": "سطر قصير عن ما ستقدمه لهذا الدور...",
+            "portfolio": "معرض الأعمال أو GitHub",
+            "hoursPerWeek": "ساعات في الأسبوع",
+            "submit": "إرسال الطلب",
+            "submitting": "جاري الإرسال...",
+            "submitted": "تم إرسال الطلب",
+            "alreadyJoined": "لقد تقدمت لهذا الدور مسبقًا",
+            "roleFull": "هذا الدور ممتلئ",
+            "roleClosed": "هذا الدور مغلق",
+            "mustSignIn": "سجّل الدخول للانضمام إلى الحملة",
+            "withdraw": "سحب الطلب",
+            "withdrew": "تم السحب"
+        },
+        "wizard": {
+            "title": "ابدأ حملة",
+            "editTitle": "تعديل الحملة",
+            "step": "الخطوة {current} من {total}",
+            "next": "التالي",
+            "previous": "السابق",
+            "saveDraft": "حفظ كمسودة",
+            "submit": "إرسال للمراجعة",
+            "saving": "جاري الحفظ...",
+            "submitting": "جاري الإرسال...",
+            "savedDraft": "تم حفظ المسودة",
+            "submitted": "تم إرسال الحملة للمراجعة",
+            "step1": {
+                "title": "الفكرة",
+                "description": "أخبرنا بما تريد بناءه. اللغة البسيطة كافية.",
+                "titleLabel": "عنوان الحملة",
+                "titlePlaceholder": "مثال: خريطة مدارس تحفيظ القرآن في منطقتنا",
+                "pitchLabel": "جملة تعريفية",
+                "pitchPlaceholder": "جملة واحدة تصف الفكرة.",
+                "problemLabel": "ما المشكلة؟",
+                "problemPlaceholder": "صف المشكلة التي ستحلها هذه الفكرة في بضعة أسطر.",
+                "outcomeLabel": "كيف يبدو النجاح؟ (اختياري)",
+                "outcomePlaceholder": "ما الذي سيكون متحققًا بعد إنجاز المشروع؟"
+            },
+            "step2": {
+                "title": "أين ومن",
+                "description": "أضف الدولة وبريد التواصل، و(اختياريًا) منظمة داعمة.",
+                "country": "الدولة",
+                "countryPlaceholder": "مثال: مصر",
+                "contactEmail": "بريد التواصل",
+                "organization": "المنظمة (اختياري)",
+                "noOrganization": "لا توجد منظمة",
+                "language": "لغة العمل"
+            },
+            "step3": {
+                "title": "عنوان الدور",
+                "description": "الوصف (اختياري)",
+                "addRole": "إضافة دور",
+                "removeRole": "حذف الدور",
+                "skill": "المهارة",
+                "skillPlaceholder": "ابحث عن مهارة...",
+                "titlePlaceholder": "مثال: مهندس واجهات",
+                "descriptionPlaceholder": "ماذا سيفعل هذا الشخص...",
+                "count": "عدد المقاعد",
+                "seniority": "مستوى الخبرة",
+                "seniorityOptions": {
+                    "JUNIOR": "مبتدئ",
+                    "MID": "متوسط",
+                    "SENIOR": "أول",
+                    "ANY": "أي مستوى"
+                },
+                "required": "مطلوب للبدء",
+                "noRoles": "أضف دورًا واحدًا على الأقل قبل الإرسال."
+            },
+            "step4": {
+                "title": "الجدول والمراحل",
+                "description": "اختياري. أضف موعدًا نهائيًا للتجنيد وبعض نقاط التتبع.",
+                "startsAt": "تاريخ البدء المتوقع",
+                "deadline": "الموعد النهائي للتجنيد",
+                "milestones": "المراحل",
+                "addMilestone": "إضافة مرحلة",
+                "milestoneTitle": "عنوان المرحلة",
+                "milestoneTitlePlaceholder": "مثال: اكتمال الأدوار",
+                "milestoneDescription": "الوصف (اختياري)",
+                "milestoneDescriptionPlaceholder": "ما الذي يجعل هذه المرحلة منجزة؟"
+            },
+            "step5": {
+                "title": "المراجعة والإرسال",
+                "description": "تأكد من التفاصيل، ثم أرسل للمراجعة.",
+                "review": "مراجعة"
+            }
+        },
+        "roles": {
+            "filled": "مكتمل",
+            "open": "مفتوح",
+            "closed": "مغلق",
+            "seniority": "مستوى الخبرة"
+        },
+        "status": {
+            "DRAFT": "مسودة",
+            "PENDING": "قيد المراجعة",
+            "RECRUITING": "قيد التجنيد",
+            "READY": "اكتمل الفريق",
+            "COMPLETED": "مكتملة",
+            "CANCELLED": "ملغاة"
+        },
+        "errors": {
+            "loadFailed": "تعذر تحميل هذه الحملة",
+            "saveFailed": "تعذر حفظ الحملة",
+            "joinFailed": "تعذر الانضمام للحملة",
+            "promoteFailed": "تعذر تحويل الحملة إلى مشروع"
+        }
+    },
+    "dashboardCampaigns": {
+        "title": "حملاتي",
+        "subtitle": "الحملات التي بدأتها",
+        "noCampaigns": "لا توجد حملات بعد",
+        "noCampaignsDescription": "ابدأ حملة لجمع فريق حول فكرتك.",
+        "startCampaign": "ابدأ حملة",
+        "view": "فتح",
+        "viewJoins": "إدارة الطلبات",
+        "edit": "تعديل",
+        "submissions": "طلبات الانضمام",
+        "noJoins": "لا توجد طلبات بعد",
+        "approve": "قبول",
+        "reject": "رفض",
+        "approved": "مقبول",
+        "rejected": "مرفوض",
+        "withdraw": "سحب",
+        "withdrawn": "تم السحب"
+    },
+    "dashboardCampaignJoins": {
+        "title": "انضماماتي للحملات",
+        "subtitle": "الحملات التي تطوعت للمساعدة فيها",
+        "noJoins": "لم تنضم لأي حملة بعد",
+        "noJoinsDescription": "تصفح الحملات للعثور على ما يناسب مهاراتك.",
+        "viewCampaign": "عرض الحملة",
+        "withdraw": "سحب الطلب"
+    },
+    "adminCampaigns": {
+        "title": "مراجعة الحملات",
+        "subtitle": "الموافقة على حملات أو إرجاعها للمراجعة",
+        "noCampaigns": "لا توجد حملات للمراجعة",
+        "approve": "موافقة",
+        "reject": "إعادة للمراجعة",
+        "feedbackLabel": "ملاحظات (اختياري)",
+        "feedbackPlaceholder": "أخبر صاحب الحملة بما يحتاج تعديلًا...",
+        "approved": "تمت الموافقة على الحملة",
+        "rejected": "تم إرجاع الحملة",
+        "review": "مراجعة",
+        "joins": "طلبات انضمام",
+        "statusPending": "قيد المراجعة",
+        "statusRecruiting": "تجنيد",
+        "statusDraft": "مسودة",
+        "statusReady": "تم التحويل"
+    },
+    "legal": {
+        "privacy": {
+            "title": "سياسة الخصوصية",
+            "updated": "آخر تحديث: 2026",
+            "intro": "وقف منصة للمساهمة تصل المطورين بالمشاريع التي تحتاج مساعدتهم. توضح هذه السياسة البيانات التي نجمعها، ولماذا نجمعها، والخيارات المتاحة لك.",
+            "sections": [
+                {
+                    "title": "1. البيانات التي نجمعها",
+                    "body": "بيانات الحساب: الاسم والبريد الإلكتروني واسم المستخدم عند التسجيل. بيانات الملف الشخصي: السيرة الذاتية والمهارات والمنطقة الزمنية والروابط التي تضيفها. بيانات المساهمة: المشاريع والطلبات والرسائل ونشاطك على المنصة. بيانات تقنية: عنوان IP ونوع المتصفح والصفحات التي تزورها، تُجمع تلقائياً."
+                },
+                {
+                    "title": "2. كيف نستخدم بياناتك",
+                    "body": "نستخدم بياناتك لتشغيل المنصة: للتحقق من هويتك، وربطك بالمشاريع، وتوصيل الرسائل والإشعارات، ومراجعة المحتوى، وتحسين خدماتنا. نحن لا نبيع بياناتك الشخصية."
+                },
+                {
+                    "title": "3. ما هو علني",
+                    "body": "ملفك الشخصي العام — الاسم والسيرة والمهارات والأعمال — مرئي للمستخدمين الآخرين. الرسائل بين المساهمين وأصحاب المشاريع مرئية لأطرافها. صفحات المشاريع والحملات علنية بطبيعتها."
+                },
+                {
+                    "title": "4. المشاركة مع مقدمي الخدمات",
+                    "body": "نشارك بيانات محدودة مع مقدمي الخدمات الذين نعتمد عليهم في تشغيل المنصة، مثل الاستضافة والبريد والتخزين. يلتزم هؤلاء بالسرية ولا يعالجون البيانات إلا وفق تعليماتنا."
+                },
+                {
+                    "title": "5. مدة الاحتفاظ بالبيانات",
+                    "body": "نحتفظ ببياناتك طالما كان حسابك نشطاً، ولمدة معقولة بعده، ونحذفها أسرع عند طلبك أو عندما يقتضي القانون ذلك."
+                },
+                {
+                    "title": "6. حقوقك",
+                    "body": "يمكنك الاطلاع على بياناتك الشخصية أو تصحيحها أو حذفها في أي وقت من إعداداتك، أو بالتواصل معنا. يمكنك أيضاً تصدير بياناتك وإغلاق حسابك."
+                },
+                {
+                    "title": "7. الأطفال",
+                    "body": "المنصة مخصصة للمطورين من عمر 16 سنة فما فوق. لا نجمع بيانات الأطفال عن علم."
+                },
+                {
+                    "title": "8. تغييرات على هذه السياسة",
+                    "body": "قد نحدّث هذه السياسة مع تطور المنصة. سيُعلن عن التغييرات الجوهرية عبر المنصة أو بالبريد."
+                },
+                {
+                    "title": "9. التواصل",
+                    "body": "لديك أسئلة عن هذه السياسة؟ راسلنا على privacy@waqf.dev."
+                }
+            ]
+        },
+        "terms": {
+            "title": "شروط الخدمة",
+            "updated": "آخر تحديث: 2026",
+            "intro": "تحكم هذه الشروط استخدامك لمنصة وقف. بإنشائك حساباً فإنك توافق عليها.",
+            "sections": [
+                {
+                    "title": "1. الخدمة",
+                    "body": "وقف منصة مساهمة للمطورين. تصل الأشخاص الراغبين في تقديم وقتهم ومهاراتهم بأصحاب المشاريع الذين يحتاجون المساعدة — سواء كانت المشاريع مفتوحة المصدر أو مغلقة أو خاصة."
+                },
+                {
+                    "title": "2. الأهلية",
+                    "body": "يجب أن يكون عمرك 16 عاماً على الأقل وقادراً على إبرام اتفاق ملزم لاستخدام المنصة."
+                },
+                {
+                    "title": "3. حسابك",
+                    "body": "أنت مسؤول عن حماية بيانات الدخول الخاصة بك وعن كل ما يتم من خلال حسابك. أخبرنا فوراً بأي استخدام غير مصرح به."
+                },
+                {
+                    "title": "4. المحتوى الخاص بك",
+                    "body": "تحتفظ بملكية المحتوى الذي تنشره. تمنح المنصة ترخيصاً لتخزينه وعرضه ومعالجته لتشغيل الخدمة. أنت مسؤول عن دقة ومشروعية ما تنشره."
+                },
+                {
+                    "title": "5. المساهمات",
+                    "body": "عندما تساهم في مشروع، تنطبق شروط الترخيص والملكية الخاصة بذلك المشروع. المنصة ليست طرفاً في اتفاقيات المساهمين وأصحاب المشاريع ولا تتحمل مسؤولية عنها."
+                },
+                {
+                    "title": "6. الاستخدام المقبول",
+                    "body": "توافق على عدم: نشر محتوى غير قانوني أو منتهك للحقوق، أو محاولة الوصول إلى حسابات أو بيانات مستخدمين آخرين، أو عرقلة عمل المنصة، أو استخدامها للبريد المزعج أو الاحتيال أو المضايقة."
+                },
+                {
+                    "title": "7. الرقابة",
+                    "body": "أصحاب المشاريع يديرون الطلبات والمساهمات على مشاريعهم. قد يزيل مشرفو المنصة المحتوى ويعلقون الحسابات التي تخالف هذه الشروط."
+                },
+                {
+                    "title": "8. إخلاء المسؤولية",
+                    "body": "تُقدم المنصة \"كما هي\" دون أي ضمانات صريحة أو ضمنية. لا نضمن أن تكون الخدمة متواصلة أو خالية من الأخطاء."
+                },
+                {
+                    "title": "9. حدود المسؤولية",
+                    "body": "إلى أقصى حد يسمح به القانون، لا تتحمل وقف المسؤولية عن الأضرار غير المباشرة أو العرضية الناشئة عن استخدامك للمنصة."
+                },
+                {
+                    "title": "10. تغييرات على هذه الشروط",
+                    "body": "قد نراجع هذه الشروط. استمرار استخدامك للمنصة بعد سريان التغييرات يعني قبولها."
+                },
+                {
+                    "title": "11. التواصل",
+                    "body": "لديك أسئلة عن هذه الشروط؟ راسلنا على legal@waqf.dev."
+                }
+            ]
+        },
+        "contact": {
+            "title": "تواصل معنا",
+            "intro": "يسعدنا سماع رأيك — ملاحظات أو أسئلة أو بلاغات عن إساءة استخدام.",
+            "emailLabel": "البريد الإلكتروني",
+            "emailValue": "support@waqf.dev",
+            "reportLabel": "الإبلاغ عن إساءة",
+            "reportBody": "للإبلاغ عن مشروع أو حملة أو مستخدم، استخدم زر الإبلاغ على المحتوى، أو راسلنا مباشرة.",
+            "responseNote": "نهدف إلى الرد خلال 48 ساعة."
+        }
+    },
+    "notFound": {
+        "title": "الصفحة غير موجودة",
+        "description": "الصفحة التي تبحث عنها غير موجودة. ربما تم نقلها أو حذفها.",
+        "backHome": "العودة للرئيسية",
+        "exploreProjects": "استكشف المشاريع"
+    },
+    "error": {
+        "title": "حدث خطأ ما",
+        "description": "حدث خطأ غير متوقع أثناء تحميل هذه الصفحة. حاول مرة أخرى.",
+        "retry": "إعادة المحاولة"
     }
 }

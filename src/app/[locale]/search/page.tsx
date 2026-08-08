@@ -1,11 +1,19 @@
 import { Suspense } from "react";
+import { getTranslations } from "next-intl/server";
 import { SearchResults } from "@/components/search/SearchResults";
 import { Loader2 } from "lucide-react";
 
-export const metadata = {
-    title: "Search Projects | Waqf",
-    description: "Search for Islamic open-source projects to contribute to as sadaqah jariyah",
-};
+export async function generateMetadata({
+    params,
+}: {
+    params: Promise<{ locale: string }>;
+}) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "metadata" });
+    return {
+        title: t("search"),
+    };
+}
 
 function SearchLoading() {
     return (

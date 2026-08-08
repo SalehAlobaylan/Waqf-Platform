@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { projectStatusUpdateSchema, routeIdParamSchema } from "@/lib/validation/schemas";
 import { parseBody, parseParams } from "@/lib/validation/parse";
 import { makeValidationError } from "@/lib/validation/errors";
+import { isAdminUserId } from "@/lib/auth-helpers";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -55,7 +56,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         }
 
         const isOwner = project.ownerId === session.user.id;
-        const isAdmin = session.user.role === "ADMIN";
+        const isAdmin = await isAdminUserId(session.user.id);
 
         // Check valid transitions
         const currentStatus = project.status;

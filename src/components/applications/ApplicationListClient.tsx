@@ -26,6 +26,7 @@ interface ApplicationWithScore {
     project: { id: string; title: string; slug: string };
     contributor: {
         id: string;
+        username: string | null;
         name: string;
         email: string;
         image: string | null;
@@ -137,7 +138,7 @@ export function ApplicationListClient({ applications, locale }: ApplicationListC
                                             )}
                                             <div>
                                                 <Link
-                                                    href={`/${locale}/profile/${app.contributor.id}`}
+                                                    href={`/${locale}/profile/${app.contributor.username ?? app.contributor.id}`}
                                                     className="font-semibold text-secondary-900 hover:text-primary-600 transition-colors"
                                                 >
                                                     {app.contributor.name}
@@ -158,7 +159,7 @@ export function ApplicationListClient({ applications, locale }: ApplicationListC
                                         <div className="flex flex-wrap gap-1.5 mb-2">
                                             {app.contributor.contributorProfile.skills.slice(0, 5).map((s, i) => (
                                                 <span key={i} className="px-2 py-0.5 bg-secondary-50 text-secondary-600 rounded text-xs">
-                                                    {locale === "ar" ? s.skill.nameAr || s.skill.name : s.skill.name}
+                                                    {locale === "ar" && s.skill.nameAr ? s.skill.nameAr : s.skill.name}
                                                 </span>
                                             ))}
                                         </div>
@@ -182,13 +183,13 @@ export function ApplicationListClient({ applications, locale }: ApplicationListC
                                         {app.hoursPerWeek && (
                                             <span className="flex items-center gap-1">
                                                 <Clock className="w-3.5 h-3.5" />
-                                                {app.hoursPerWeek}h/week
+                                                {app.hoursPerWeek}{t("hWeek")}
                                             </span>
                                         )}
                                         {app._count.messages > 0 && (
                                             <span className="flex items-center gap-1">
                                                 <MessageSquare className="w-3.5 h-3.5" />
-                                                {app._count.messages} {locale === "ar" ? "رسالة" : "messages"}
+                                                {app._count.messages} {t("messages")}
                                             </span>
                                         )}
                                     </div>

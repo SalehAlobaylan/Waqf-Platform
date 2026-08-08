@@ -1,24 +1,33 @@
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { ReportQueue } from "@/components/admin/ReportQueue";
 import { Flag } from "lucide-react";
 
-export const metadata = {
-    title: "Content Reports | Admin | Waqf",
-};
+export async function generateMetadata({
+    params,
+}: {
+    params: Promise<{ locale: string }>;
+}) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "metadata" });
+    return {
+        title: t("adminReports"),
+    };
+}
 
 export default async function AdminReportsPage({
     params,
 }: {
     params: Promise<{ locale: string }>;
 }) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "reports" });
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user?.id || session.user.role !== "ADMIN") {
-        redirect("/login");
+        redirect(`/${locale}/login`);
     }
-
-    const { locale } = await params;
 
     return (
         <div className="container max-w-5xl mx-auto px-4 py-8">
@@ -28,7 +37,7 @@ export default async function AdminReportsPage({
                         <Flag className="w-5 h-5 text-red-600" />
                     </div>
                     <h1 className="text-2xl font-bold text-secondary-900">
-                        {locale === "ar" ? "بلاغات المحتوى" : "Content Reports"}
+                        {t("adminTitle")}
                     </h1>
                 </div>
                 <p className="text-secondary-500">

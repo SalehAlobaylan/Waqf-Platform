@@ -1,15 +1,33 @@
 import { ProjectCard } from "@/components/projects/ProjectCard";
-import { Building2, Globe, CheckCircle2, MessageSquare, Phone } from "lucide-react";
+import { Building2, Globe, CheckCircle2, MessageSquare, Phone, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 import type { Organization, Project } from "@prisma/client";
 
-type OrganizationWithProjects = Organization & { projects: Project[] };
+type OrganizationWithProjects = Organization & {
+    projects: Array<
+        Project & {
+            skills: Array<{ skill: { name: string; nameAr: string | null }; isRequired: boolean }>;
+            owner: { name: string; image: string | null } | null;
+            _count: { applications: number };
+        }
+    >;
+};
 
 export function OrganizationProfile({ organization, locale }: { organization: OrganizationWithProjects, locale: string }) {
     return (
         <div className="space-y-6">
+            {/* Back Link */}
+            <Link
+                href={`/${locale}/explore`}
+                className="inline-flex items-center gap-1.5 text-sm text-secondary-500 hover:text-primary-600 transition-colors"
+            >
+                <ArrowLeft className="w-4 h-4 rtl:rotate-180" />
+                {locale === "ar" ? "العودة للاستكشاف" : "Back to Explore"}
+            </Link>
+
             {/* Header Card */}
             <div className="bg-white rounded-2xl border border-secondary-100 p-8 shadow-sm text-center md:text-left md:flex md:items-start md:gap-6 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-bl-full -z-10 opacity-50"></div>
+                <div aria-hidden="true" className="absolute top-0 right-0 w-32 h-32 bg-amber-50 rounded-bl-full -z-10 opacity-50"></div>
 
                 <div className="w-24 h-24 mx-auto md:mx-0 rounded-2xl overflow-hidden bg-secondary-100 shrink-0 border border-secondary-200 flex items-center justify-center">
                     {organization.logo ? (

@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Bookmark, CheckCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Bookmark, CheckCircle, ExternalLink } from "lucide-react";
 
 interface ProjectCardProps {
     project: {
@@ -11,12 +12,13 @@ interface ProjectCardProps {
         description: string;
         category: string;
         status: string;
+        source?: string;
         tags?: string[];
         timeCommitment?: string | null;
         featured?: boolean;
         _count?: { applications: number };
         skills: Array<{ skill: { name: string; nameAr: string | null }; isRequired: boolean }>;
-        owner: { name: string; image: string | null };
+        owner: { name: string; image: string | null } | null;
     };
     locale: string;
 }
@@ -31,9 +33,11 @@ const categoryIcons: Record<string, { emoji: string; bgClass: string }> = {
 };
 
 export function ProjectCard({ project, locale }: ProjectCardProps) {
+    const t = useTranslations("projectCard");
     const icon = categoryIcons[project.category] || { emoji: "📦", bgClass: "bg-gray-50" };
     const requiredSkills = project.skills.filter((s) => s.isRequired).slice(0, 3);
     const optionalSkills = project.skills.filter((s) => !s.isRequired).slice(0, 2);
+    const isExternal = project.source === "EXTERNAL";
 
     return (
         <Link
@@ -49,7 +53,9 @@ export function ProjectCard({ project, locale }: ProjectCardProps) {
                         </div>
                         <div>
                             <div className="flex items-center gap-1.5">
-                                <span className="text-xs font-medium text-secondary-500">{project.owner.name}</span>
+                                <span className="text-xs font-medium text-secondary-500">
+                                    {project.owner?.name ?? (isExternal ? "Curated" : "—")}
+                                </span>
                                 <CheckCircle className="w-3.5 h-3.5 text-primary-600" />
                             </div>
                         </div>
@@ -64,6 +70,15 @@ export function ProjectCard({ project, locale }: ProjectCardProps) {
 
                 <h3 className="text-lg font-bold text-secondary-900 mb-2 group-hover:text-primary-600 transition-colors leading-tight">
                     {project.title}
+                    {isExternal && (
+                        <span
+                            className="inline-flex items-center gap-1 ms-2 align-middle px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-[10px] font-semibold"
+                            title={t("curatedExternalProject")}
+                        >
+                            <ExternalLink className="w-2.5 h-2.5" />
+                            {t("external")}
+                        </span>
+                    )}
                 </h3>
                 <p className="text-sm text-secondary-500 line-clamp-2 leading-relaxed mb-4">
                     {project.description}
@@ -110,11 +125,11 @@ export function ProjectCard({ project, locale }: ProjectCardProps) {
                 <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-green-500"></span>
                     <span className="text-xs text-secondary-500">
-                        {locale === "ar" ? "نشط مؤخراً" : "Active 2d ago"}
+                        {t("activeRecently")}
                     </span>
                 </div>
                 <span className="text-xs font-bold text-primary-600 group-hover:underline">
-                    {locale === "ar" ? "ساهم" : "Contribute →"}
+                    {t("contribute")}
                 </span>
             </div>
         </Link>

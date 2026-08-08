@@ -27,7 +27,9 @@ const PAGE_SIZE = 24;
 
 export function ExplorePageClient({ initialProjects, skills }: ExplorePageClientProps) {
     const locale = useLocale();
-    const t = useTranslations("explore");
+    const t = useTranslations("search");
+    const tApps = useTranslations("applications");
+    const tLanding = useTranslations("landing");
 
     const [projects, setProjects] = useState(initialProjects);
     const [loading, setLoading] = useState(false);
@@ -48,12 +50,14 @@ export function ExplorePageClient({ initialProjects, skills }: ExplorePageClient
         const params = new URLSearchParams();
         if (searchQuery) params.set("search", searchQuery);
         if (filters.category) params.set("category", filters.category);
-        if (sortBy === "newest") params.set("sortBy", "newest");
-        if (sortBy === "oldest") params.set("sortBy", "oldest");
+        if (filters.skills.length) params.set("skills", filters.skills.join(","));
+        if (filters.language) params.set("language", filters.language);
+        if (filters.timeCommitment) params.set("timeCommitment", filters.timeCommitment);
+        params.set("sortBy", sortBy);
         params.set("limit", String(PAGE_SIZE));
         params.set("offset", String(extraOffset ?? 0));
         return params;
-    }, [searchQuery, filters.category, sortBy]);
+    }, [searchQuery, filters.category, filters.skills, filters.language, filters.timeCommitment, sortBy]);
 
     // Fresh fetch when filters/search/sort change
     const fetchProjects = useCallback(async () => {
@@ -116,15 +120,13 @@ export function ExplorePageClient({ initialProjects, skills }: ExplorePageClient
                                     {locale === "ar" ? "استكشف الفرص" : "Explore Opportunities"}
                                 </h1>
                                 <p className="text-waqf-muted">
-                                    {locale === "ar"
-                                        ? "اعثر على مشروع لتساهم بمهاراتك كصدقة جارية."
-                                        : "Find a project to contribute your skills for Sadaqah Jariyah."}
+                                    {t("searchPlaceholder")}
                                 </p>
                             </div>
                             <div className="hidden md:block">
                                 <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-600/10 text-primary-600">
                                     <span className="w-2 h-2 rounded-full bg-primary-600 mr-2"></span>
-                                    {projects.length} {locale === "ar" ? "مشروع نشط" : "Active Projects"}
+                                    {projects.length} {tLanding("activeProjects")}
                                 </span>
                             </div>
                         </div>
@@ -141,11 +143,7 @@ export function ExplorePageClient({ initialProjects, skills }: ExplorePageClient
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     className="block w-full pl-10 pr-3 py-3 border border-secondary-200 rounded-xl leading-5 bg-white placeholder-secondary-400 focus:outline-none focus:ring-1 focus:ring-primary-600 focus:border-primary-600 sm:text-sm shadow-sm"
-                                    placeholder={
-                                        locale === "ar"
-                                            ? "ابحث عن مشاريع بالاسم أو التقنية..."
-                                            : "Search projects by name, technology, or impact..."
-                                    }
+                                    placeholder={t("searchPlaceholder")}
                                 />
                             </div>
 
@@ -158,7 +156,7 @@ export function ExplorePageClient({ initialProjects, skills }: ExplorePageClient
                                 >
                                     <option value="recommended">{locale === "ar" ? "موصى به" : "Recommended"}</option>
                                     <option value="newest">{locale === "ar" ? "الأحدث" : "Newest First"}</option>
-                                    <option value="oldest">{locale === "ar" ? "الأقدم" : "Most Active"}</option>
+                                    <option value="oldest">{locale === "ar" ? "الأقدم" : "Oldest First"}</option>
                                 </select>
                                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-secondary-500">
                                     <ChevronDown className="w-4 h-4" />

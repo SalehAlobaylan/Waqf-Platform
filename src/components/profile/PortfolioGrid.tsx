@@ -1,7 +1,9 @@
 import { ExternalLink, Folder } from "lucide-react";
+import { useTranslations } from "next-intl";
 import type { PortfolioItem } from "@prisma/client";
 
-export function PortfolioGrid({ items, locale }: { items: PortfolioItem[], locale: string }) {
+export function PortfolioGrid({ items }: { items: PortfolioItem[]; locale: string }) {
+    const t = useTranslations("profile.edit");
     if (!items || items.length === 0) return null;
 
     return (
@@ -9,7 +11,7 @@ export function PortfolioGrid({ items, locale }: { items: PortfolioItem[], local
             <div className="px-6 py-5 border-b border-waqf-border flex justify-between items-center">
                 <h2 className="text-lg font-bold text-secondary-900 flex items-center gap-2">
                     <Folder className="w-5 h-5 text-primary-600" />
-                    {locale === "ar" ? "معرض الأعمال" : "Portfolio"}
+                    {t("portfolio")}
                 </h2>
             </div>
 
@@ -19,7 +21,13 @@ export function PortfolioGrid({ items, locale }: { items: PortfolioItem[], local
                         <div key={item.id} className="border border-secondary-200 rounded-xl p-4 hover:border-primary-300 hover:shadow-sm transition bg-secondary-50 hover:bg-white group flex flex-col h-full">
                             <h3 className="font-bold text-secondary-900 group-hover:text-primary-700 transition flex items-center justify-between">
                                 {item.title}
-                                <a href={item.url} target="_blank" rel="noopener noreferrer" className="text-secondary-400 hover:text-primary-600 p-1">
+                                <a
+                                    href={item.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label={item.title}
+                                    className="text-secondary-400 hover:text-primary-600 p-1"
+                                >
                                     <ExternalLink size={16} />
                                 </a>
                             </h3>

@@ -1,13 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocale } from "next-intl";
-import { Shield, Bell, Globe, Eye, EyeOff, Loader2, CheckCircle, Lock } from "lucide-react";
+import { Shield, Bell, Globe, Loader2, CheckCircle, Mail, KeyRound } from "lucide-react";
 
 interface GeneralSettingsProps {
     userEmail: string;
     currentLanguage: string;
 }
+
+interface NotificationPrefs {
+    emailNotifs: boolean;
+    appAccepted: boolean;
+    appRejected: boolean;
+    newApplications: boolean;
+    messages: boolean;
+}
+
+const DEFAULT_PREFS: NotificationPrefs = {
+    emailNotifs: true,
+    appAccepted: true,
+    appRejected: true,
+    newApplications: true,
+    messages: true,
+};
 
 export function GeneralSettings({ userEmail, currentLanguage }: GeneralSettingsProps) {
     const locale = useLocale();
@@ -29,18 +45,52 @@ export function GeneralSettings({ userEmail, currentLanguage }: GeneralSettingsP
 
 // ─── NOTIFICATION PREFERENCES ────────────────────────
 function NotificationPreferences({ isRtl }: { isRtl: boolean }) {
-    const [emailNotifs, setEmailNotifs] = useState(true);
-    const [appAccepted, setAppAccepted] = useState(true);
-    const [appRejected, setAppRejected] = useState(true);
-    const [newApplications, setNewApplications] = useState(true);
-    const [messages, setMessages] = useState(true);
-    const handleSave = () => {};
+    const [emailNotifs, setEmailNotifs] = useState(DEFAULT_PREFS.emailNotifs);
+    const [appAccepted, setAppAccepted] = useState(DEFAULT_PREFS.appAccepted);
+    const [appRejected, setAppRejected] = useState(DEFAULT_PREFS.appRejected);
+    const [newApplications, setNewApplications] = useState(DEFAULT_PREFS.newApplications);
+    const [messages, setMessages] = useState(DEFAULT_PREFS.messages);
+    const [saved, setSaved] = useState(false);
+    const [saving, setSaving] = useState(false);
+
+    useEffect(() => {
+        try {
+            const raw = window.localStorage.getItem("waqf.notificationPrefs");
+            if (raw) {
+                const parsed = JSON.parse(raw) as Partial<NotificationPrefs>;
+                if (typeof parsed.emailNotifs === "boolean") setEmailNotifs(parsed.emailNotifs);
+                if (typeof parsed.appAccepted === "boolean") setAppAccepted(parsed.appAccepted);
+                if (typeof parsed.appRejected === "boolean") setAppRejected(parsed.appRejected);
+                if (typeof parsed.newApplications === "boolean") setNewApplications(parsed.newApplications);
+                if (typeof parsed.messages === "boolean") setMessages(parsed.messages);
+            }
+        } catch {
+            // localStorage unavailable; fall back to defaults
+        }
+    }, []);
+
+    const handleSave = async () => {
+        setSaving(true);
+        setSaved(false);
+        try {
+            window.localStorage.setItem(
+                "waqf.notificationPrefs",
+                JSON.stringify({ emailNotifs, appAccepted, appRejected, newApplications, messages }),
+            );
+            setSaved(true);
+            setTimeout(() => setSaved(false), 2000);
+        } catch {
+            // localStorage unavailable; still report success so the UX is honest about what happened
+        } finally {
+            setSaving(false);
+        }
+    };
 
     return (
         <section className="p-6">
             <div className="flex items-center gap-3 mb-5">
                 <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center">
-                    <Bell className="w-4.5 h-4.5 text-amber-600" />
+                    <Bell className="w-5 h-5 text-amber-600" />
                 </div>
                 <div>
                     <h2 className="font-bold text-secondary-900">
@@ -88,7 +138,8 @@ function NotificationPreferences({ isRtl }: { isRtl: boolean }) {
             <div className="mt-5 flex justify-end">
                 <button
                     onClick={handleSave}
-                    className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-xl hover:bg-primary-700 transition-colors"
+                    disabled={saving}
+                    className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-xl hover:bg-primary-700 transition-colors disabled:opacity-50"
                 >
                     {saved ? <CheckCircle className="w-4 h-4" /> : null}
                     {saved
@@ -100,124 +151,91 @@ function NotificationPreferences({ isRtl }: { isRtl: boolean }) {
     );
 }
 
-// ─── SECURITY / PASSWORD ────────────────────────
+// ─── SECURITY (PASSWORDLESS) ────────────────────────
+// Waqf is passwordless — sign-in happens via email magic link / OTP or
+// OAuth (GitHub, Google). There is no password to manage. This section
+// shows the connected sign-in methods so the user can verify their account
+// is using the strongest available factor.
 function SecuritySection({ isRtl, userEmail }: { isRtl: boolean; userEmail: string }) {
-    const [currentPassword, setCurrentPassword] = useState("");
-    const [newPassword, setNewPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [showCurrent, setShowCurrent] = useState(false);
-    const [showNew, setShowNew] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState("");
-    const [error, setError] = useState("");
+    const [providers, setProviders] = useState<string[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const handleChangePassword = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError("");
-        setMessage("");
-
-        if (newPassword.length < 8) {
-            setError(isRtl ? "كلمة المرور يجب أن تكون 8 أحرف على الأقل" : "Password must be at least 8 characters");
-            return;
-        }
-        if (newPassword !== confirmPassword) {
-            setError(isRtl ? "كلمتا المرور غير متطابقتين" : "Passwords don't match");
-            return;
-        }
-
-        setLoading(true);
-        try {
-            const res = await fetch("/api/auth/change-password", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ currentPassword, newPassword }),
-            });
-
-            if (!res.ok) {
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                const res = await fetch("/api/auth/list-accounts", { cache: "no-store" });
+                if (!res.ok) return;
                 const data = await res.json();
-                throw new Error(data.message || "Failed");
+                if (!cancelled && Array.isArray(data)) {
+                    setProviders(data.map((a: { providerId: string }) => a.providerId));
+                }
+            } catch {
+                // Non-critical — providers list is informational
+            } finally {
+                if (!cancelled) setLoading(false);
             }
+        })();
+        return () => { cancelled = true; };
+    }, []);
 
-            setMessage(isRtl ? "تم تغيير كلمة المرور بنجاح" : "Password changed successfully");
-            setCurrentPassword("");
-            setNewPassword("");
-            setConfirmPassword("");
-        } catch (err) {
-            const message = err instanceof Error
-                ? err.message
-                : (isRtl ? "فشل تغيير كلمة المرور" : "Failed to change password");
-            setError(message);
-        } finally {
-            setLoading(false);
-        }
+    const providerLabels: Record<string, { label: string; ar: string }> = {
+        github: { label: "GitHub", ar: "جيت هَب" },
+        google: { label: "Google", ar: "جوجل" },
+        email: { label: "Email magic link", ar: "رابط البريد السحري" },
     };
 
     return (
         <section className="p-6">
             <div className="flex items-center gap-3 mb-5">
                 <div className="w-9 h-9 rounded-xl bg-red-100 flex items-center justify-center">
-                    <Shield className="w-4.5 h-4.5 text-red-600" />
+                    <Shield className="w-5 h-5 text-red-600" />
                 </div>
                 <div>
                     <h2 className="font-bold text-secondary-900">
                         {isRtl ? "الأمان" : "Security"}
                     </h2>
                     <p className="text-xs text-secondary-500">
-                        {isRtl ? "إدارة كلمة المرور والأمان" : "Manage your password and security"}
+                        {isRtl ? "طرق تسجيل الدخول المرتبطة بحسابك" : "Sign-in methods connected to your account"}
                     </p>
                 </div>
             </div>
 
-            <div className="mb-4 px-4 py-3 bg-secondary-50 rounded-xl">
-                <p className="text-xs text-secondary-500">{isRtl ? "البريد الإلكتروني" : "Email"}</p>
-                <p className="text-sm font-medium text-secondary-900">{userEmail}</p>
+            <div className="mb-4 px-4 py-3 bg-secondary-50 rounded-xl flex items-center gap-3">
+                <Mail className="w-4 h-4 text-secondary-500 shrink-0" />
+                <div className="min-w-0">
+                    <p className="text-xs text-secondary-500">{isRtl ? "البريد الإلكتروني" : "Email"}</p>
+                    <p className="text-sm font-medium text-secondary-900 truncate">{userEmail}</p>
+                </div>
             </div>
 
-            <form onSubmit={handleChangePassword} className="space-y-4">
-                <PasswordField
-                    label={isRtl ? "كلمة المرور الحالية" : "Current Password"}
-                    value={currentPassword}
-                    onChange={setCurrentPassword}
-                    show={showCurrent}
-                    onToggle={() => setShowCurrent(!showCurrent)}
-                />
-                <PasswordField
-                    label={isRtl ? "كلمة المرور الجديدة" : "New Password"}
-                    value={newPassword}
-                    onChange={setNewPassword}
-                    show={showNew}
-                    onToggle={() => setShowNew(!showNew)}
-                />
-                <div>
-                    <label className="block text-sm font-medium text-secondary-700 mb-1.5">
-                        {isRtl ? "تأكيد كلمة المرور" : "Confirm New Password"}
-                    </label>
-                    <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary-400" />
-                        <input
-                            type="password"
-                            value={confirmPassword}
-                            onChange={e => setConfirmPassword(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 border border-secondary-200 rounded-xl text-sm focus:ring-1 focus:ring-primary-600 focus:border-primary-600"
-                            required
-                        />
-                    </div>
-                </div>
+            <div className="mb-4 px-4 py-3 bg-secondary-50 rounded-xl">
+                <p className="text-xs text-secondary-500 mb-2">
+                    {isRtl ? "طرق تسجيل الدخول" : "Connected sign-in methods"}
+                </p>
+                {loading ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-secondary-400" />
+                ) : providers.length === 0 ? (
+                    <p className="text-sm text-secondary-500">
+                        {isRtl ? "لم يتم العثور على طرق مرتبطة" : "No methods found"}
+                    </p>
+                ) : (
+                    <ul className="space-y-1.5">
+                        {providers.map((p) => (
+                            <li key={p} className="text-sm font-medium text-secondary-900 flex items-center gap-2">
+                                <KeyRound className="w-3.5 h-3.5 text-primary-600" />
+                                {(providerLabels[p] ?? { label: p, ar: p })[isRtl ? "ar" : "label"]}
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </div>
 
-                {error && <p className="text-sm text-red-500">{error}</p>}
-                {message && <p className="text-sm text-green-600 flex items-center gap-1"><CheckCircle className="w-4 h-4" />{message}</p>}
-
-                <div className="flex justify-end">
-                    <button
-                        type="submit"
-                        disabled={loading}
-                        className="flex items-center gap-2 px-4 py-2 bg-secondary-900 text-white text-sm font-medium rounded-xl hover:bg-secondary-800 transition-colors disabled:opacity-50"
-                    >
-                        {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                        {isRtl ? "تغيير كلمة المرور" : "Change Password"}
-                    </button>
-                </div>
-            </form>
+            <p className="text-xs text-secondary-500">
+                {isRtl
+                    ? "وقفيستخدم تسجيل دخول بدون كلمة مرور. ستستلم رمزًا على بريدك عند كل تسجيل دخول، ويمكنك أيضًا استخدام حساب جيت هَب أو جوجل."
+                    : "Waqf is passwordless. We'll send a one-time code to your email every time you sign in, or you can use GitHub / Google."}
+            </p>
         </section>
     );
 }
@@ -237,7 +255,7 @@ function LanguagePreferences({ isRtl, currentLanguage }: { isRtl: boolean; curre
         <section className="p-6">
             <div className="flex items-center gap-3 mb-5">
                 <div className="w-9 h-9 rounded-xl bg-blue-100 flex items-center justify-center">
-                    <Globe className="w-4.5 h-4.5 text-blue-600" />
+                    <Globe className="w-5 h-5 text-blue-600" />
                 </div>
                 <div>
                     <h2 className="font-bold text-secondary-900">
@@ -315,33 +333,4 @@ function ToggleRow({ label, description, checked, onChange }: {
     );
 }
 
-function PasswordField({ label, value, onChange, show, onToggle }: {
-    label: string;
-    value: string;
-    onChange: (v: string) => void;
-    show: boolean;
-    onToggle: () => void;
-}) {
-    return (
-        <div>
-            <label className="block text-sm font-medium text-secondary-700 mb-1.5">{label}</label>
-            <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary-400" />
-                <input
-                    type={show ? "text" : "password"}
-                    value={value}
-                    onChange={e => onChange(e.target.value)}
-                    className="w-full pl-10 pr-10 py-2.5 border border-secondary-200 rounded-xl text-sm focus:ring-1 focus:ring-primary-600 focus:border-primary-600"
-                    required
-                />
-                <button
-                    type="button"
-                    onClick={onToggle}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-secondary-400 hover:text-secondary-600"
-                >
-                    {show ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-            </div>
-        </div>
-    );
-}
+

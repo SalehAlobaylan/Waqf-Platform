@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { Save, Loader2, MessageSquare, Phone } from "lucide-react";
 import { SkillSelector } from "./SkillSelector";
 import { PortfolioManager } from "./PortfolioManager";
@@ -12,10 +14,12 @@ interface EditProfileFormProps {
     initialSkills: ContributorSkill[];
     initialPortfolio: PortfolioItem[];
     locale: string;
+    userHandle: string;
 }
 
-export function EditProfileForm({ initialProfile, initialSkills, initialPortfolio, locale }: EditProfileFormProps) {
+export function EditProfileForm({ initialProfile, initialSkills, initialPortfolio, locale, userHandle }: EditProfileFormProps) {
     const router = useRouter();
+    const t = useTranslations("profile.edit");
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
@@ -25,6 +29,8 @@ export function EditProfileForm({ initialProfile, initialSkills, initialPortfoli
         intentionStatement: initialProfile.intentionStatement || "",
         discord: initialProfile.discord || "",
         whatsapp: initialProfile.whatsapp || "",
+        isAvailable: initialProfile.isAvailable,
+        hoursPerWeek: initialProfile.hoursPerWeek ?? null,
     });
 
     const [selectedSkills, setSelectedSkills] = useState<number[]>(
@@ -41,7 +47,11 @@ export function EditProfileForm({ initialProfile, initialSkills, initialPortfoli
             const res = await fetch("/api/contributors/profile", {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...form, selectedSkills })
+                body: JSON.stringify({
+                    ...form,
+                    selectedSkills,
+                    hoursPerWeek: form.hoursPerWeek ?? null,
+                })
             });
 
             if (!res.ok) {
@@ -63,7 +73,7 @@ export function EditProfileForm({ initialProfile, initialSkills, initialPortfoli
         <div>
             <div className="p-6 border-b border-secondary-100 bg-secondary-50/50">
                 <h2 className="text-xl font-bold text-secondary-900">
-                    {locale === "ar" ? "تعديل الملف الشخصي" : "Edit Profile"}
+                    {t("title")}
                 </h2>
                 <p className="text-sm text-secondary-500 mt-1">
                     {locale === "ar"
@@ -81,7 +91,7 @@ export function EditProfileForm({ initialProfile, initialSkills, initialPortfoli
                     )}
                     {success && (
                         <div className="p-4 rounded-xl bg-green-50 text-green-700 text-sm border border-green-200">
-                            {locale === "ar" ? "تم الحفظ بنجاح!" : "Saved successfully!"}
+                            {t("saveSuccess")}
                         </div>
                     )}
 
@@ -90,14 +100,54 @@ export function EditProfileForm({ initialProfile, initialSkills, initialPortfoli
                         <h3 className="font-medium text-secondary-900">{locale === "ar" ? "نبذة عنك" : "About You"}</h3>
                         <div>
                             <label className="block text-sm font-medium text-secondary-700 mb-1">
-                                {locale === "ar" ? "السيرة الذاتية" : "Bio"}
+                                {t("bio")}
                             </label>
                             <textarea
                                 value={form.bio}
                                 onChange={e => setForm({ ...form, bio: e.target.value })}
                                 rows={4}
                                 className="w-full px-4 py-2 rounded-xl border border-secondary-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-secondary-50 focus:bg-white transition-all"
-                                placeholder={locale === "ar" ? "تحدث عن خبرتك ومجالك..." : "Describe your experience and background..."}
+                                placeholder={t("bioPlaceholder")}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Availability */}
+                    <div className="space-y-4 pt-4 border-t border-secondary-100">
+                        <h3 className="font-medium text-secondary-900">{locale === "ar" ? "التوفر" : "Availability"}</h3>
+                        <div className="flex items-center justify-between p-4 rounded-xl border border-secondary-200 bg-secondary-50/50">
+                            <div>
+                                <p className="text-sm font-medium text-secondary-800">
+                                    {locale === "ar" ? "متاح للمساهمة" : "Open to contributing"}
+                                </p>
+                                <p className="text-xs text-secondary-500 mt-0.5">
+                                    {locale === "ar"
+                                        ? "إظهار حالتك كمتاح يجعل أصحاب المشاريع يجدونك بسهولة."
+                                        : "Marking yourself available helps project owners find you."}
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                role="switch"
+                                aria-checked={form.isAvailable}
+                                onClick={() => setForm({ ...form, isAvailable: !form.isAvailable })}
+                                className={`relative w-12 h-7 rounded-full transition-colors shrink-0 ${form.isAvailable ? "bg-primary-600" : "bg-secondary-300"}`}
+                            >
+                                <span className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-all ${form.isAvailable ? "left-6" : "left-1"}`} />
+                            </button>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-secondary-700 mb-1">
+                                {locale === "ar" ? "ساعات التفرغ أسبوعياً (اختياري)" : "Hours per week (optional)"}
+                            </label>
+                            <input
+                                type="number"
+                                min={1}
+                                max={168}
+                                value={form.hoursPerWeek ?? ""}
+                                onChange={e => setForm({ ...form, hoursPerWeek: e.target.value ? Number(e.target.value) : null })}
+                                className="w-full px-4 py-2 rounded-xl border border-secondary-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-secondary-50 focus:bg-white"
+                                placeholder={locale === "ar" ? "مثال: 10" : "e.g. 10"}
                             />
                         </div>
                     </div>
@@ -113,27 +163,27 @@ export function EditProfileForm({ initialProfile, initialSkills, initialPortfoli
                             <div>
                                 <label className="block text-sm font-medium text-secondary-700 mb-1 flex items-center gap-2">
                                     <MessageSquare size={16} className="text-[#5865F2]" />
-                                    Discord Username
+                                    {t("discord")}
                                 </label>
                                 <input
                                     type="text"
                                     value={form.discord}
                                     onChange={e => setForm({ ...form, discord: e.target.value })}
                                     className="w-full px-4 py-2 rounded-xl border border-secondary-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-secondary-50 focus:bg-white"
-                                    placeholder="username#1234"
+                                    placeholder={t("discordPlaceholder")}
                                 />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-secondary-700 mb-1 flex items-center gap-2">
                                     <Phone size={16} className="text-[#25D366]" />
-                                    WhatsApp Formatted Link
+                                    {t("whatsapp")}
                                 </label>
                                 <input
                                     type="text"
                                     value={form.whatsapp}
                                     onChange={e => setForm({ ...form, whatsapp: e.target.value })}
                                     className="w-full px-4 py-2 rounded-xl border border-secondary-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-secondary-50 focus:bg-white"
-                                    placeholder="https://wa.me/1234567890"
+                                    placeholder={t("whatsappPlaceholder")}
                                 />
                             </div>
                         </div>
@@ -150,14 +200,20 @@ export function EditProfileForm({ initialProfile, initialSkills, initialPortfoli
                     </div>
 
                     {/* Actions */}
-                    <div className="pt-6 border-t border-secondary-100 flex justify-end">
+                    <div className="pt-6 border-t border-secondary-100 flex justify-end gap-3">
+                        <Link
+                            href={`/${locale}/profile/${userHandle}`}
+                            className="px-6 py-2.5 border border-secondary-200 text-secondary-700 font-medium rounded-xl hover:bg-secondary-50 transition"
+                        >
+                            {t("cancel")}
+                        </Link>
                         <button
                             type="submit"
                             disabled={loading}
                             className="flex items-center gap-2 px-6 py-2.5 bg-primary-600 text-white font-medium rounded-xl hover:bg-primary-700 transition"
                         >
                             {loading ? <Loader2 size={18} className="animate-spin" /> : <Save size={18} />}
-                            {locale === "ar" ? "حفظ التغييرات" : "Save Changes"}
+                            {t("saveChanges")}
                         </button>
                     </div>
                 </form>

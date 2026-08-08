@@ -1,4 +1,5 @@
 import { test } from "@playwright/test";
+import { signInAs, SEEDED_USERS } from "../auth-helpers";
 import { expectForbiddenError, expectUnauthorizedError, expectValidationError } from "./helpers";
 
 test.describe("API Validation - Auth Guardrails", () => {
@@ -38,8 +39,9 @@ test.describe("API Validation - Auth Guardrails", () => {
     await expectUnauthorizedError(response);
   });
 
-  test("GET /api/reports preserves 403 precedence", async ({ request }) => {
-    const response = await request.get("/api/reports?status=BAD");
+  test("GET /api/reports preserves 403 precedence", async ({ page }) => {
+    await signInAs(page, SEEDED_USERS.omar);
+    const response = await page.request.get("/api/reports?status=BAD");
     await expectForbiddenError(response);
   });
 

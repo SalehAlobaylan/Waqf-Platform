@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { notificationPatchSchema, notificationsQuerySchema } from "@/lib/validation/schemas";
 import { parseBody, parseQuery } from "@/lib/validation/parse";
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
 
 /**
  * GET /api/notifications
@@ -65,6 +66,10 @@ export async function PATCH(request: NextRequest) {
         const session = await auth.api.getSession({ headers: await headers() });
         if (!session?.user?.id) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        if (!checkRateLimit(request, "notification-patch", { limit: 30, windowMs: 60_000 }, session.user.id)) {
+            return rateLimitedResponse();
         }
 
         const parsedBody = await parseBody(request, notificationPatchSchema);

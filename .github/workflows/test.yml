@@ -1,4 +1,4 @@
-name: E2E Tests
+name: CI
 
 on:
   push:
@@ -6,9 +6,19 @@ on:
   pull_request:
     branches: [main, develop]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+  BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
+  BETTER_AUTH_URL: ${{ secrets.BETTER_AUTH_URL }}
+  NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+
 jobs:
   test:
-    name: Run E2E Tests
+    name: E2E Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -26,8 +36,18 @@ jobs:
 
       - name: Generate Prisma Client
         run: npx prisma generate
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Sync database schema
+        run: npx prisma db push --skip-generate
+
+      - name: Mark initial migration as applied
+        run: npx prisma migrate resolve --applied 0001_init || true
+
+      - name: Seed database
+        run: npm run db:seed
+
+      - name: Backfill usernames
+        run: npm run db:backfill-usernames || true
 
       - name: Setup Playwright Browsers
         run: npx playwright install chromium
@@ -35,22 +55,14 @@ jobs:
       - name: Run API Validation Contract Tests
         run: npm run test:validation
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
-          BETTER_AUTH_URL: ${{ secrets.BETTER_AUTH_URL }}
-          GITHUB_CLIENT_ID: ${{ secrets.GITHUB_CLIENT_ID }}
-          GITHUB_CLIENT_SECRET: ${{ secrets.GITHUB_CLIENT_SECRET }}
-          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+          ENABLE_DEV_LOGIN: "true"
+          NEXT_PUBLIC_ENABLE_DEV_LOGIN: "true"
 
       - name: Run E2E Tests
         run: npm test
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
-          BETTER_AUTH_URL: ${{ secrets.BETTER_AUTH_URL }}
-          GITHUB_CLIENT_ID: ${{ secrets.GITHUB_CLIENT_ID }}
-          GITHUB_CLIENT_SECRET: ${{ secrets.GITHUB_CLIENT_SECRET }}
-          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+          ENABLE_DEV_LOGIN: "true"
+          NEXT_PUBLIC_ENABLE_DEV_LOGIN: "true"
 
       - name: Upload test results
         if: always()
@@ -69,7 +81,7 @@ jobs:
           retention-days: 7
 
   lint:
-    name: Lint & Type Check
+    name: Lint, Type Check & Build
     runs-on: ubuntu-latest
 
     steps:
@@ -88,12 +100,21 @@ jobs:
       - name: Run ESLint
         run: npm run lint
 
+      - name: Type Check
+        run: npm run type-check
+
+      - name: Audit dependencies
+        run: npm run audit:check
+
       - name: Build project
         run: npm run build
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
           BETTER_AUTH_URL: ${{ secrets.BETTER_AUTH_URL }}
+
+      - name: Check message key parity
+        run: npm run i18n:check
 
   db-check:
     name: Database Schema Check
@@ -114,13 +135,9 @@ jobs:
 
       - name: Generate Prisma Client
         run: npx prisma generate
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Validate Prisma Schema
         run: npx prisma validate
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Check for migration needed
         run: |
@@ -128,7 +145,7 @@ jobs:
             --from-url "$DATABASE_URL" \
             --to-schema-datamodel prisma/schema.prisma \
             --script > migration.sql 2>&1 || true
-          
+
           if grep -q "SELECT COUNT" migration.sql; then
             echo "Database is out of sync with schema"
             cat migration.sql
@@ -136,5 +153,3 @@ jobs:
           else
             echo "Database schema is in sync"
           fi
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}

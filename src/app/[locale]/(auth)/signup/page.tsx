@@ -1,9 +1,17 @@
+import { getTranslations } from "next-intl/server";
 import { SignupForm } from "@/components/auth/SignupForm";
 
-export const metadata = {
-    title: "Sign Up | Waqf",
-    description: "Create your Waqf account and start contributing to Islamic open-source projects as sadaqah jariyah",
-};
+export async function generateMetadata({
+    params,
+}: {
+    params: Promise<{ locale: string }>;
+}) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "metadata" });
+    return {
+        title: t("signup"),
+    };
+}
 
 export default function SignupPage() {
     return <SignupForm />;

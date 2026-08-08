@@ -6,6 +6,7 @@ import { ApplicationStatus } from "@prisma/client";
 import { applicationStatusUpdateSchema, routeIdParamSchema } from "@/lib/validation/schemas";
 import { parseBody, parseParams } from "@/lib/validation/parse";
 import { makeValidationError } from "@/lib/validation/errors";
+import { sendEventEmail } from "@/lib/event-email";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -63,6 +64,14 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             );
         }
 
+        // External/curated projects have no on-platform owner to manage applications
+        if (!application.project.ownerId) {
+            return NextResponse.json(
+                { error: "External curated projects do not accept on-platform applications" },
+                { status: 400 }
+            );
+        }
+
         // Only project owner can update status
         if (application.project.ownerId !== session.user.id) {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
@@ -97,6 +106,16 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
                     : feedback?.trim() || `Your application to "${application.project.title}" was not accepted this time.`,
                 link: `/dashboard/applications`,
             },
+        });
+
+        // Event email to the contributor
+        await sendEventEmail(application.contributorId, {
+            kind: status === "ACCEPTED" ? "APPLICATION_ACCEPTED" : "APPLICATION_REJECTED",
+            actorName: session.user.name ?? undefined,
+            projectTitle: application.project.title,
+            projectSlug: application.project.slug,
+            applicationId: application.id,
+            feedback: feedback?.trim() || undefined,
         });
 
         // If accepted, optionally update project status to IN_PROGRESS

@@ -1,97 +1,89 @@
-import { PrismaClient } from "@prisma/client";
-import { scryptSync, randomBytes } from "crypto";
+import { PrismaClient, UserRole } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-function hashPassword(password: string): string {
-  const salt = randomBytes(16).toString("hex");
-  const hash = scryptSync(password, salt, 64).toString("hex");
-  return `${salt}:${hash}`;
-}
-
 const skills = [
   // Frontend
-  { name: "React", nameAr: "رياكت", category: "Frontend" },
-  { name: "Vue.js", nameAr: "فيو جي اس", category: "Frontend" },
-  { name: "Angular", nameAr: "أنجولار", category: "Frontend" },
-  { name: "Next.js", nameAr: "نكست جي اس", category: "Frontend" },
-  { name: "TypeScript", nameAr: "تايب سكريبت", category: "Frontend" },
-  { name: "JavaScript", nameAr: "جافا سكريبت", category: "Frontend" },
-  { name: "HTML/CSS", nameAr: "اتش تي ام ال / سي اس اس", category: "Frontend" },
-  { name: "Tailwind CSS", nameAr: "تيلويند", category: "Frontend" },
-  { name: "SASS/SCSS", nameAr: "ساس", category: "Frontend" },
+  { name: "React", category: "Frontend" },
+  { name: "Vue.js", category: "Frontend" },
+  { name: "Angular", category: "Frontend" },
+  { name: "Next.js", category: "Frontend" },
+  { name: "TypeScript", category: "Frontend" },
+  { name: "JavaScript", category: "Frontend" },
+  { name: "HTML/CSS", category: "Frontend" },
+  { name: "Tailwind CSS", category: "Frontend" },
+  { name: "SASS/SCSS", category: "Frontend" },
   // Backend
-  { name: "Node.js", nameAr: "نود جي اس", category: "Backend" },
-  { name: "Python", nameAr: "بايثون", category: "Backend" },
-  { name: "Go", nameAr: "جو", category: "Backend" },
-  { name: "Java", nameAr: "جافا", category: "Backend" },
-  { name: "PHP", nameAr: "بي اتش بي", category: "Backend" },
-  { name: "Ruby", nameAr: "روبي", category: "Backend" },
-  { name: "C#", nameAr: "سي شارب", category: "Backend" },
-  { name: "Rust", nameAr: "رست", category: "Backend" },
-  { name: "Express.js", nameAr: "اكسبريس", category: "Backend" },
-  { name: "Django", nameAr: "جانغو", category: "Backend" },
-  { name: "FastAPI", nameAr: "فاست ايه بي اي", category: "Backend" },
+  { name: "Node.js", category: "Backend" },
+  { name: "Python", category: "Backend" },
+  { name: "Go", category: "Backend" },
+  { name: "Java", category: "Backend" },
+  { name: "PHP", category: "Backend" },
+  { name: "Ruby", category: "Backend" },
+  { name: "C#", category: "Backend" },
+  { name: "Rust", category: "Backend" },
+  { name: "Express.js", category: "Backend" },
+  { name: "Django", category: "Backend" },
+  { name: "FastAPI", category: "Backend" },
   // Mobile
-  { name: "React Native", nameAr: "رياكت نيتيف", category: "Mobile" },
-  { name: "Flutter", nameAr: "فلاتر", category: "Mobile" },
-  { name: "Swift", nameAr: "سويفت", category: "Mobile" },
-  { name: "Kotlin", nameAr: "كوتلن", category: "Mobile" },
-  { name: "iOS Development", nameAr: "تطوير آي أو اس", category: "Mobile" },
-  { name: "Android Development", nameAr: "تطوير أندرويد", category: "Mobile" },
+  { name: "React Native", category: "Mobile" },
+  { name: "Flutter", category: "Mobile" },
+  { name: "Swift", category: "Mobile" },
+  { name: "Kotlin", category: "Mobile" },
+  { name: "iOS Development", category: "Mobile" },
+  { name: "Android Development", category: "Mobile" },
   // DevOps
-  { name: "Docker", nameAr: "دوكر", category: "DevOps" },
-  { name: "Kubernetes", nameAr: "كوبرنيتس", category: "DevOps" },
-  { name: "AWS", nameAr: "خدمات أمازون السحابية", category: "DevOps" },
-  { name: "Google Cloud", nameAr: "جوجل كلاود", category: "DevOps" },
-  { name: "Azure", nameAr: "أزور", category: "DevOps" },
-  { name: "CI/CD", nameAr: "التكامل المستمر", category: "DevOps" },
-  { name: "Linux", nameAr: "لينكس", category: "DevOps" },
-  { name: "Nginx", nameAr: "إنجينكس", category: "DevOps" },
+  { name: "Docker", category: "DevOps" },
+  { name: "Kubernetes", category: "DevOps" },
+  { name: "AWS", category: "DevOps" },
+  { name: "Google Cloud", category: "DevOps" },
+  { name: "Azure", category: "DevOps" },
+  { name: "CI/CD", category: "DevOps" },
+  { name: "Linux", category: "DevOps" },
+  { name: "Nginx", category: "DevOps" },
   // Database
-  { name: "PostgreSQL", nameAr: "بوستجري اس كيو ال", category: "Database" },
-  { name: "MySQL", nameAr: "ماي اس كيو ال", category: "Database" },
-  { name: "MongoDB", nameAr: "مونجو دي بي", category: "Database" },
-  { name: "Redis", nameAr: "ريديس", category: "Database" },
-  { name: "Prisma", nameAr: "بريزما", category: "Database" },
+  { name: "PostgreSQL", category: "Database" },
+  { name: "MySQL", category: "Database" },
+  { name: "MongoDB", category: "Database" },
+  { name: "Redis", category: "Database" },
+  { name: "Prisma", category: "Database" },
   // Design
-  { name: "Figma", nameAr: "فيجما", category: "Design" },
-  { name: "UI/UX Design", nameAr: "تصميم واجهات المستخدم", category: "Design" },
-  { name: "Graphic Design", nameAr: "التصميم الجرافيكي", category: "Design" },
-  { name: "Adobe XD", nameAr: "أدوبي إكس دي", category: "Design" },
+  { name: "Figma", category: "Design" },
+  { name: "UI/UX Design", category: "Design" },
+  { name: "Graphic Design", category: "Design" },
+  { name: "Adobe XD", category: "Design" },
   // AI/ML
-  { name: "Machine Learning", nameAr: "تعلم الآلة", category: "AI" },
-  { name: "Deep Learning", nameAr: "التعلم العميق", category: "AI" },
-  { name: "NLP", nameAr: "معالجة اللغات الطبيعية", category: "AI" },
-  { name: "TensorFlow", nameAr: "تنسرفلو", category: "AI" },
-  { name: "PyTorch", nameAr: "باي تورش", category: "AI" },
+  { name: "Machine Learning", category: "AI" },
+  { name: "Deep Learning", category: "AI" },
+  { name: "NLP", category: "AI" },
+  { name: "TensorFlow", category: "AI" },
+  { name: "PyTorch", category: "AI" },
   // Other
-  { name: "Technical Writing", nameAr: "الكتابة التقنية", category: "Other" },
-  { name: "Arabic NLP", nameAr: "معالجة اللغة العربية", category: "Other" },
-  { name: "Islamic Content", nameAr: "المحتوى الإسلامي", category: "Other" },
-  { name: "Quran Tech", nameAr: "تقنيات القرآن", category: "Other" },
-  { name: "Project Management", nameAr: "إدارة المشاريع", category: "Other" },
+  { name: "Technical Writing", category: "Other" },
+  { name: "Arabic NLP", category: "Other" },
+  { name: "Islamic Content", category: "Other" },
+  { name: "Quran Tech", category: "Other" },
+  { name: "Project Management", category: "Other" },
 ];
-
-async function getSkill(name: string) {
-  return prisma.skill.findUnique({ where: { name } });
-}
 
 async function main() {
   console.log("🌱 جاري تهيئة قاعدة البيانات...\n");
 
   // ===================== المهارات =====================
-  for (const skill of skills) {
-    await prisma.skill.upsert({
-      where: { name: skill.name },
-      update: {},
-      create: skill,
-    });
-  }
+  await prisma.skill.createMany({
+    data: skills,
+    skipDuplicates: true,
+  });
+  const skillMap = new Map(
+    (await prisma.skill.findMany()).map((s) => [s.name, s])
+  );
   console.log(`✅ تم إضافة ${skills.length} مهارة`);
 
   // ===================== المستخدمون =====================
-  const passwordHash = hashPassword("test");
+  // المصادقة بدون كلمة مرور: لا تُخزَّن كلمات مرور.
+  // تسجيل الدخول عبر رابط البريد / رمز OTP أو عبر OAuth (GitHub / Google)
+  // عند الإعداد. مساعد /api/dev/sign-in-as يصدر جلسة مباشرة (متاح فقط
+  // عندما ENABLE_DEV_LOGIN=true في .env).
 
   const usersData = [
     { name: "مدير النظام", email: "admin@gmail.com", role: "ADMIN", lang: "ar" },
@@ -105,39 +97,24 @@ async function main() {
     { name: "ليلى راشد", email: "layla@example.com", role: "USER", lang: "ar" },
   ];
 
-  const users: Record<string, any> = {};
-
-  for (const u of usersData) {
-    const user = await prisma.user.upsert({
-      where: { email: u.email },
-      update: {},
-      create: {
-        name: u.name,
-        email: u.email,
-        emailVerified: true,
-        role: u.role,
-        preferredLanguage: u.lang,
-      },
-    });
-    users[u.email] = user;
-
-    await prisma.account.upsert({
-      where: {
-        providerId_accountId: {
-          providerId: "credential",
-          accountId: user.id,
-        },
-      },
-      update: {},
-      create: {
-        userId: user.id,
-        accountId: user.id,
-        providerId: "credential",
-        password: passwordHash,
-      },
-    });
-  }
-  console.log(`✅ تم إضافة ${usersData.length} مستخدم (كلمة المرور: "test")`);
+  await prisma.user.createMany({
+    data: usersData.map((u) => ({
+      name: u.name,
+      email: u.email,
+      emailVerified: true,
+      role: u.role as UserRole,
+      preferredLanguage: u.lang,
+    })),
+    skipDuplicates: true,
+  });
+  const users: Record<string, any> = Object.fromEntries(
+    (
+      await prisma.user.findMany({
+        where: { email: { in: usersData.map((u) => u.email) } },
+      })
+    ).map((u) => [u.email, u])
+  );
+  console.log(`✅ تم إضافة ${usersData.length} مستخدم (مصادقة بدون كلمة مرور)`);
 
   const admin = users["admin@gmail.com"];
   const omar = users["omar@example.com"];
@@ -215,41 +192,44 @@ async function main() {
     },
   ];
 
-  for (const profile of profiles) {
-    await prisma.contributorProfile.upsert({
-      where: { userId: profile.userId },
-      update: {},
-      create: profile,
-    });
-  }
+  await prisma.contributorProfile.createMany({
+    data: profiles,
+    skipDuplicates: true,
+  });
+  const profileMap = new Map(
+    (
+      await prisma.contributorProfile.findMany({
+        where: { userId: { in: profiles.map((p) => p.userId) } },
+      })
+    ).map((p) => [p.userId, p])
+  );
   console.log(`✅ تم إضافة ${profiles.length} ملف مساهم`);
 
   // ===================== مهارات المساهمين =====================
-  const react = await getSkill("React");
-  const nextjs = await getSkill("Next.js");
-  const ts = await getSkill("TypeScript");
-  const python = await getSkill("Python");
-  const arabicNlp = await getSkill("Arabic NLP");
-  const flutter = await getSkill("Flutter");
-  const figma = await getSkill("Figma");
-  const uiux = await getSkill("UI/UX Design");
-  const nodejs = await getSkill("Node.js");
-  const docker = await getSkill("Docker");
-  const postgresql = await getSkill("PostgreSQL");
-  const tailwind = await getSkill("Tailwind CSS");
-  const ml = await getSkill("Machine Learning");
-  const reactNative = await getSkill("React Native");
-  const techWriting = await getSkill("Technical Writing");
-  const go = await getSkill("Go");
-  const aws = await getSkill("AWS");
-  await getSkill("FastAPI");
+  const react = skillMap.get("React")!;
+  const nextjs = skillMap.get("Next.js")!;
+  const ts = skillMap.get("TypeScript")!;
+  const python = skillMap.get("Python")!;
+  const arabicNlp = skillMap.get("Arabic NLP")!;
+  const flutter = skillMap.get("Flutter")!;
+  const figma = skillMap.get("Figma")!;
+  const uiux = skillMap.get("UI/UX Design")!;
+  const nodejs = skillMap.get("Node.js")!;
+  const docker = skillMap.get("Docker")!;
+  const postgresql = skillMap.get("PostgreSQL")!;
+  const tailwind = skillMap.get("Tailwind CSS")!;
+  const ml = skillMap.get("Machine Learning")!;
+  const reactNative = skillMap.get("React Native")!;
+  const techWriting = skillMap.get("Technical Writing")!;
+  const go = skillMap.get("Go")!;
+  const aws = skillMap.get("AWS")!;
 
-  const omarProfile = await prisma.contributorProfile.findUnique({ where: { userId: omar.id } });
-  const fatimaProfile = await prisma.contributorProfile.findUnique({ where: { userId: fatima.id } });
-  const yusufProfile = await prisma.contributorProfile.findUnique({ where: { userId: yusuf.id } });
-  const aishaProfile = await prisma.contributorProfile.findUnique({ where: { userId: aisha.id } });
-  const khalidProfile = await prisma.contributorProfile.findUnique({ where: { userId: khalid.id } });
-  const nouraProfile = await prisma.contributorProfile.findUnique({ where: { userId: noura.id } });
+  const omarProfile = profileMap.get(omar.id)!;
+  const fatimaProfile = profileMap.get(fatima.id)!;
+  const yusufProfile = profileMap.get(yusuf.id)!;
+  const aishaProfile = profileMap.get(aisha.id)!;
+  const khalidProfile = profileMap.get(khalid.id)!;
+  const nouraProfile = profileMap.get(noura.id)!;
 
   const contributorSkills = [
     { contributorId: omarProfile!.id, skillId: react!.id, level: "ADVANCED" as const, yearsExperience: 4 },
@@ -272,13 +252,10 @@ async function main() {
     { contributorId: nouraProfile!.id, skillId: techWriting!.id, level: "EXPERT" as const, yearsExperience: 4 },
   ];
 
-  for (const cs of contributorSkills) {
-    await prisma.contributorSkill.upsert({
-      where: { contributorId_skillId: { contributorId: cs.contributorId, skillId: cs.skillId } },
-      update: {},
-      create: cs,
-    });
-  }
+  await prisma.contributorSkill.createMany({
+    data: contributorSkills,
+    skipDuplicates: true,
+  });
   console.log(`✅ تم إضافة ${contributorSkills.length} مهارة للمساهمين`);
 
   // ===================== أعمال سابقة =====================
@@ -290,13 +267,19 @@ async function main() {
     { contributorId: khalidProfile!.id, title: "محلل المشاعر العربية", description: "نموذج NLP لتحليل مشاعر النصوص العربية.", url: "https://github.com/example/arabic-sentiment", order: 0 },
   ];
 
-  for (const item of portfolioItems) {
-    const existing = await prisma.portfolioItem.findFirst({
-      where: { contributorId: item.contributorId, title: item.title },
-    });
-    if (!existing) {
-      await prisma.portfolioItem.create({ data: item });
-    }
+  const existingPortfolio = await prisma.portfolioItem.findMany({
+    where: {
+      contributorId: { in: [...new Set(portfolioItems.map((i) => i.contributorId))] },
+    },
+  });
+  const newPortfolio = portfolioItems.filter(
+    (i) =>
+      !existingPortfolio.some(
+        (e) => e.contributorId === i.contributorId && e.title === i.title
+      )
+  );
+  if (newPortfolio.length) {
+    await prisma.portfolioItem.createMany({ data: newPortfolio });
   }
   console.log(`✅ تم إضافة ${portfolioItems.length} عمل سابق`);
 
@@ -327,15 +310,17 @@ async function main() {
     },
   ];
 
-  const organizations: Record<string, any> = {};
-  for (const org of orgs) {
-    const o = await prisma.organization.upsert({
-      where: { slug: org.slug },
-      update: {},
-      create: org,
-    });
-    organizations[org.slug] = o;
-  }
+  await prisma.organization.createMany({
+    data: orgs,
+    skipDuplicates: true,
+  });
+  const organizations: Record<string, any> = Object.fromEntries(
+    (
+      await prisma.organization.findMany({
+        where: { slug: { in: orgs.map((o) => o.slug) } },
+      })
+    ).map((o) => [o.slug, o])
+  );
   console.log(`✅ تم إضافة ${orgs.length} منظمة`);
 
   // ===================== المشاريع =====================
@@ -725,37 +710,162 @@ async function main() {
     },
   ];
 
-  for (const { skills: projectSkills, ...projectData } of projectsData) {
-    const project = await prisma.project.upsert({
-      where: { slug: projectData.slug },
-      update: {},
-      create: projectData,
-    });
-
-    for (const ps of projectSkills) {
-      const skill = await getSkill(ps.name);
-      if (skill) {
-        await prisma.projectSkill.upsert({
-          where: { projectId_skillId: { projectId: project.id, skillId: skill.id } },
-          update: {},
-          create: { projectId: project.id, skillId: skill.id, isRequired: ps.required },
-        });
-      }
-    }
-  }
+  await prisma.project.createMany({
+    data: projectsData.map(({ skills: _skills, ...projectData }, i) => ({
+      ...projectData,
+      createdAt: new Date(Date.now() + i * 1000),
+    })),
+    skipDuplicates: true,
+  });
+  const projectMap = new Map(
+    (
+      await prisma.project.findMany({
+        where: { slug: { in: projectsData.map((p) => p.slug) } },
+      })
+    ).map((p) => [p.slug, p])
+  );
+  await prisma.projectSkill.createMany({
+    data: projectsData.flatMap(({ skills: projectSkills, slug }) =>
+      projectSkills.flatMap((ps) => {
+        const skill = skillMap.get(ps.name);
+        const project = projectMap.get(slug);
+        return skill && project
+          ? [{ projectId: project.id, skillId: skill.id, isRequired: ps.required }]
+          : [];
+      })
+    ),
+    skipDuplicates: true,
+  });
   console.log(`✅ تم إضافة ${projectsData.length} مشروع`);
 
+  // ===================== مشاريع خارجية منتقاة (يضيفها المدير بالنيابة عن أصحاب غير مسجلين) =====================
+  const curatedProjectsData = [
+    {
+      slug: "haramblur",
+      title: "حرم بلر",
+      description: "أداة ويب لإخفاء المحتوى غير المناسب تلقائيًا في الصور ومقاطع الفيديو، مع تركيز على المحتوى المرئي الإسلامي.",
+      impact: "حماية تجربة المشاهدة للعائلات والمستخدمين الذين يبحثون عن محتوى مرئي نظيف.",
+      category: "TOOLS" as const,
+      language: "ARABIC" as const,
+      country: "SA",
+      status: "OPEN" as const,
+      source: "EXTERNAL" as const,
+      externalUrl: "https://haramblur.com/",
+      externalOwnerName: "فريق حرم بلر",
+      externalOwnerContact: "https://haramblur.com/",
+      curatorNotes: "أداة مفيدة جدًا لحماية المحتوى المرئي. لا يوجد مالك مسجل على المنصة، تتم الإدارة عبر الموقع الأصلي.",
+      addedByAdminId: admin.id,
+      skills: [
+        { name: "Next.js", required: true },
+        { name: "Python", required: true },
+        { name: "Machine Learning", required: false },
+        { name: "Figma", required: false },
+      ],
+    },
+    {
+      slug: "haram-mute",
+      title: "حرم ميوت",
+      description: "إضافة متصفح تكتم تلقائيًا للمقاطع والموسيقى التي تحتوي على محتوى غير مناسب على يوتيوب والمنصات الأخرى.",
+      impact: "تجربة تصفح آمنة ومناسبة للعائلات على منصات المحتوى.",
+      category: "TOOLS" as const,
+      language: "ARABIC" as const,
+      country: "AE",
+      status: "OPEN" as const,
+      source: "EXTERNAL" as const,
+      externalUrl: "https://haram-mute.com/",
+      externalOwnerName: "فريق حرم ميوت",
+      externalOwnerContact: "https://haram-mute.com/",
+      curatorNotes: "إضافة متصفح مبتكرة. تتكامل مع المنصات الرئيسية، مفيدة جدًا للباحثين عن تجربة مشاهدة نظيفة.",
+      addedByAdminId: admin.id,
+      skills: [
+        { name: "JavaScript", required: true },
+        { name: "TypeScript", required: true },
+        { name: "Machine Learning", required: false },
+      ],
+    },
+  ];
+
+  await prisma.project.createMany({
+    data: curatedProjectsData.map(({ skills: _skills, ...projectData }, i) => ({
+      ...projectData,
+      createdAt: new Date(Date.now() + 60_000 + i * 1000),
+    })),
+    skipDuplicates: true,
+  });
+  await prisma.projectSkill.createMany({
+    data: curatedProjectsData.flatMap(({ skills: projectSkills, slug }) =>
+      projectSkills.flatMap((ps) => {
+        const skill = skillMap.get(ps.name);
+        const project = projectMap.get(slug);
+        return skill && project
+          ? [{ projectId: project.id, skillId: skill.id, isRequired: ps.required }]
+          : [];
+      })
+    ),
+    skipDuplicates: true,
+  });
+  console.log(`✅ تم إضافة ${curatedProjectsData.length} مشروع منتقى`);
+
+  // ===================== الحملات =====================
+  const campaignsData = [
+    {
+      slug: "quran-app-relaunch",
+      ownerId: admin.id,
+      title: "إعادة إطلاق تطبيق القرآن الكريم",
+      pitch: "نحتاج فريقًا متكاملًا لإعادة تصميم تطبيق القرآن الكريم بأحدث التقنيات.",
+      problem: "التطبيق الحالي قديم ويحتاج إعادة بناء كاملة لواجهة المستخدم وتجربة القراءة.",
+      outcome: "تطبيق جديد بمحرك بحث متقدم وتلاوات متعددة وواجهة عصرية.",
+      category: "QURAN" as const,
+      language: "BOTH" as const,
+      country: "SA",
+      status: "RECRUITING" as const,
+      tags: ["React", "Next.js", "Audio"],
+    },
+    {
+      slug: "prayer-api-v2",
+      ownerId: omar.id,
+      title: "تطوير واجهة مواقيت الصلاة",
+      pitch: "توسيع واجهة مواقيت الصلاة لدعم المزيد من طرق الحساب.",
+      problem: "الواجهة الحالية تدعم طرق حساب قليلة وتحتاج تحسين الدقة.",
+      outcome: "دعم كامل لطرق الحساب المتعددة مع وثائق مطورة.",
+      category: "PRAYER" as const,
+      language: "ARABIC" as const,
+      country: "EG",
+      status: "DRAFT" as const,
+      tags: ["API", "Go"],
+    },
+    {
+      slug: "mosque-data-platform",
+      ownerId: admin.id,
+      title: "منصة بيانات المساجد",
+      pitch: "بناء منصة مفتوحة لبيانات المساجد في المنطقة العربية.",
+      problem: "لا توجد قاعدة بيانات موحدة ومفتوحة لبيانات المساجد.",
+      outcome: "منصة ببيانات منسقة ومتاحة للجميع.",
+      category: "COMMUNITY" as const,
+      language: "BOTH" as const,
+      country: "AE",
+      status: "PENDING" as const,
+      tags: ["Data", "Open Data"],
+    },
+  ];
+
+  await prisma.campaign.createMany({
+    data: campaignsData,
+    skipDuplicates: true,
+  });
+  console.log(`✅ تم إضافة ${campaignsData.length} حملة`);
+
   // ===================== الطلبات =====================
-  const quranTracker = await prisma.project.findUnique({ where: { slug: "quran-memorization-tracker" } });
-  const prayerApi = await prisma.project.findUnique({ where: { slug: "islamic-prayer-times-api" } });
-  const charityClassifier = await prisma.project.findUnique({ where: { slug: "arabic-charity-classifier" } });
-  const communityHub = await prisma.project.findUnique({ where: { slug: "muslim-community-hub" } });
-  const mosqueFinder = await prisma.project.findUnique({ where: { slug: "mosque-finder-app" } });
-  const islamicLms = await prisma.project.findUnique({ where: { slug: "islamic-studies-lms" } });
-  const designSystem = await prisma.project.findUnique({ where: { slug: "islamic-design-system" } });
-  const halalScanner = await prisma.project.findUnique({ where: { slug: "halal-food-scanner" } });
-  const zakatCalc = await prisma.project.findUnique({ where: { slug: "zakat-calculator-pro" } });
-  const hijriApi = await prisma.project.findUnique({ where: { slug: "hijri-calendar-api" } });
+  const quranTracker = projectMap.get("quran-memorization-tracker")!;
+  const prayerApi = projectMap.get("islamic-prayer-times-api")!;
+  const charityClassifier = projectMap.get("arabic-charity-classifier")!;
+  const communityHub = projectMap.get("muslim-community-hub")!;
+  const mosqueFinder = projectMap.get("mosque-finder-app")!;
+  const islamicLms = projectMap.get("islamic-studies-lms")!;
+  const designSystem = projectMap.get("islamic-design-system")!;
+  const halalScanner = projectMap.get("halal-food-scanner")!;
+  const zakatCalc = projectMap.get("zakat-calculator-pro")!;
+  const hijriApi = projectMap.get("hijri-calendar-api")!;
 
   const applicationsData = [
     { projectId: quranTracker!.id, contributorId: omar.id, status: "ACCEPTED" as const, message: "لدي خبرة في بناء أدوات تعليمية باستخدام React و Next.js. أرغب في المساهمة!", hoursPerWeek: 12 },
@@ -779,14 +889,14 @@ async function main() {
   ];
 
   const applications: Record<string, any> = {};
-  for (const app of applicationsData) {
-    const key = `${app.projectId}-${app.contributorId}`;
-    const a = await prisma.application.upsert({
-      where: { projectId_contributorId: { projectId: app.projectId, contributorId: app.contributorId } },
-      update: {},
-      create: app,
-    });
-    applications[key] = a;
+  await prisma.application.createMany({
+    data: applicationsData,
+    skipDuplicates: true,
+  });
+  for (const a of await prisma.application.findMany({
+    where: { projectId: { in: applicationsData.map((x) => x.projectId) } },
+  })) {
+    applications[`${a.projectId}-${a.contributorId}`] = a;
   }
   console.log(`✅ تم إضافة ${applicationsData.length} طلب`);
 
@@ -806,21 +916,26 @@ async function main() {
     { appKey: `${mosqueFinder!.id}-${aisha.id}`, senderId: aisha.id, content: "لا مشاكل! Flutter يتعامل مع المنصتين بشكل ممتاز. سأجهز المشروع اليوم." },
   ];
 
-  let msgCount = 0;
-  for (const msg of messagesData) {
+  const messagesToCreate = messagesData.flatMap((msg) => {
     const app = applications[msg.appKey];
-    if (app) {
-      await prisma.message.create({
-        data: {
-          applicationId: app.id,
-          senderId: msg.senderId,
-          content: msg.content,
-        },
-      });
-      msgCount++;
-    }
+    return app
+      ? [{ applicationId: app.id, senderId: msg.senderId, content: msg.content }]
+      : [];
+  });
+  await prisma.message.deleteMany({
+    where: {
+      applicationId: { in: [...new Set(messagesToCreate.map((m) => m.applicationId))] },
+    },
+  });
+  if (messagesToCreate.length) {
+    await prisma.message.createMany({
+      data: messagesToCreate.map((m, i) => ({
+        ...m,
+        createdAt: new Date(Date.now() + i * 1000),
+      })),
+    });
   }
-  console.log(`✅ تم إضافة ${msgCount} رسالة`);
+  console.log(`✅ تم إضافة ${messagesToCreate.length} رسالة`);
 
   // ===================== الإشعارات =====================
   const notificationsData = [
@@ -841,9 +956,10 @@ async function main() {
     { userId: aisha.id, type: "NEW_MESSAGE", title: "رسالة جديدة", content: "أرسل لك المدير رسالة حول تطبيق البحث عن المساجد", link: "/dashboard/messages" },
   ];
 
-  for (const n of notificationsData) {
-    await prisma.notification.create({ data: n });
-  }
+  await prisma.notification.deleteMany({
+    where: { userId: { in: [...new Set(notificationsData.map((n) => n.userId))] } },
+  });
+  await prisma.notification.createMany({ data: notificationsData });
   console.log(`✅ تم إضافة ${notificationsData.length} إشعار`);
 
   // ===================== البلاغات =====================
@@ -853,17 +969,20 @@ async function main() {
     { reporterId: yusuf.id, targetType: "PROJECT", targetId: "fake-project-id-2", reason: "وصف مضلل", details: "وصف المشروع لا يتطابق مع العمل الفعلي.", status: "RESOLVED" as const, resolvedBy: admin.id },
   ];
 
-  for (const r of reportsData) {
-    await prisma.report.create({ data: r });
-  }
+  await prisma.report.deleteMany({
+    where: { reporterId: { in: [...new Set(reportsData.map((r) => r.reporterId))] } },
+  });
+  await prisma.report.createMany({ data: reportsData });
   console.log(`✅ تم إضافة ${reportsData.length} بلاغ`);
 
   console.log("\n🎉 اكتملت التهيئة! جميع أقسام المحتوى مغطاة.");
-  console.log("\n📋 بيانات تسجيل الدخول (كلمة المرور: 'test'):");
+  console.log("\n📋 المستخدمون المهيّؤون (للتطوير والاختبار):");
   console.log("   المدير:     admin@gmail.com");
   console.log("   المستخدمون: omar@example.com, fatima@example.com, yusuf@example.com,");
   console.log("               aisha@example.com, khalid@example.com, noura@example.com,");
   console.log("               ahmed@example.com, layla@example.com");
+  console.log("\n   سجّل دخولهم عبر GitHub / Google / رابط البريد");
+  console.log("   (مساعد /api/dev/sign-in-as متاح في وضع التطوير فقط)");
 }
 
 main()

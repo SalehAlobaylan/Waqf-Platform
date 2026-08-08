@@ -6,6 +6,8 @@ import { headers } from "next/headers";
 import { reportCreateSchema, reportsQuerySchema } from "@/lib/validation/schemas";
 import { parseBody, parseQuery } from "@/lib/validation/parse";
 import { makeValidationError } from "@/lib/validation/errors";
+import { requireAdmin } from "@/lib/auth-helpers";
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
 
 /**
  * POST /api/reports
@@ -16,6 +18,10 @@ export async function POST(request: NextRequest) {
         const session = await auth.api.getSession({ headers: await headers() });
         if (!session?.user?.id) {
             return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+        }
+
+        if (!checkRateLimit(request, "report-create", { limit: 5, windowMs: 60_000 }, session.user.id)) {
+            return rateLimitedResponse();
         }
 
         const parsedBody = await parseBody(request, reportCreateSchema);
@@ -65,10 +71,8 @@ export async function POST(request: NextRequest) {
  */
 export async function GET(request: NextRequest) {
     try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id || session.user.role !== "ADMIN") {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-        }
+        const { admin, response } = await requireAdmin();
+        if (response) return response;
 
         const parsedQuery = parseQuery(request, reportsQuerySchema);
         if (!parsedQuery.success) {

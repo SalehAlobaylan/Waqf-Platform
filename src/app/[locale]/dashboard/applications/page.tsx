@@ -1,29 +1,34 @@
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ApplicationCard } from "@/components/applications/ApplicationCard";
-import { Briefcase, FileText, Inbox } from "lucide-react";
+import { Briefcase, Inbox } from "lucide-react";
 import Link from "next/link";
 
 interface ApplicationsPageProps {
     params: Promise<{ locale: string }>;
 }
 
-export const metadata = {
-    title: "My Applications | Waqf",
-    description: "Track your applications to Islamic open-source projects",
-};
+export async function generateMetadata({ params }: ApplicationsPageProps) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "metadata" });
+    return {
+        title: t("dashboardApplications"),
+    };
+}
 
 export default async function ApplicationsPage({ params }: ApplicationsPageProps) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "dashboard.applications" });
+    const tApps = await getTranslations({ locale, namespace: "applications" });
+    const tLanding = await getTranslations({ locale, namespace: "landing" });
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user?.id) {
-        redirect("/login");
+        redirect(`/${locale}/login`);
     }
 
-    const { locale } = await params;
-
-    // Fetch user's applications
     const applications = await prisma.application.findMany({
         where: {
             contributorId: session.user.id,
@@ -61,19 +66,15 @@ export default async function ApplicationsPage({ params }: ApplicationsPageProps
     return (
         <div className="min-h-screen bg-secondary-50">
             <div className="container max-w-4xl mx-auto px-4 py-8">
-                {/* Header */}
                 <div className="mb-8">
                     <h1 className="text-2xl font-bold text-secondary-900">
-                        {locale === "ar" ? "طلباتي" : "My Applications"}
+                        {t("title")}
                     </h1>
                     <p className="text-secondary-500 mt-1">
-                        {locale === "ar"
-                            ? "تتبع طلبات المساهمة في المشاريع"
-                            : "Track your project contribution applications"}
+                        {t("subtitle")}
                     </p>
                 </div>
 
-                {/* Stats */}
                 <div className="grid grid-cols-3 gap-4 mb-8">
                     <div className="bg-white rounded-xl border border-secondary-100 p-4 text-center">
                         <div className="text-2xl font-bold text-secondary-900">{applications.length}</div>
@@ -84,18 +85,17 @@ export default async function ApplicationsPage({ params }: ApplicationsPageProps
                     <div className="bg-white rounded-xl border border-secondary-100 p-4 text-center">
                         <div className="text-2xl font-bold text-amber-600">{pendingCount}</div>
                         <div className="text-sm text-secondary-500">
-                            {locale === "ar" ? "قيد الانتظار" : "Pending"}
+                            {tApps("filterPending")}
                         </div>
                     </div>
                     <div className="bg-white rounded-xl border border-secondary-100 p-4 text-center">
                         <div className="text-2xl font-bold text-green-600">{acceptedCount}</div>
                         <div className="text-sm text-secondary-500">
-                            {locale === "ar" ? "مقبول" : "Accepted"}
+                            {tApps("filterAccepted")}
                         </div>
                     </div>
                 </div>
 
-                {/* Applications List */}
                 {applications.length > 0 ? (
                     <div className="space-y-4">
                         {applications.map((application) => (
@@ -112,19 +112,17 @@ export default async function ApplicationsPage({ params }: ApplicationsPageProps
                             <Inbox className="w-8 h-8 text-secondary-400" />
                         </div>
                         <h3 className="text-lg font-medium text-secondary-900 mb-2">
-                            {locale === "ar" ? "لا توجد طلبات بعد" : "No applications yet"}
+                            {t("noApplications")}
                         </h3>
                         <p className="text-secondary-500 mb-6 max-w-md mx-auto">
-                            {locale === "ar"
-                                ? "ابدأ بالبحث عن مشاريع تناسب مهاراتك وساهم كصدقة جارية"
-                                : "Start by exploring projects that match your skills and contribute as sadaqah jariyah"}
+                            {t("noApplicationsDescription")}
                         </p>
                         <Link
                             href={`/${locale}/explore`}
                             className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white font-medium rounded-xl hover:bg-primary-700 transition-colors"
                         >
                             <Briefcase className="w-5 h-5" />
-                            {locale === "ar" ? "استكشف المشاريع" : "Explore Projects"}
+                            {tLanding("exploreProjects")}
                         </Link>
                     </div>
                 )}

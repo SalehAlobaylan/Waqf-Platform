@@ -34,7 +34,8 @@ export async function GET(request: NextRequest) {
         const { status, page, limit } = parsedQuery.data;
         const offset = (page - 1) * limit;
 
-        const where = status ? { status } : {};
+        const where: Record<string, unknown> = { source: "INTERNAL" };
+        if (status) where.status = status;
 
         const [projects, total] = await Promise.all([
             prisma.project.findMany({

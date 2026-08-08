@@ -10,7 +10,9 @@ import {
     Users,
     BarChart3,
     Shield,
-    ChevronRight
+    ChevronRight,
+    Globe,
+    Megaphone
 } from "lucide-react";
 
 type Props = {
@@ -51,6 +53,16 @@ export default async function AdminLayout({ params, children }: Props) {
             href: `/${locale}/admin/projects`,
             icon: FolderKanban,
             label: isAr ? "إدارة المشاريع" : "Projects",
+        },
+        {
+            href: `/${locale}/admin/campaigns`,
+            icon: Megaphone,
+            label: isAr ? "إدارة الحملات" : "Campaigns",
+        },
+        {
+            href: `/${locale}/admin/projects/curated`,
+            icon: Globe,
+            label: isAr ? "مشاريع منتقاة" : "Curated Projects",
         },
         {
             href: `/${locale}/admin/users`,

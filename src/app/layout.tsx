@@ -7,7 +7,7 @@ export const metadata: Metadata = {
     template: "%s | Waqf",
   },
   description:
-    "Connect with Islamic open-source projects and contribute your skills as sadaqah jariyah",
+    "Connect with projects that matter and contribute your skills to lasting impact",
 };
 
 export default function RootLayout({

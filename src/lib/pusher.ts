@@ -1,64 +1,60 @@
-// Pusher configuration - placeholder until pusher packages are installed
-// Install with: npm install pusher pusher-js
-
-// Placeholder types when Pusher is not installed
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type PusherServer = any;
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type PusherClient = any;
+import PusherServer from "pusher";
+import PusherClient from "pusher-js";
 
 // Server-side Pusher instance
-// Used in API routes to trigger events
-let pusherServer: PusherServer | null = null;
+// Only initialized when PUSHER_APP_ID env var is set
+let pusherServerInstance: PusherServer | null = null;
 
-try {
-    // Dynamic import to avoid build errors when package is not installed
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const Pusher = require("pusher");
-    pusherServer = new Pusher({
-        appId: process.env.PUSHER_APP_ID || "app-id",
-        key: process.env.NEXT_PUBLIC_PUSHER_KEY || "app-key",
-        secret: process.env.PUSHER_SECRET || "app-secret",
-        cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || "mt1",
-        useTLS: true,
-    });
-} catch {
-    // Pusher not installed - messaging will use polling fallback
-    console.log("[Pusher] Server not initialized - using polling fallback");
-}
+function getPusherServer(): PusherServer | null {
+    if (pusherServerInstance) return pusherServerInstance;
 
-export { pusherServer };
+    const appId = process.env.PUSHER_APP_ID;
+    const key = process.env.NEXT_PUBLIC_PUSHER_KEY;
+    const secret = process.env.PUSHER_SECRET;
+    const cluster = process.env.NEXT_PUBLIC_PUSHER_CLUSTER;
 
-// Client-side Pusher instance
-// Used in React components to subscribe to channels
-let pusherClient: PusherClient | null = null;
-
-export const getPusherClient = () => {
-    if (typeof window === "undefined") return null;
-    
-    try {
-        if (!pusherClient) {
-            // eslint-disable-next-line @typescript-eslint/no-require-imports
-            const PusherClientLib = require("pusher-js");
-            pusherClient = new PusherClientLib(
-                process.env.NEXT_PUBLIC_PUSHER_KEY || "app-key",
-                {
-                    cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || "mt1",
-                }
-            );
-        }
-        return pusherClient;
-    } catch {
-        // Pusher not installed - using polling fallback
+    if (!appId || !key || !secret || !cluster) {
         return null;
     }
+
+    pusherServerInstance = new PusherServer({
+        appId,
+        key,
+        secret,
+        cluster,
+        useTLS: true,
+    });
+
+    return pusherServerInstance;
+}
+
+export { getPusherServer as pusherServer };
+
+// Client-side Pusher instance
+// Only initialized when NEXT_PUBLIC_PUSHER_KEY env var is set
+let pusherClientInstance: PusherClient | null = null;
+
+export const getPusherClient = (): PusherClient | null => {
+    if (typeof window === "undefined") return null;
+
+    if (pusherClientInstance) return pusherClientInstance;
+
+    const key = process.env.NEXT_PUBLIC_PUSHER_KEY;
+    const cluster = process.env.NEXT_PUBLIC_PUSHER_CLUSTER;
+
+    if (!key || !cluster) {
+        return null;
+    }
+
+    pusherClientInstance = new PusherClient(key, { cluster });
+    return pusherClientInstance;
 };
 
 // Channel name helpers
-export const getApplicationChannel = (applicationId: string) => 
+export const getApplicationChannel = (applicationId: string) =>
     `private-application-${applicationId}`;
 
-export const getUserChannel = (userId: string) => 
+export const getUserChannel = (userId: string) =>
     `private-user-${userId}`;
 
 // Event types

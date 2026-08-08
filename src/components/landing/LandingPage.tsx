@@ -8,8 +8,6 @@ import {
     HandHeart,
     GraduationCap,
     PiggyBank,
-    ChevronLeft,
-    ChevronRight,
     Users,
     GitCommit,
     Folder,
@@ -43,15 +41,15 @@ const categories = [
         id: "EDUCATION",
         icon: GraduationCap,
         color: "bg-blue-500/10 text-blue-600",
-        title: { en: "Islamic EdTech", ar: "التعليم الإسلامي" },
-        description: { en: "LMS for Madrasahs, Arabic learning, and kids apps.", ar: "أنظمة تعليم للمدارس، تعلم العربية، وتطبيقات أطفال." },
+        title: { en: "Education", ar: "التعليم" },
+        description: { en: "LMS platforms, language learning, and kids apps.", ar: "أنظمة تعليم، تعلم اللغات، وتطبيقات أطفال." },
     },
     {
         id: "TOOLS",
         icon: PiggyBank,
         color: "bg-emerald-500/10 text-emerald-600",
-        title: { en: "Halal Finance", ar: "المالية الإسلامية" },
-        description: { en: "Ethical investment tools, inheritance calculators.", ar: "أدوات استثمار أخلاقية، حاسبات الميراث." },
+        title: { en: "Finance", ar: "المالية" },
+        description: { en: "Ethical investment tools, budgeting, and calculators.", ar: "أدوات استثمار أخلاقية، ميزانيات، وحاسبات." },
     },
 ];
 
@@ -61,8 +59,8 @@ const steps = [
         icon: Search,
         title: { en: "1. Discover", ar: "1. اكتشف" },
         description: {
-            en: "Find open-source projects that match your tech stack and interests.",
-            ar: "اعثر على مشاريع مفتوحة المصدر تناسب مهاراتك واهتماماتك."
+            en: "Find projects that match your skills and interests.",
+            ar: "اعثر على مشاريع تناسب مهاراتك واهتماماتك."
         },
     },
     {
@@ -75,10 +73,10 @@ const steps = [
     },
     {
         icon: Heart,
-        title: { en: "3. Earn Hasanat", ar: "3. اكسب الحسنات" },
+        title: { en: "3. Lasting Impact", ar: "3. أثر دائم" },
         description: {
-            en: "Benefit from Sadaqah Jariyah as your code serves the community continuously.",
-            ar: "استفد من الصدقة الجارية كلما خدم كودك المجتمع باستمرار."
+            en: "Your code keeps serving people long after the merge.",
+            ar: "يبقى كودك يخدم الناس طويلاً بعد اكتمال عملك."
         },
         highlight: true,
     },
@@ -117,15 +115,15 @@ export async function LandingPage({ locale }: LandingPageProps) {
                             <h1 className="text-[#101917] text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] tracking-[-0.033em]">
                                 {isAr ? (
                                     <>
-                                        <span className="text-[#1f705d]">صدقة جارية عبر الكود</span>
+                                        <span className="text-[#1f705d]">أوقف خبرتك التقنية</span>
                                         <br />
-                                        <span className="mt-2 block">Tech for the Ummah</span>
+                                        <span className="mt-2 block">Tech for Good</span>
                                     </>
                                 ) : (
                                     <>
-                                        Tech for the Ummah <br />
+                                        Tech for Good <br />
                                         <span className="text-[#1f705d] text-4xl md:text-5xl lg:text-6xl mt-2 block" style={{ fontFamily: 'Noto Sans Arabic, sans-serif' }}>
-                                            صدقة جارية عبر الكود
+                                            أوقف خبرتك التقنية
                                         </span>
                                     </>
                                 )}
@@ -133,8 +131,8 @@ export async function LandingPage({ locale }: LandingPageProps) {
 
                             <p className="text-gray-600 text-lg md:text-xl font-normal leading-relaxed max-w-xl">
                                 {isAr
-                                    ? "انضم إلى أول مجتمع مفتوح المصدر يبني التقنية للأمة الإسلامية. ساهم بمهاراتك في مشاريع تفيد الملايين—صدقة جارية من خلال الكود."
-                                    : "Join the first open-source community building technology for the Muslim Ummah. Contribute your skills to projects that benefit millions—Sadaqah Jariyah through code."
+                                    ? "وقف يربط المطورين بالمشاريع التي تحتاج مساعدتك — مفتوحة أو مغلقة أو خاصة. ساهم بمهاراتك في عمل يظل يفيد الناس طويلاً بعد اكتماله."
+                                    : "Waqf matches developers with projects that need help — open, closed, or private. Contribute your skills to work that keeps serving people long after the merge."
                                 }
                             </p>
                         </div>
@@ -190,7 +188,7 @@ export async function LandingPage({ locale }: LandingPageProps) {
                                     <div className="space-y-2 font-mono text-sm">
                                         <div className="flex gap-2">
                                             <span className="text-purple-500">const</span>
-                                            <span className="text-blue-500">sadaqah</span>
+                                            <span className="text-blue-500">contribute</span>
                                             <span className="text-gray-400">=</span>
                                             <span className="text-yellow-600">async</span>
                                             <span className="text-gray-400">()</span>
@@ -199,12 +197,12 @@ export async function LandingPage({ locale }: LandingPageProps) {
                                         </div>
                                         <div className="pl-4 flex gap-2">
                                             <span className="text-purple-500">await</span>
-                                            <span className="text-blue-500">buildForUmmah</span>
+                                            <span className="text-blue-500">buildForGood</span>
                                             <span className="text-gray-400">();</span>
                                         </div>
                                         <div className="pl-4 flex gap-2">
                                             <span className="text-purple-500">return</span>
-                                            <span className="text-green-600">&quot;Hasanat++&quot;</span>
+                                            <span className="text-green-600">&quot;lastingImpact&quot;</span>
                                             <span className="text-gray-400">;</span>
                                         </div>
                                         <div className="flex gap-2">
@@ -320,7 +318,7 @@ export async function LandingPage({ locale }: LandingPageProps) {
             </section>
 
             {/* How It Works */}
-            <section className="py-16 md:py-24 px-4 bg-[#1f705d]/5 relative overflow-hidden">
+            <section id="how-it-works" className="py-16 md:py-24 px-4 bg-[#1f705d]/5 relative overflow-hidden">
                 <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-[#1f705d]/5 rounded-full blur-3xl"></div>
                 <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 bg-[#d4a056]/5 rounded-full blur-3xl"></div>
 
@@ -331,8 +329,8 @@ export async function LandingPage({ locale }: LandingPageProps) {
                         </h2>
                         <p className="text-gray-600 max-w-xl mx-auto">
                             {isAr
-                                ? "رحلتك من كتابة الكود إلى الأجر المستمر."
-                                : "Your journey from code commit to eternal reward."
+                                ? "رحلتك من الفكرة إلى أثرٍ يبقى."
+                                : "Your journey from idea to lasting impact."
                             }
                         </p>
                     </div>
@@ -352,7 +350,7 @@ export async function LandingPage({ locale }: LandingPageProps) {
                                         />
                                         {step.highlight && (
                                             <span className="absolute -top-2 -right-2 bg-[#d4a056] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                                                {isAr ? "مكافأة" : "Reward"}
+                                                {isAr ? "أثر" : "Impact"}
                                             </span>
                                         )}
                                     </div>
@@ -376,14 +374,6 @@ export async function LandingPage({ locale }: LandingPageProps) {
                         <h2 className="text-3xl font-bold text-[#101917] tracking-tight">
                             {isAr ? "المشاريع المميزة" : "Featured Projects"}
                         </h2>
-                        <div className="flex gap-2">
-                            <button className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition-colors">
-                                <ChevronLeft className="w-5 h-5" />
-                            </button>
-                            <button className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center hover:bg-gray-100 transition-colors">
-                                <ChevronRight className="w-5 h-5" />
-                            </button>
-                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -459,8 +449,8 @@ export async function LandingPage({ locale }: LandingPageProps) {
                                 name: isAr ? "أحمد خالد" : "Ahmed Khalid",
                                 role: isAr ? "مطور Full-Stack" : "Full-Stack Developer",
                                 text: isAr
-                                    ? "ساعدتني منصة وقف على إيجاد مشاريع ذات أثر حقيقي. الآن كل سطر كود أكتبه يصبح صدقة جارية."
-                                    : "Waqf helped me find projects with real impact. Now every line of code I write becomes Sadaqah Jariyah.",
+                                    ? "ساعدتني منصة وقف على إيجاد مشاريع ذات أثر حقيقي. الآن كل سطر كود أكتبه يساهم في عمل يدوم أثره."
+                                    : "Waqf helped me find projects with real impact. Now every line of code I write contributes to something that outlasts me.",
                                 initials: "AK",
                                 color: "bg-[#1f705d]/10 text-[#1f705d]",
                             },
@@ -468,8 +458,8 @@ export async function LandingPage({ locale }: LandingPageProps) {
                                 name: isAr ? "فاطمة نور" : "Fatima Nour",
                                 role: isAr ? "مصممة UX" : "UX Designer",
                                 text: isAr
-                                    ? "المجتمع هنا مذهل. وجدت فريقاً يشاركني نفس الرؤية لخدمة الأمة بالتقنية."
-                                    : "The community here is amazing. I found a team that shares my vision of serving the Ummah through tech.",
+                                    ? "المجتمع هنا مذهل. وجدت فريقاً يشاركني رؤية بناء تقنية ذات أثر حقيقي."
+                                    : "The community here is amazing. I found a team that shares my vision of building tech with real impact.",
                                 initials: "FN",
                                 color: "bg-[#d4a056]/10 text-[#d4a056]",
                             },
@@ -477,8 +467,8 @@ export async function LandingPage({ locale }: LandingPageProps) {
                                 name: isAr ? "عمر حسن" : "Omar Hassan",
                                 role: isAr ? "مهندس Backend" : "Backend Engineer",
                                 text: isAr
-                                    ? "من أفضل المنصات للمساهمة في المصادر المفتوحة. المشاريع هنا تخدم ملايين المسلمين."
-                                    : "One of the best platforms for open-source contribution. Projects here serve millions of Muslims.",
+                                    ? "من أفضل المنصات للمساهمة الهادفة. المشاريع هنا تصل إلى من يحتاجها فعلاً."
+                                    : "One of the best platforms for meaningful contribution. Projects here reach people who genuinely need them.",
                                 initials: "OH",
                                 color: "bg-blue-500/10 text-blue-600",
                             },
@@ -507,8 +497,8 @@ export async function LandingPage({ locale }: LandingPageProps) {
                 </div>
             </section>
 
-            {/* Open Source & Trust */}
-            <section className="py-16 md:py-20 px-4 bg-[#f9fbfb]">
+            {/* About & Trust */}
+            <section id="about" className="py-16 md:py-20 px-4 bg-[#f9fbfb]">
                 <div className="max-w-[1280px] mx-auto">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
                         <div className="flex flex-col items-center gap-3 p-6">
@@ -516,12 +506,12 @@ export async function LandingPage({ locale }: LandingPageProps) {
                                 <Shield className="w-7 h-7 text-[#1f705d]" />
                             </div>
                             <h3 className="text-lg font-bold text-[#101917]">
-                                {isAr ? "مفتوح المصدر 100%" : "100% Open Source"}
+                                {isAr ? "شفافية وموثوقية" : "Trusted & Transparent"}
                             </h3>
                             <p className="text-sm text-gray-500 max-w-xs">
                                 {isAr
-                                    ? "كل الكود متاح للجميع. الشفافية هي أساس الثقة."
-                                    : "All code is publicly available. Transparency is the foundation of trust."
+                                    ? "ملكية واضحة للمشاريع، تقدم مرئي، وإشراف من المجتمع."
+                                    : "Clear project ownership, visible progress, and community oversight."
                                 }
                             </p>
                         </div>
@@ -544,12 +534,12 @@ export async function LandingPage({ locale }: LandingPageProps) {
                                 <Heart className="w-7 h-7 text-blue-600" />
                             </div>
                             <h3 className="text-lg font-bold text-[#101917]">
-                                {isAr ? "صدقة جارية" : "Sadaqah Jariyah"}
+                                {isAr ? "أثر دائم" : "Lasting Impact"}
                             </h3>
                             <p className="text-sm text-gray-500 max-w-xs">
                                 {isAr
-                                    ? "كل مساهمة هي استثمار في الآخرة."
-                                    : "Every contribution is an investment in the Hereafter."
+                                    ? "أثرك يتضاعف — كود يظل يخدم الناس طويلاً بعد اكتماله."
+                                    : "Your contribution compounds — code that keeps serving people long after the merge."
                                 }
                             </p>
                         </div>
@@ -570,8 +560,8 @@ export async function LandingPage({ locale }: LandingPageProps) {
                         </h2>
                         <p className="text-lg text-white/80">
                             {isAr
-                                ? "انضم إلى آلاف المطورين الذين يحولون أكوادهم إلى صدقة جارية."
-                                : "Join thousands of developers turning their commits into Sadaqah Jariyah."
+                                ? "انضم إلى آلاف المطورين الذين يحولون مهاراتهم إلى عمل يفيد الناس فعلاً."
+                                : "Join thousands of developers putting their skills to work on projects that matter."
                             }
                         </p>
                         <div className="flex flex-col sm:flex-row gap-4 w-full justify-center mt-4">
@@ -616,10 +606,16 @@ async function getStats() {
 
 async function getFeaturedProjects() {
     try {
+        const now = new Date();
         const projects = await prisma.project.findMany({
             where: {
                 status: "OPEN",
                 featured: true,
+                // A featuredUntil in the past means the feature expired
+                OR: [
+                    { featuredUntil: null },
+                    { featuredUntil: { gt: now } },
+                ],
             },
             take: 3,
             include: {

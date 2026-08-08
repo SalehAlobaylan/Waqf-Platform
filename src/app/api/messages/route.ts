@@ -5,6 +5,9 @@ import { headers } from "next/headers";
 import { messagesQuerySchema, messageCreateSchema } from "@/lib/validation/schemas";
 import { parseBody, parseQuery } from "@/lib/validation/parse";
 import { makeValidationError } from "@/lib/validation/errors";
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
+import { pusherServer, getApplicationChannel, PUSHER_EVENTS } from "@/lib/pusher";
+import { sendEventEmail } from "@/lib/event-email";
 
 /**
  * GET /api/messages
@@ -101,6 +104,10 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
+        if (!checkRateLimit(request, "message-create", { limit: 30, windowMs: 60_000 }, session.user.id)) {
+            return rateLimitedResponse();
+        }
+
         const parsedBody = await parseBody(request, messageCreateSchema);
         if (!parsedBody.success) {
             return NextResponse.json(parsedBody.error, { status: 400 });
@@ -155,23 +162,41 @@ export async function POST(request: NextRequest) {
             },
         });
 
-        // Create notification for recipient
-        const recipientId = isContributor 
-            ? application.project.ownerId 
+        // Create notification for recipient (skip if owner is absent, e.g. external project)
+        const recipientId = isContributor
+            ? application.project.ownerId
             : application.contributorId;
 
-        await prisma.notification.create({
-            data: {
-                userId: recipientId,
-                type: "NEW_MESSAGE",
-                title: "New Message",
-                content: `${session.user.name}: ${content.trim().slice(0, 50)}${content.trim().length > 50 ? "..." : ""}`,
-                link: `/dashboard/applications/${applicationId}`,
-            },
-        });
+        if (recipientId) {
+            await prisma.notification.create({
+                data: {
+                    userId: recipientId,
+                    type: "NEW_MESSAGE",
+                    title: "New Message",
+                    content: `${session.user.name}: ${content.trim().slice(0, 50)}${content.trim().length > 50 ? "..." : ""}`,
+                    link: `/dashboard/applications/${applicationId}`,
+                },
+            });
 
-        // TODO: Trigger Pusher event for real-time updates
-        // pusherServer.trigger(getApplicationChannel(applicationId), PUSHER_EVENTS.NEW_MESSAGE, message);
+            // Event email to the recipient
+            await sendEventEmail(recipientId, {
+                kind: "NEW_MESSAGE",
+                actorName: session.user.name ?? undefined,
+                projectTitle: application.project.title,
+                applicationId,
+                messagePreview: content.trim().slice(0, 140),
+            });
+        }
+
+        // Trigger Pusher event for real-time updates
+        const pusher = pusherServer();
+        if (pusher) {
+            pusher.trigger(
+                getApplicationChannel(applicationId),
+                PUSHER_EVENTS.NEW_MESSAGE,
+                message
+            );
+        }
 
         return NextResponse.json({ message }, { status: 201 });
     } catch (error) {

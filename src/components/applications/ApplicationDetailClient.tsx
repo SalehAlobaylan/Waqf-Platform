@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft, ExternalLink, CheckCircle, XCircle, Loader2 } from "lucide-react";
@@ -27,7 +27,7 @@ interface ApplicationDetailClientProps {
                 id: string;
                 name: string;
                 image: string | null;
-            };
+            } | null;
         };
         contributor: {
             id: string;
@@ -64,6 +64,7 @@ export function ApplicationDetailClient({
     isContributor,
 }: ApplicationDetailClientProps) {
     const locale = useLocale();
+    const t = useTranslations("applicationDetail");
     const router = useRouter();
     const [isUpdating, setIsUpdating] = useState(false);
     const [currentStatus, setCurrentStatus] = useState(application.status);
@@ -87,7 +88,10 @@ export function ApplicationDetailClient({
         }
     };
 
-    const otherUser = isOwner ? application.contributor : application.project.owner;
+    // `project.owner` is null for EXTERNAL projects. Contributors always exist.
+    const otherUser = isOwner
+        ? application.contributor
+        : application.project.owner ?? { id: "deleted", name: "—", image: null };
 
     return (
         <div className="min-h-screen bg-secondary-50">
@@ -97,8 +101,8 @@ export function ApplicationDetailClient({
                     href={`/${locale}/dashboard/applications`}
                     className="inline-flex items-center gap-2 text-secondary-500 hover:text-secondary-700 mb-6 transition-colors"
                 >
-                    <ArrowLeft className="w-4 h-4" />
-                    {locale === "ar" ? "العودة للطلبات" : "Back to Applications"}
+                    <ArrowLeft className="w-4 h-4 rtl:rotate-180" />
+                    {t("back")}
                 </Link>
 
                 <div className="grid gap-6 lg:grid-cols-3">
@@ -119,7 +123,7 @@ export function ApplicationDetailClient({
                         <div className="bg-white rounded-xl border border-secondary-100 p-5">
                             <div className="flex items-center justify-between mb-4">
                                 <h3 className="font-medium text-secondary-900">
-                                    {locale === "ar" ? "حالة الطلب" : "Application Status"}
+                                    {t("status")}
                                 </h3>
                                 <ApplicationStatusBadge status={currentStatus} locale={locale} />
                             </div>
@@ -137,7 +141,7 @@ export function ApplicationDetailClient({
                                         ) : (
                                             <CheckCircle className="w-4 h-4" />
                                         )}
-                                        {locale === "ar" ? "قبول" : "Accept"}
+                                        {t("accept")}
                                     </button>
                                     <button
                                         onClick={() => handleStatusUpdate("REJECTED")}
@@ -149,7 +153,7 @@ export function ApplicationDetailClient({
                                         ) : (
                                             <XCircle className="w-4 h-4" />
                                         )}
-                                        {locale === "ar" ? "رفض" : "Reject"}
+                                        {t("reject")}
                                     </button>
                                 </div>
                             )}
@@ -158,7 +162,7 @@ export function ApplicationDetailClient({
                         {/* Project Info */}
                         <div className="bg-white rounded-xl border border-secondary-100 p-5">
                             <h3 className="font-medium text-secondary-900 mb-3">
-                                {locale === "ar" ? "المشروع" : "Project"}
+                                {t("project")}
                             </h3>
                             <Link
                                 href={`/${locale}/projects/${application.project.slug}`}
@@ -173,7 +177,7 @@ export function ApplicationDetailClient({
                         <div className="bg-white rounded-xl border border-secondary-100 p-5">
                             <h3 className="font-medium text-secondary-900 mb-4">
                                 {isOwner
-                                    ? (locale === "ar" ? "المتقدم" : "Applicant")
+                                    ? t("applicant")
                                     : (locale === "ar" ? "صاحب المشروع" : "Project Owner")}
                             </h3>
 
@@ -205,7 +209,7 @@ export function ApplicationDetailClient({
                             {application.message && (
                                 <div className="mb-4">
                                     <p className="text-xs text-secondary-400 mb-1">
-                                        {locale === "ar" ? "رسالة التقديم" : "Application Message"}
+                                        {t("message")}
                                     </p>
                                     <p className="text-sm text-secondary-700">{application.message}</p>
                                 </div>
@@ -214,9 +218,9 @@ export function ApplicationDetailClient({
                             {application.hoursPerWeek && (
                                 <div className="text-sm text-secondary-600">
                                     <span className="text-secondary-400">
-                                        {locale === "ar" ? "الوقت المتاح:" : "Availability:"}
+                                        {t("hoursPerWeek")}:
                                     </span>{" "}
-                                    {application.hoursPerWeek}h/week
+                                    {application.hoursPerWeek}{t("hWeek")}
                                 </div>
                             )}
 
@@ -228,7 +232,7 @@ export function ApplicationDetailClient({
                                     className="mt-3 inline-flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700"
                                 >
                                     <ExternalLink className="w-3.5 h-3.5" />
-                                    {locale === "ar" ? "الملف الشخصي" : "View Portfolio"}
+                                    {t("portfolio")}
                                 </a>
                             )}
                         </div>

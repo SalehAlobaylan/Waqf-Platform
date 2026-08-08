@@ -1,5 +1,6 @@
 import { redirect, notFound } from "next/navigation";
 import { headers } from "next/headers";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { ApplicationDetailClient } from "@/components/applications/ApplicationDetailClient";
@@ -9,7 +10,8 @@ interface ApplicationDetailPageProps {
 }
 
 export async function generateMetadata({ params }: ApplicationDetailPageProps) {
-    const { id } = await params;
+    const { locale, id } = await params;
+    const t = await getTranslations({ locale, namespace: "metadata" });
     const application = await prisma.application.findUnique({
         where: { id },
         select: {
@@ -18,19 +20,16 @@ export async function generateMetadata({ params }: ApplicationDetailPageProps) {
     });
 
     return {
-        title: application
-            ? `Application - ${application.project.title} | Waqf`
-            : "Application | Waqf",
+        title: t("dashboardApplications"),
     };
 }
 
 export default async function ApplicationDetailPage({ params }: ApplicationDetailPageProps) {
+    const { locale, id } = await params;
     const session = await auth.api.getSession({ headers: await headers() });
     if (!session?.user?.id) {
-        redirect("/login");
+        redirect(`/${locale}/login`);
     }
-
-    const { locale, id } = await params;
 
     const application = await prisma.application.findUnique({
         where: { id },

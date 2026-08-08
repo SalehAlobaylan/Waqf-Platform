@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Calendar, MessageSquare, Clock, ArrowRight } from "lucide-react";
 import { ApplicationStatusBadge } from "./ApplicationStatus";
 import { ApplicationStatus } from "@prisma/client";
@@ -19,11 +19,11 @@ interface ApplicationCardProps {
             title: string;
             slug: string;
             category?: string;
-            owner?: {
+            owner: {
                 id: string;
                 name: string;
                 image: string | null;
-            };
+            } | null;
         };
         contributor?: {
             id: string;
@@ -40,6 +40,7 @@ interface ApplicationCardProps {
 
 export function ApplicationCard({ application, variant = "contributor" }: ApplicationCardProps) {
     const locale = useLocale();
+    const t = useTranslations("applications");
     const createdAt = new Date(application.createdAt);
 
     return (
@@ -121,15 +122,15 @@ export function ApplicationCard({ application, variant = "contributor" }: Applic
                         {application.hoursPerWeek && (
                             <span className="flex items-center gap-1">
                                 <Clock className="w-3.5 h-3.5" />
-                                {application.hoursPerWeek}h/week
-                            </span>
-                        )}
-                        {application._count.messages > 0 && (
-                            <span className="flex items-center gap-1">
-                                <MessageSquare className="w-3.5 h-3.5" />
-                                {application._count.messages} messages
-                            </span>
-                        )}
+                        {application.hoursPerWeek}{t("hWeek")}
+                    </span>
+                )}
+                {application._count.messages > 0 && (
+                    <span className="flex items-center gap-1">
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        {application._count.messages} {t("messages")}
+                    </span>
+                )}
                     </div>
                 </div>
 

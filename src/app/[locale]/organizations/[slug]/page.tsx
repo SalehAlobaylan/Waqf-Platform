@@ -1,13 +1,15 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { OrganizationProfile } from "@/components/organizations/OrganizationProfile";
 
-export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
-    const { slug } = await params;
+export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }) {
+    const { locale, slug } = await params;
+    const t = await getTranslations({ locale, namespace: "metadata" });
     const org = await prisma.organization.findUnique({ where: { slug } });
 
-    if (!org) return { title: "Organization Not Found" };
-    return { title: `${org.name} | Waqf` };
+    if (!org) return { title: t("organizationNotFound") };
+    return { title: t("organization") };
 }
 
 export default async function OrganizationPage({ params }: { params: Promise<{ locale: string, slug: string }> }) {
@@ -21,6 +23,7 @@ export default async function OrganizationPage({ params }: { params: Promise<{ l
                 orderBy: { createdAt: "desc" },
                 include: {
                     skills: { include: { skill: true } },
+                    owner: { select: { name: true, image: true } },
                     _count: { select: { applications: true } }
                 }
             }
@@ -31,13 +34,10 @@ export default async function OrganizationPage({ params }: { params: Promise<{ l
         notFound();
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const transformedOrg = org as any;
-
     return (
         <div className="min-h-screen bg-secondary-50 py-8">
             <div className="container max-w-5xl mx-auto px-4">
-                <OrganizationProfile organization={transformedOrg} locale={locale} />
+                <OrganizationProfile organization={org} locale={locale} />
             </div>
         </div>
     );

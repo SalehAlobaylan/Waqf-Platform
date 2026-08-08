@@ -6,7 +6,9 @@ import { parseQuery } from "@/lib/validation/parse";
 
 /**
  * GET /api/search
- * Full-text search across projects
+ * Full-text search across projects (PostgreSQL tsvector + GIN index,
+ * roadmap §3.2). Falls back to ILIKE for queries that cannot be parsed
+ * into a tsquery (e.g. short/symbol-only input).
  */
 export async function GET(request: NextRequest) {
     try {
@@ -25,61 +27,104 @@ export async function GET(request: NextRequest) {
             });
         }
 
-        // Build search conditions
-        const searchTerms = query.toLowerCase().split(/\s+/).filter(t => t.length > 1);
-        
-        // Using Prisma's native search (contains) for now
-        // For production, consider using PostgreSQL full-text search via raw queries
-        const whereCondition: Prisma.ProjectWhereInput = {
-            AND: [
-                ...(status === "ALL"
-                    ? [{ status: { in: [ProjectStatus.OPEN, ProjectStatus.IN_PROGRESS, ProjectStatus.COMPLETED] } }]
-                    : [{ status: status as ProjectStatus }]),
-                ...(category ? [{ category: category as ProjectCategory }] : []),
-                {
-                    OR: searchTerms.map(term => ({
-                        OR: [
-                            { title: { contains: term, mode: "insensitive" as const } },
-                            { description: { contains: term, mode: "insensitive" as const } },
-                            { impact: { contains: term, mode: "insensitive" as const } },
-                        ],
-                    })),
-                },
-            ],
-        };
+        const statusFilter = status === "ALL"
+            ? [ProjectStatus.OPEN, ProjectStatus.IN_PROGRESS, ProjectStatus.COMPLETED]
+            : [status as ProjectStatus];
 
-        // Count total matches
-        const total = await prisma.project.count({ where: whereCondition });
+        const statusArray = Prisma.sql`${statusFilter}::"ProjectStatus"[]`;
 
-        // Fetch matching projects
-        const projects = await prisma.project.findMany({
-            where: whereCondition,
-            include: {
-                skills: {
+        const categoryFilter = category
+            ? Prisma.sql`AND p."category" = ${category}::"ProjectCategory"`
+            : Prisma.empty;
+
+        // Normalize query into a boolean tsquery (AND of terms)
+        const terms = query
+            .trim()
+            .split(/\s+/)
+            .map((t) => t.replace(/[&|:!()'*\\<>-]/g, ""))
+            .filter((t) => t.length > 0);
+
+        let results: { id: string }[] = [];
+        let total = 0;
+
+        if (terms.length > 0) {
+            const tsQuery = terms.join(" & ");
+
+            // Ranked full-text matches (tsvector is maintained by a trigger)
+            const [ftsRows, ftsCount] = await Promise.all([
+                prisma.$queryRaw<{ id: string }[]>(Prisma.sql`
+                    SELECT p."id"
+                    FROM "Project" p
+                    WHERE p."search_vector" @@ to_tsquery('simple', ${tsQuery})
+                      AND p."status" = ANY(${statusArray})
+                      ${categoryFilter}
+                    ORDER BY ts_rank(p."search_vector", to_tsquery('simple', ${tsQuery})) DESC,
+                             p."featured" DESC,
+                             p."createdAt" DESC
+                    LIMIT ${limit} OFFSET ${offset}
+                `),
+                prisma.$queryRaw<{ count: bigint }[]>(Prisma.sql`
+                    SELECT COUNT(*)::bigint AS count
+                    FROM "Project" p
+                    WHERE p."search_vector" @@ to_tsquery('simple', ${tsQuery})
+                      AND p."status" = ANY(${statusArray})
+                      ${categoryFilter}
+                `),
+            ]);
+            results = ftsRows as { id: string }[];
+            total = Number((ftsCount as { count: bigint }[])[0]?.count ?? 0);
+        }
+
+        // If full-text found nothing (or the query had no parseable terms),
+        // fall back to substring matching so partial terms still work.
+        let projects: Array<Record<string, unknown>> = [];
+        if (results.length === 0 && query.trim().length > 0) {
+            const whereCondition: Prisma.ProjectWhereInput = {
+                status: { in: statusFilter },
+                ...(category ? { category: category as ProjectCategory } : {}),
+                OR: [
+                    { title: { contains: query, mode: "insensitive" as const } },
+                    { description: { contains: query, mode: "insensitive" as const } },
+                    { impact: { contains: query, mode: "insensitive" as const } },
+                ],
+            };
+
+            const [fallbackProjects, fallbackTotal] = await Promise.all([
+                prisma.project.findMany({
+                    where: whereCondition,
                     include: {
-                        skill: true,
+                        skills: { include: { skill: true } },
+                        owner: { select: { id: true, name: true, image: true } },
+                        _count: { select: { applications: true } },
                     },
+                    orderBy: [{ featured: "desc" }, { createdAt: "desc" }],
+                    skip: offset,
+                    take: limit,
+                }),
+                prisma.project.count({ where: whereCondition }),
+            ]);
+
+            projects = fallbackProjects as unknown as Array<Record<string, unknown>>;
+            total = fallbackTotal;
+        } else if (results.length > 0) {
+            const ids = results.map((r) => r.id);
+            projects = (await prisma.project.findMany({
+                where: { id: { in: ids } },
+                include: {
+                    skills: { include: { skill: true } },
+                    owner: { select: { id: true, name: true, image: true } },
+                    _count: { select: { applications: true } },
                 },
-                owner: {
-                    select: {
-                        id: true,
-                        name: true,
-                        image: true,
-                    },
-                },
-                _count: {
-                    select: {
-                        applications: true,
-                    },
-                },
-            },
-            orderBy: [
-                { featured: "desc" },
-                { createdAt: "desc" },
-            ],
-            skip: offset,
-            take: limit,
-        });
+            })) as unknown as Array<Record<string, unknown>>;
+
+            // Preserve the rank order from the tsvector query
+            const order = new Map(results.map((r, i) => [r.id, i]));
+            projects.sort((a, b) => {
+                const aid = typeof a.id === "string" ? a.id : String(a.id);
+                const bid = typeof b.id === "string" ? b.id : String(b.id);
+                return (order.get(aid) ?? 0) - (order.get(bid) ?? 0);
+            });
+        }
 
         return NextResponse.json({
             projects,

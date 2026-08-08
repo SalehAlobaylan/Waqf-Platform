@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import Link from "next/link";
 import {
     Users,
@@ -41,8 +41,9 @@ interface Stats {
             id: string;
             title: string;
             status: string;
+            source: string;
             createdAt: string;
-            owner: { name: string; image: string | null };
+            owner: { name: string; image: string | null } | null;
         }>;
         topContributors: Array<{
             id: string;
@@ -60,6 +61,7 @@ interface AdminDashboardProps {
 export function AdminDashboard({ locale }: AdminDashboardProps) {
     const [stats, setStats] = useState<Stats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const t = useTranslations("admin");
     const isAr = locale === "ar";
 
     useEffect(() => {
@@ -105,31 +107,31 @@ export function AdminDashboard({ locale }: AdminDashboardProps) {
 
     const statCards = [
         {
-            label: isAr ? "إجمالي المستخدمين" : "Total Users",
+            label: t("totalUsers"),
             value: stats.overview.totalUsers,
             change: stats.growth.newUsersThisMonth,
-            changeLabel: isAr ? "هذا الشهر" : "this month",
+            changeLabel: t("thisMonth"),
             icon: Users,
             color: "bg-blue-500",
         },
         {
-            label: isAr ? "إجمالي المشاريع" : "Total Projects",
+            label: t("totalProjects"),
             value: stats.overview.totalProjects,
             change: stats.growth.newProjectsThisMonth,
-            changeLabel: isAr ? "هذا الشهر" : "this month",
+            changeLabel: t("thisMonth"),
             icon: FolderKanban,
             color: "bg-primary-500",
         },
         {
-            label: isAr ? "الطلبات" : "Applications",
+            label: t("totalApplications"),
             value: stats.overview.totalApplications,
             change: stats.growth.newApplicationsThisWeek,
-            changeLabel: isAr ? "هذا الأسبوع" : "this week",
+            changeLabel: t("thisWeek"),
             icon: FileCheck,
             color: "bg-amber-500",
         },
         {
-            label: isAr ? "معدل القبول" : "Acceptance Rate",
+            label: t("acceptanceRate"),
             value: `${stats.rates.acceptanceRate}%`,
             change: null,
             changeLabel: "",
@@ -143,7 +145,7 @@ export function AdminDashboard({ locale }: AdminDashboardProps) {
             {/* Header */}
             <div>
                 <h1 className="text-2xl font-bold text-secondary-900">
-                    {isAr ? "لوحة التحكم" : "Dashboard Overview"}
+                    {t("dashboard")}
                 </h1>
                 <p className="text-secondary-500 mt-1">
                     {isAr ? "نظرة عامة على نشاط المنصة" : "Platform activity overview"}
@@ -190,12 +192,12 @@ export function AdminDashboard({ locale }: AdminDashboardProps) {
                                 <Clock className="w-5 h-5" />
                             </div>
                             <div>
-                                <h3 className="font-semibold text-secondary-900">
-                                    {isAr ? "مشاريع قيد المراجعة" : "Pending Review"}
-                                </h3>
-                                <p className="text-sm text-secondary-500">
-                                    {stats.overview.pendingProjects} {isAr ? "مشروع" : "projects"}
-                                </p>
+                            <h3 className="font-semibold text-secondary-900">
+                                {t("pendingReview")}
+                            </h3>
+                            <p className="text-sm text-secondary-500">
+                                {stats.overview.pendingProjects} {isAr ? "مشروع" : "projects"}
+                            </p>
                             </div>
                         </div>
                         <Link
@@ -214,14 +216,14 @@ export function AdminDashboard({ locale }: AdminDashboardProps) {
                             >
                                 <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-sm font-bold text-primary-700">
-                                        {project.owner.name?.charAt(0) || "?"}
+                                        {(project.owner?.name ?? (project.source === "EXTERNAL" ? "C" : "?")).charAt(0)}
                                     </div>
                                     <div>
                                         <p className="font-medium text-secondary-900 text-sm">
                                             {project.title}
                                         </p>
                                         <p className="text-xs text-secondary-500">
-                                            {project.owner.name}
+                                            {project.owner?.name ?? (project.source === "EXTERNAL" ? "Curated" : "—")}
                                         </p>
                                     </div>
                                 </div>

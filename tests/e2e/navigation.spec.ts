@@ -1,97 +1,85 @@
 import { test, expect } from "@playwright/test";
+import { signInAs, SEEDED_USERS } from "./auth-helpers";
 
 test.describe("Navigation Flow", () => {
   test.describe("Header Navigation", () => {
     test("should display main navigation", async ({ page }) => {
       await page.goto("/en");
-      
+
       // Check for main navigation elements
-      await expect(page.locator("nav, header")).toBeVisible();
+      await expect(page.locator("header nav").first()).toBeVisible();
     });
 
     test("should have explore link", async ({ page }) => {
       await page.goto("/en");
-      
+
       const exploreLink = page.locator('a:has-text("Explore")').first();
       await expect(exploreLink).toBeVisible();
     });
 
     test("should have login/signup buttons for unauthenticated users", async ({ page }) => {
       await page.goto("/en");
-      
-      const loginLink = page.locator('a:has-text("Login"), a:has-text("Sign in")').first();
-      const signupLink = page.locator('a:has-text("Sign up"), a:has-text("Sign up")').first();
-      
+
+      const loginLink = page.locator('a:has-text("Log In")').first();
+      const signupLink = page.locator('a:has-text("Sign Up")').first();
+
       await expect(loginLink).toBeVisible();
       await expect(signupLink).toBeVisible();
     });
 
     test("should have user menu for authenticated users", async ({ page }) => {
-      await page.goto("/en/login");
-      await page.fill('input[type="email"]', "test@example.com");
-      await page.fill('input[type="password"]', "TestPass123");
-      await page.click('button[type="submit"]');
-      await page.waitForURL("/en/dashboard", { timeout: 15000 });
-      
-      // Should show user menu
-      await expect(page.locator("button:has-text('Test Owner'), button:has-text('Test')")).toBeVisible();
+      await signInAs(page, SEEDED_USERS.omar);
+      await page.goto("/en");
+
+      // User menu trigger is the only button with a chevron-down icon (avatar dropdown).
+      await expect(page.locator("button:has(svg.lucide-chevron-down)")).toBeVisible();
     });
   });
 
   test.describe("Dashboard Navigation", () => {
-    test("should display dashboard sidebar or navigation", async ({ page }) => {
-      await page.goto("/en/login");
-      await page.fill('input[type="email"]', "test@example.com");
-      await page.fill('input[type="password"]', "TestPass123");
-      await page.click('button[type="submit"]');
-      await page.waitForURL("/en/dashboard", { timeout: 15000 });
-      
-      // Should show dashboard navigation
-      await expect(page.locator("text=Dashboard")).toBeVisible();
+    test("should display dashboard navigation", async ({ page }) => {
+      await signInAs(page, SEEDED_USERS.omar);
+      await page.goto("/en/dashboard");
+
+      // Dashboard shows the stats grid with section links
+      await expect(page.locator('a:has-text("Your Applications")')).toBeVisible();
     });
 
     test("should have applications link", async ({ page }) => {
-      await page.goto("/en/login");
-      await page.fill('input[type="email"]', "test@example.com");
-      await page.fill('input[type="password"]', "TestPass123");
-      await page.click('button[type="submit"]');
-      await page.waitForURL("/en/dashboard", { timeout: 15000 });
-      
-      const applicationsLink = page.locator('a:has-text("Applications")');
+      await signInAs(page, SEEDED_USERS.omar);
+      await page.goto("/en/dashboard");
+
+      const applicationsLink = page.locator('a:has-text("Your Applications")');
       await expect(applicationsLink).toBeVisible();
+      await expect(applicationsLink).toHaveAttribute("href", "/en/dashboard/applications");
     });
 
     test("should have messages link", async ({ page }) => {
-      await page.goto("/en/login");
-      await page.fill('input[type="email"]', "test@example.com");
-      await page.fill('input[type="password"]', "TestPass123");
-      await page.click('button[type="submit"]');
-      await page.waitForURL("/en/dashboard", { timeout: 15000 });
-      
-      const messagesLink = page.locator('a:has-text("Messages")');
+      await signInAs(page, SEEDED_USERS.omar);
+      await page.goto("/en/dashboard");
+
+      // Dashboard sidebar already links to Messages
+      const messagesLink = page.locator('a:has-text("Messages")').first();
       await expect(messagesLink).toBeVisible();
+      await expect(messagesLink).toHaveAttribute("href", "/en/dashboard/messages");
     });
 
     test("should have profile link", async ({ page }) => {
-      await page.goto("/en/login");
-      await page.fill('input[type="email"]', "test@example.com");
-      await page.fill('input[type="password"]', "TestPass123");
-      await page.click('button[type="submit"]');
-      await page.waitForURL("/en/dashboard", { timeout: 15000 });
-      
+      await signInAs(page, SEEDED_USERS.omar);
+      await page.goto("/en");
+
+      // Profile link lives in the avatar dropdown menu
+      await page.click("button:has(svg.lucide-chevron-down)");
       const profileLink = page.locator('a:has-text("Profile")');
       await expect(profileLink).toBeVisible();
     });
 
     test("should have notifications bell", async ({ page }) => {
-      await page.goto("/en/login");
-      await page.fill('input[type="email"]', "test@example.com");
-      await page.fill('input[type="password"]', "TestPass123");
-      await page.click('button[type="submit"]');
-      await page.waitForURL("/en/dashboard", { timeout: 15000 });
-      
+      await signInAs(page, SEEDED_USERS.omar);
+      await page.goto("/en");
+
       // Look for notification bell
-      const bellIcon = page.locator('button[aria-label*="notification" i], button:has(svg)');
+      await expect(page.locator('button[aria-label="Notifications"]')).toBeVisible();
     });
   });
 
@@ -126,20 +114,21 @@ test.describe("Navigation Flow", () => {
 
     test("should persist locale across pages", async ({ page }) => {
       await page.goto("/en/explore");
-      
+
       // Switch to Arabic
-      const langSwitcher = page.locator('button:has-text("English")');
+      const langSwitcher = page.locator("button:has-text(\"English\")");
       if (await langSwitcher.isVisible()) {
         await langSwitcher.click();
         await page.click('a:has-text("العربية")');
-        
+
         await page.waitForURL(/\/ar\//);
-        
-        // Navigate to another page
-        await page.goto("/ar/projects/test-project");
-        
+
+        // Navigate to another page using a real seeded project slug
+        await page.goto("/ar/projects/halal-food-scanner");
+
         // Should still be in Arabic
         await expect(page).toHaveURL(/\/ar\//);
+        await expect(page.locator("h1")).toBeVisible();
       }
     });
   });

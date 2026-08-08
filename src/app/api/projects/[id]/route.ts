@@ -2,13 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { ProjectStatus } from "@prisma/client";
 import { projectUpdateSchema, routeIdParamSchema } from "@/lib/validation/schemas";
 import { parseBody, parseParams } from "@/lib/validation/parse";
 import { makeValidationError } from "@/lib/validation/errors";
+import { getSessionUser, isAdminUserId } from "@/lib/auth-helpers";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
 }
+
+const PUBLIC_STATUSES: ProjectStatus[] = [ProjectStatus.OPEN];
 
 /**
  * GET /api/projects/[id]
@@ -22,6 +26,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = parsedParams.data;
+
+    const user = await getSessionUser();
 
     const project = await prisma.project.findFirst({
       where: {
@@ -38,7 +44,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             id: true,
             name: true,
             image: true,
-            email: true,
           },
         },
         organization: {
@@ -61,6 +66,18 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         makeValidationError("Project not found", "id"),
         { status: 404 }
       );
+    }
+
+    // Non-public projects are only visible to their owner and admins.
+    if (!PUBLIC_STATUSES.includes(project.status)) {
+      const isOwner = user !== null && project.ownerId === user.id;
+      const isAdmin = await isAdminUserId(user?.id ?? "");
+      if (!isOwner && !isAdmin) {
+        return NextResponse.json(
+          makeValidationError("Project not found", "id"),
+          { status: 404 }
+        );
+      }
     }
 
     return NextResponse.json(project);
@@ -126,7 +143,22 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       organizationId,
       slug: newSlug,
       skills,
+      status: newStatus,
     } = parsedBody.data;
+
+    // Organization must belong to the project owner (mirrors campaign routes)
+    if (organizationId) {
+      const org = await prisma.organization.findUnique({
+        where: { id: organizationId },
+        select: { userId: true },
+      });
+      if (!org || org.userId !== session.user.id) {
+        return NextResponse.json(
+          makeValidationError("Organization not found or not owned by you", "organizationId"),
+          { status: 400 }
+        );
+      }
+    }
 
     // If slug changed, verify uniqueness
     if (newSlug) {
@@ -146,12 +178,26 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       await prisma.projectSkill.deleteMany({ where: { projectId: id } });
       if (skills.length > 0) {
         await prisma.projectSkill.createMany({
-          data: skills.map((s: { skillId: number; isRequired: boolean }) => ({
+          data: skills.map((s: { skillId: number; isRequired?: boolean }) => ({
             projectId: id,
             skillId: s.skillId,
-            isRequired: s.isRequired ?? false,
+            isRequired: Boolean(s.isRequired ?? false),
           })),
         });
+      }
+    }
+
+    // Owner can only resubmit a DRAFT project for review (DRAFT -> PENDING)
+    if (newStatus) {
+      const current = await prisma.project.findUnique({
+        where: { id },
+        select: { status: true },
+      });
+      if (current?.status !== "DRAFT") {
+        return NextResponse.json(
+          makeValidationError("Only draft projects can be submitted for review", "status"),
+          { status: 400 }
+        );
       }
     }
 
@@ -169,6 +215,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         ...(githubUrl !== undefined && { githubUrl }),
         ...(featuredImage !== undefined && { featuredImage }),
         ...(organizationId !== undefined && { organizationId: organizationId || null }),
+        ...(newStatus && {
+          status: newStatus,
+          adminFeedback: null,
+        }),
       },
       include: {
         skills: {

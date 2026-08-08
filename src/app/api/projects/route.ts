@@ -2,10 +2,47 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { ProjectStatus } from "@prisma/client";
+import { ProjectStatus, ProjectLanguage } from "@prisma/client";
 import { projectCreateSchema, projectsQuerySchema } from "@/lib/validation/schemas";
 import { parseBody, parseQuery } from "@/lib/validation/parse";
 import { makeValidationError } from "@/lib/validation/errors";
+import { getSessionUser, isAdminUserId } from "@/lib/auth-helpers";
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
+import { calculateMatchScore } from "@/lib/matching/engine";
+import type { ContributorMatchData, ProjectMatchData } from "@/lib/matching/types";
+
+const PUBLIC_STATUSES: ProjectStatus[] = [ProjectStatus.OPEN];
+
+/** Projects are OPEN-status only for anonymous/basic listing */
+function getCommitmentRange(timeCommitment?: string): { min?: number; max?: number } | null {
+  if (!timeCommitment) return null;
+  switch (timeCommitment) {
+    case "1-5":
+      return { max: 5 };
+    case "5-10":
+      return { min: 5, max: 10 };
+    case "10+":
+      return { min: 10 };
+    default:
+      return null;
+  }
+}
+
+/**
+ * timeCommitment is a free-text string (e.g. "10-15 hours/week",
+ * "١٠-١٥ ساعة/أسبوع"). Extract the first number and test it against
+ * the requested range. Unparseable values never match.
+ */
+function matchesCommitment(value: string | null, range: { min?: number; max?: number } | null): boolean {
+  if (!range || !value) return false;
+  const normalized = value.replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));
+  const numbers = normalized.match(/\d+/g)?.map(Number).filter((n) => n > 0);
+  if (!numbers?.length) return false;
+  const first = numbers[0];
+  if (range.min !== undefined && first < range.min) return false;
+  if (range.max !== undefined && first > range.max) return false;
+  return true;
+}
 
 /**
  * GET /api/projects
@@ -18,25 +55,59 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(parsedQuery.error, { status: 400 });
     }
 
-    const { limit, offset, category, search, sortBy, status } = parsedQuery.data;
+    const { limit, offset, category, search, sortBy, status, skills, language, timeCommitment } = parsedQuery.data;
+
+    const user = await getSessionUser();
+    const isAdmin = await isAdminUserId(user?.id ?? "");
 
     // Build where clause
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const where: any = {};
-    
-    if (status !== "all") {
-      where.status = status as ProjectStatus;
+
+    const requestedStatus = status as ProjectStatus | "all" | undefined;
+
+    if (isAdmin) {
+      if (requestedStatus && requestedStatus !== "all") {
+        where.status = requestedStatus;
+      }
+    } else if (requestedStatus && requestedStatus !== "all") {
+      if (PUBLIC_STATUSES.includes(requestedStatus)) {
+        where.status = requestedStatus;
+      } else if (user) {
+        // Non-public statuses (DRAFT, PENDING, ...) are scoped to the owner
+        where.status = requestedStatus;
+        where.ownerId = user.id;
+      } else {
+        where.status = { in: PUBLIC_STATUSES };
+      }
+    } else {
+      where.status = { in: PUBLIC_STATUSES };
     }
-    
+
     if (category) {
       where.category = category;
     }
-    
+
     if (search) {
       where.OR = [
         { title: { contains: search, mode: "insensitive" } },
         { description: { contains: search, mode: "insensitive" } },
       ];
+    }
+
+    if (skills?.length) {
+      where.skills = {
+        some: {
+          skillId: { in: skills },
+        },
+      };
+    }
+
+    if (language) {
+      // A project written in both languages matches either choice
+      where.language = language === ProjectLanguage.BOTH
+        ? ProjectLanguage.BOTH
+        : { in: [language, ProjectLanguage.BOTH] };
     }
 
     // Build order clause
@@ -46,38 +117,106 @@ export async function GET(request: NextRequest) {
       orderBy = { createdAt: "asc" };
     }
 
-    // Fetch projects
-    const [projects, total] = await Promise.all([
-      prisma.project.findMany({
-        where,
+    const projectInclude = {
+      skills: {
         include: {
+          skill: true,
+        },
+      },
+      owner: {
+        select: {
+          id: true,
+          name: true,
+          image: true,
+        },
+      },
+      _count: {
+        select: {
+          applications: true,
+        },
+      },
+    };
+
+    // Fetch ALL matching projects: timeCommitment needs in-memory filtering
+    // and "recommended" needs in-memory scoring. Public listings are small.
+    const projects = await prisma.project.findMany({
+      where,
+      include: projectInclude,
+      orderBy,
+    });
+
+    // "recommended" sorts by the contributor's match score when the user has
+    // a contributor profile, otherwise falls back to newest-first.
+    if (sortBy === "recommended" && user) {
+      const profile = await prisma.contributorProfile.findUnique({
+        where: { userId: user.id },
+        select: {
+          preferredCategories: true,
+          spokenLanguages: true,
           skills: {
-            include: {
-              skill: true,
-            },
-          },
-          owner: {
             select: {
-              id: true,
-              name: true,
-              image: true,
-            },
-          },
-          _count: {
-            select: {
-              applications: true,
+              skillId: true,
+              level: true,
+              skill: { select: { name: true } },
             },
           },
         },
-        orderBy,
-        take: limit,
-        skip: offset,
-      }),
-      prisma.project.count({ where }),
-    ]);
+      });
+
+      if (profile) {
+        const contributor: ContributorMatchData = {
+          id: user.id,
+          skills: profile.skills.map((s) => ({
+            skillId: s.skillId,
+            skillName: s.skill.name,
+            level: s.level,
+          })),
+          preferredCategories: (profile.preferredCategories || []) as ProjectMatchData["category"][],
+          spokenLanguages: profile.spokenLanguages?.length ? profile.spokenLanguages : ["ar", "en"],
+        };
+
+        const scored = projects
+          .map((p) => {
+            const projectMatch: ProjectMatchData = {
+              id: p.id,
+              title: p.title,
+              slug: p.slug,
+              description: p.description ?? "",
+              category: p.category,
+              language: p.language,
+              createdAt: p.createdAt,
+              skills: p.skills.map((s) => ({
+                skillId: s.skillId,
+                skillName: s.skill.name,
+                isRequired: s.isRequired,
+              })),
+              owner: p.owner
+                ? { id: p.owner.id, name: p.owner.name, image: p.owner.image }
+                : null,
+            };
+            return { project: p, score: calculateMatchScore(contributor, projectMatch).totalScore };
+          })
+          .sort((a, b) => b.score - a.score)
+          .map((s) => s.project);
+
+        const final = timeCommitment
+          ? scored.filter((p) => matchesCommitment(p.timeCommitment, getCommitmentRange(timeCommitment)))
+          : scored;
+        const total = final.length;
+        return NextResponse.json({
+          projects: final.slice(offset, offset + limit),
+          pagination: { total, limit, offset, hasMore: offset + limit < total },
+        });
+      }
+    }
+
+    const final = timeCommitment
+      ? projects.filter((p) => matchesCommitment(p.timeCommitment, getCommitmentRange(timeCommitment)))
+      : projects;
+    const total = final.length;
 
     return NextResponse.json({
-      projects,
+      projects: final.slice(offset, offset + limit),
       pagination: {
         total,
         limit,
@@ -109,6 +248,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (!checkRateLimit(request, "project-create", { limit: 10, windowMs: 60_000 }, session.user.id)) {
+      return rateLimitedResponse();
+    }
+
     const parsedBody = await parseBody(request, projectCreateSchema);
     if (!parsedBody.success) {
       return NextResponse.json(parsedBody.error, { status: 400 });
@@ -127,6 +270,7 @@ export async function POST(request: NextRequest) {
       organizationId,
       customSlug,
       skills,
+      status: newStatus,
     } = parsedBody.data;
 
     // Generate or use custom slug
@@ -148,6 +292,20 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Organization must belong to the creator (mirrors campaign routes)
+    if (organizationId) {
+      const org = await prisma.organization.findUnique({
+        where: { id: organizationId },
+        select: { userId: true },
+      });
+      if (!org || org.userId !== session.user.id) {
+        return NextResponse.json(
+          makeValidationError("Organization not found or not owned by you", "organizationId"),
+          { status: 400 }
+        );
+      }
+    }
+
     // Create project
     const project = await prisma.project.create({
       data: {
@@ -156,7 +314,7 @@ export async function POST(request: NextRequest) {
         description,
         category,
         language: language || "BOTH",
-        status: ProjectStatus.DRAFT,
+        status: newStatus === "PENDING" ? ProjectStatus.PENDING : ProjectStatus.DRAFT,
         timeCommitment,
         duration,
         impact,
@@ -166,9 +324,9 @@ export async function POST(request: NextRequest) {
         ownerId: session.user.id,
         skills: skills?.length
           ? {
-              create: skills.map((s: { skillId: number; isRequired: boolean }) => ({
+              create: skills.map((s: { skillId: number; isRequired?: boolean }) => ({
                 skillId: s.skillId,
-                isRequired: s.isRequired ?? false,
+                isRequired: Boolean(s.isRequired ?? false),
               })),
             }
           : undefined,

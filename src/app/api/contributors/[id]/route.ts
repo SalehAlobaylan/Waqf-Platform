@@ -22,14 +22,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const { id } = parsedParams.data;
 
     // Fetch user with contributor profile and skills
+    // Note: email and role are intentionally excluded — this is a public
+    // profile endpoint and must not disclose contact data.
     const user = await prisma.user.findUnique({
       where: { id },
       select: {
         id: true,
         name: true,
-        email: true,
         image: true,
-        role: true,
         createdAt: true,
         contributorProfile: {
           include: {
@@ -54,9 +54,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const profile = {
       id: user.id,
       name: user.name,
-      email: user.email,
       avatar: user.image,
-      role: user.role,
       createdAt: user.createdAt,
       bio: user.contributorProfile?.bio || null,
       timezone: user.contributorProfile?.timezone || null,

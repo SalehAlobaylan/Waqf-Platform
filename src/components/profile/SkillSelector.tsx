@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Check, ChevronsUpDown, Search, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export type Skill = {
     id: number;
@@ -18,6 +19,7 @@ interface SkillSelectorProps {
 }
 
 export function SkillSelector({ selectedSkills, onChange, locale, maxSelection = 10 }: SkillSelectorProps) {
+    const t = useTranslations("profile.edit");
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState("");
     const [skills, setSkills] = useState<Skill[]>([]);
@@ -109,6 +111,7 @@ export function SkillSelector({ selectedSkills, onChange, locale, maxSelection =
                         {getSkillName(id)}
                         <button
                             onClick={(e) => removeSkill(e, id)}
+                            aria-label={t("removeSkill")}
                             className="text-primary-400 hover:text-primary-700 hover:bg-primary-100 rounded-full p-0.5 transition-colors"
                         >
                             <X size={14} />
@@ -124,12 +127,13 @@ export function SkillSelector({ selectedSkills, onChange, locale, maxSelection =
                         setOpen(true);
                     }}
                     onFocus={() => setOpen(true)}
-                    placeholder={selectedSkills.length === 0 ? (locale === "ar" ? "ابحث عن مهارات..." : "Search skills...") : ""}
+                    placeholder={selectedSkills.length === 0 ? t("searchSkillPlaceholder") : ""}
                     className="flex-1 min-w-[120px] bg-transparent outline-none text-sm placeholder:text-secondary-400"
                 />
 
                 <button
                     type="button"
+                    aria-label={open ? t("closeSkills") : t("openSkills")}
                     className="ml-auto text-secondary-400 hover:text-secondary-600 p-1"
                     onClick={(e) => {
                         e.stopPropagation();

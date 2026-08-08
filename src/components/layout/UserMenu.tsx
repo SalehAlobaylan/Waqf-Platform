@@ -86,7 +86,7 @@ export function UserMenu() {
                             {t("dashboard")}
                         </Link>
                         <Link
-                            href={`/${locale}/profile/${session.user.id}`}
+                            href={`/${locale}/profile/${session.user.username ?? session.user.id}`}
                             onClick={() => setIsOpen(false)}
                             className="flex items-center gap-3 px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-50 transition-colors"
                         >
@@ -99,7 +99,7 @@ export function UserMenu() {
                             className="flex items-center gap-3 px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-50 transition-colors"
                         >
                             <Settings className="w-4 h-4" />
-                            Settings
+                            {t("settings")}
                         </Link>
                     </div>
 

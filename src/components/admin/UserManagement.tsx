@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import {
     Search,
     Filter,
@@ -44,6 +45,8 @@ export function UserManagement({ locale }: UserManagementProps) {
     const [actionLoading, setActionLoading] = useState<string | null>(null);
     const [openMenu, setOpenMenu] = useState<string | null>(null);
 
+    const t = useTranslations("admin");
+    const tCommon = useTranslations("common");
     const isAr = locale === "ar";
 
     const fetchUsers = useCallback(async () => {
@@ -136,7 +139,7 @@ export function UserManagement({ locale }: UserManagementProps) {
             {/* Header */}
             <div>
                 <h1 className="text-2xl font-bold text-secondary-900">
-                    {isAr ? "إدارة المستخدمين" : "User Management"}
+                    {t("users")}
                 </h1>
                 <p className="text-secondary-500 mt-1">
                     {isAr ? "إدارة جميع المستخدمين وأدوارهم" : "Manage all users and their roles"}
@@ -191,7 +194,7 @@ export function UserManagement({ locale }: UserManagementProps) {
                 <div className="text-center py-12 bg-white rounded-xl border border-secondary-200">
                     <AlertCircle className="w-12 h-12 text-secondary-300 mx-auto mb-4" />
                     <p className="text-secondary-600">
-                        {isAr ? "لا يوجد مستخدمين" : "No users found"}
+                        {t("noUsers")}
                     </p>
                 </div>
             ) : (
@@ -263,6 +266,7 @@ export function UserManagement({ locale }: UserManagementProps) {
                                             <button
                                                 onClick={() => setOpenMenu(openMenu === user.id ? null : user.id)}
                                                 disabled={actionLoading === user.id}
+                                                aria-label={isAr ? "خيارات المستخدم" : "User options"}
                                                 className="p-2 hover:bg-secondary-100 rounded-lg transition-colors disabled:opacity-50"
                                             >
                                                 {actionLoading === user.id ? (
@@ -272,35 +276,35 @@ export function UserManagement({ locale }: UserManagementProps) {
                                                 )}
                                             </button>
 
-                                            {openMenu === user.id && (
-                                                <div className="absolute right-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-secondary-200 py-1 z-10">
-                                                    {user.role === "USER" ? (
-                                                        <button
-                                                            onClick={() => handleRoleChange(user.id, "ADMIN")}
-                                                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-50"
-                                                        >
-                                                            <Shield className="w-4 h-4" />
-                                                            {isAr ? "ترقية لمدير" : "Make Admin"}
-                                                        </button>
-                                                    ) : (
-                                                        <button
-                                                            onClick={() => handleRoleChange(user.id, "USER")}
-                                                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-50"
-                                                        >
-                                                            <User className="w-4 h-4" />
-                                                            {isAr ? "تحويل لمستخدم" : "Remove Admin"}
-                                                        </button>
-                                                    )}
-                                                    <hr className="my-1 border-secondary-200" />
-                                                    <button
-                                                        onClick={() => handleDelete(user.id)}
-                                                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                        {isAr ? "حذف" : "Delete"}
-                                                    </button>
-                                                </div>
-                                            )}
+                            {openMenu === user.id && (
+                                <div className="absolute end-0 mt-1 w-48 bg-white rounded-xl shadow-lg border border-secondary-200 py-1 z-10">
+                                    {user.role === "USER" ? (
+                                        <button
+                                            onClick={() => handleRoleChange(user.id, "ADMIN")}
+                                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-50"
+                                        >
+                                            <Shield className="w-4 h-4" />
+                                            {t("makeAdmin")}
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => handleRoleChange(user.id, "USER")}
+                                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-secondary-700 hover:bg-secondary-50"
+                                        >
+                                            <User className="w-4 h-4" />
+                                            {t("removeAdmin")}
+                                        </button>
+                                    )}
+                                    <hr className="my-1 border-secondary-200" />
+                                    <button
+                                        onClick={() => handleDelete(user.id)}
+                                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                        {t("delete")}
+                                    </button>
+                                </div>
+                            )}
                                         </div>
                                     </td>
                                 </tr>
@@ -316,9 +320,10 @@ export function UserManagement({ locale }: UserManagementProps) {
                     <button
                         onClick={() => setPagination(prev => ({ ...prev, page: prev.page - 1 }))}
                         disabled={pagination.page === 1}
+                        aria-label={tCommon("previous")}
                         className="px-4 py-2 border border-secondary-200 rounded-lg disabled:opacity-50"
                     >
-                        {isAr ? "السابق" : "Previous"}
+                        {tCommon("previous")}
                     </button>
                     <span className="text-sm text-secondary-600">
                         {pagination.page} / {pagination.totalPages}
@@ -326,9 +331,10 @@ export function UserManagement({ locale }: UserManagementProps) {
                     <button
                         onClick={() => setPagination(prev => ({ ...prev, page: prev.page + 1 }))}
                         disabled={pagination.page === pagination.totalPages}
+                        aria-label={tCommon("next")}
                         className="px-4 py-2 border border-secondary-200 rounded-lg disabled:opacity-50"
                     >
-                        {isAr ? "التالي" : "Next"}
+                        {tCommon("next")}
                     </button>
                 </div>
             )}

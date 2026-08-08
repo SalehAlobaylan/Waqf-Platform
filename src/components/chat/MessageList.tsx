@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { MessageSquare, Clock } from "lucide-react";
 
 interface ConversationPreview {
@@ -13,7 +13,7 @@ interface ConversationPreview {
         id: string;
         name: string;
         image: string | null;
-    };
+    } | null;
     lastMessage?: {
         content: string;
         createdAt: string;
@@ -28,6 +28,7 @@ interface MessageListProps {
 
 export function MessageList({ conversations }: MessageListProps) {
     const locale = useLocale();
+    const t = useTranslations("chat");
 
     if (conversations.length === 0) {
         return (
@@ -36,12 +37,10 @@ export function MessageList({ conversations }: MessageListProps) {
                     <MessageSquare className="w-8 h-8 text-secondary-400" />
                 </div>
                 <h3 className="text-lg font-medium text-secondary-900 mb-2">
-                    {locale === "ar" ? "لا توجد محادثات" : "No conversations yet"}
+                    {t("noMessages")}
                 </h3>
                 <p className="text-secondary-500 max-w-md mx-auto">
-                    {locale === "ar"
-                        ? "ستظهر المحادثات هنا بعد التقديم على المشاريع"
-                        : "Conversations will appear here after applying to projects"}
+                    {t("selectConversationDescription")}
                 </p>
             </div>
         );
@@ -57,7 +56,7 @@ export function MessageList({ conversations }: MessageListProps) {
                                hover:border-primary-200 hover:shadow-sm transition-all group"
                 >
                     {/* Avatar */}
-                    {conv.otherUser.image ? (
+                    {conv.otherUser?.image ? (
                         <Image
                             src={conv.otherUser.image}
                             alt={conv.otherUser.name}
@@ -67,7 +66,7 @@ export function MessageList({ conversations }: MessageListProps) {
                         />
                     ) : (
                         <div className="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center text-lg font-medium text-primary-700">
-                            {conv.otherUser.name.charAt(0)}
+                            {conv.otherUser?.name.charAt(0) ?? "?"}
                         </div>
                     )}
 
@@ -75,7 +74,7 @@ export function MessageList({ conversations }: MessageListProps) {
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
                             <h4 className="font-medium text-secondary-900 truncate group-hover:text-primary-600 transition-colors">
-                                {conv.otherUser.name}
+                                {conv.otherUser?.name ?? (locale === "ar" ? "مستخدم محذوف" : "Deleted user")}
                             </h4>
                             {conv.lastMessage && (
                                 <span className="text-xs text-secondary-400 flex-shrink-0">
@@ -90,7 +89,7 @@ export function MessageList({ conversations }: MessageListProps) {
                         {conv.lastMessage && (
                             <p className="text-sm text-secondary-400 truncate mt-1">
                                 {conv.lastMessage.isOwn && (
-                                    <span className="text-secondary-300">You: </span>
+                                    <span className="text-secondary-300">{t("you")}: </span>
                                 )}
                                 {conv.lastMessage.content}
                             </p>

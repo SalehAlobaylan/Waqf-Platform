@@ -62,6 +62,7 @@ export async function GET() {
                     id: true,
                     title: true,
                     status: true,
+                    source: true,
                     createdAt: true,
                     owner: { select: { name: true, image: true } },
                 },

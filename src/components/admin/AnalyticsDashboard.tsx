@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import {
     Users,
     FolderKanban,
@@ -59,6 +60,7 @@ interface AnalyticsDashboardProps {
 export function AnalyticsDashboard({ locale }: AnalyticsDashboardProps) {
     const [stats, setStats] = useState<Stats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const t = useTranslations("admin");
     const isAr = locale === "ar";
 
     useEffect(() => {
@@ -118,7 +120,7 @@ export function AnalyticsDashboard({ locale }: AnalyticsDashboardProps) {
             {/* Header */}
             <div>
                 <h1 className="text-2xl font-bold text-secondary-900">
-                    {isAr ? "الإحصائيات والتحليلات" : "Analytics & Insights"}
+                    {t("analytics")}
                 </h1>
                 <p className="text-secondary-500 mt-1">
                     {isAr ? "تحليلات مفصلة عن نشاط المنصة" : "Detailed platform activity analytics"}
@@ -128,29 +130,29 @@ export function AnalyticsDashboard({ locale }: AnalyticsDashboardProps) {
             {/* Key Metrics */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <MetricCard
-                    label={isAr ? "إجمالي المستخدمين" : "Total Users"}
+                    label={t("totalUsers")}
                     value={stats.overview.totalUsers}
                     growth={stats.growth.newUsersThisMonth}
-                    growthLabel={isAr ? "هذا الشهر" : "this month"}
+                    growthLabel={t("thisMonth")}
                     icon={Users}
                     color="bg-blue-500"
                 />
                 <MetricCard
-                    label={isAr ? "إجمالي المشاريع" : "Total Projects"}
+                    label={t("totalProjects")}
                     value={stats.overview.totalProjects}
                     growth={stats.growth.newProjectsThisMonth}
-                    growthLabel={isAr ? "هذا الشهر" : "this month"}
+                    growthLabel={t("thisMonth")}
                     icon={FolderKanban}
                     color="bg-primary-500"
                 />
                 <MetricCard
-                    label={isAr ? "مشاريع نشطة" : "Active Projects"}
+                    label={t("activeProjects")}
                     value={stats.overview.activeProjects}
                     icon={Activity}
                     color="bg-green-500"
                 />
                 <MetricCard
-                    label={isAr ? "معدل القبول" : "Acceptance Rate"}
+                    label={t("acceptanceRate")}
                     value={`${stats.rates.acceptanceRate}%`}
                     icon={TrendingUp}
                     color="bg-amber-500"

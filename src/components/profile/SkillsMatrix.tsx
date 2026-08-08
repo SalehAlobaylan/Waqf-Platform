@@ -1,4 +1,5 @@
 import { SkillLevel } from "@prisma/client";
+import { useTranslations } from "next-intl";
 
 interface SkillWithLevel {
     id: number;
@@ -28,6 +29,7 @@ const levelLabels: Record<SkillLevel, { en: string; ar: string }> = {
 };
 
 export function SkillsMatrix({ skills, locale = "en" }: SkillsMatrixProps) {
+    const t = useTranslations("profile.edit");
     // Group skills by category
     const groupedSkills = skills.reduce((acc, skill) => {
         if (!acc[skill.category]) {
@@ -51,7 +53,7 @@ export function SkillsMatrix({ skills, locale = "en" }: SkillsMatrixProps) {
         return (
             <div className="bg-white rounded-xl border border-secondary-100 p-6">
                 <h3 className="text-lg font-semibold text-secondary-900 mb-4">
-                    {locale === "ar" ? "المهارات" : "Skills"}
+                    {t("skills")}
                 </h3>
                 <p className="text-secondary-500 text-sm">
                     {locale === "ar" ? "لم تتم إضافة مهارات بعد" : "No skills added yet"}
@@ -63,7 +65,7 @@ export function SkillsMatrix({ skills, locale = "en" }: SkillsMatrixProps) {
     return (
         <div className="bg-white rounded-xl border border-secondary-100 p-6">
             <h3 className="text-lg font-semibold text-secondary-900 mb-4">
-                {locale === "ar" ? "المهارات" : "Skills"}
+                {t("skills")}
             </h3>
 
             <div className="space-y-6">

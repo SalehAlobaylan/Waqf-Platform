@@ -1,4 +1,3 @@
-// Added PortfolioGrid to imports (wait, need to actually replace the whole file from start)
 import { notFound } from "next/navigation";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
@@ -11,16 +10,45 @@ import { PortfolioGrid } from "@/components/profile/PortfolioGrid";
 import { Heart, GitPullRequest, FolderOpen } from "lucide-react";
 
 interface ProfilePageProps {
-    params: Promise<{ locale: string; id: string }>;
+    params: Promise<{ locale: string; handle: string }>;
 }
 
-export async function generateMetadata({ params }: ProfilePageProps) {
-    const { id } = await params;
-    const user = await prisma.user.findUnique({
-        where: { id },
-        select: { name: true },
+async function findUserByHandle(handle: string) {
+    const byUsername = await prisma.user.findUnique({
+        where: { username: handle },
+        select: userSelect,
     });
+    if (byUsername) return byUsername;
+    return prisma.user.findUnique({
+        where: { id: handle },
+        select: userSelect,
+    });
+}
 
+const userSelect = {
+    id: true,
+    name: true,
+    email: true,
+    image: true,
+    role: true,
+    createdAt: true,
+    contributorProfile: {
+        include: {
+            skills: {
+                include: {
+                    skill: true,
+                },
+            },
+            portfolioItems: {
+                orderBy: { order: "asc" }
+            }
+        },
+    },
+} as const;
+
+export async function generateMetadata({ params }: ProfilePageProps) {
+    const { handle } = await params;
+    const user = await findUserByHandle(handle);
     return {
         title: user ? `${user.name} | Waqf` : "Profile | Waqf",
         description: user ? `View ${user.name}'s contributor profile on Waqf` : "Contributor profile",
@@ -28,32 +56,10 @@ export async function generateMetadata({ params }: ProfilePageProps) {
 }
 
 export default async function ProfilePage({ params }: ProfilePageProps) {
-    const { locale, id } = await params;
+    const { locale, handle } = await params;
     const session = await auth.api.getSession({ headers: await headers() });
 
-    const user = await prisma.user.findUnique({
-        where: { id },
-        select: {
-            id: true,
-            name: true,
-            email: true,
-            image: true,
-            role: true,
-            createdAt: true,
-            contributorProfile: {
-                include: {
-                    skills: {
-                        include: {
-                            skill: true,
-                        },
-                    },
-                    portfolioItems: {
-                        orderBy: { order: "asc" }
-                    }
-                },
-            },
-        },
-    });
+    const user = await findUserByHandle(handle);
 
     if (!user) {
         notFound();

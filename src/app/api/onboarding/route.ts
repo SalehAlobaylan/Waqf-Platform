@@ -1,10 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { onboardingSchema } from "@/lib/validation/schemas";
 import { parseBody } from "@/lib/validation/parse";
 import { makeValidationError } from "@/lib/validation/errors";
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
 
 function slugifyString(text: string) {
     return text
@@ -17,11 +18,15 @@ function slugifyString(text: string) {
         .replace(/-+$/, "");            // Trim - from end of text
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     try {
         const session = await auth.api.getSession({ headers: await headers() });
         if (!session?.user?.id) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        if (!checkRateLimit(request, "onboarding", { limit: 5, windowMs: 60_000 }, session.user.id)) {
+            return rateLimitedResponse();
         }
 
         const parsedBody = await parseBody(request, onboardingSchema);

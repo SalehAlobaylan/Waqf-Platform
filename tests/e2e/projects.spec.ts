@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { signInAs, SEEDED_USERS } from "./auth-helpers";
 
 test.describe("Projects Flow", () => {
   test.describe("Explore Projects Page", () => {
@@ -10,13 +11,10 @@ test.describe("Projects Flow", () => {
 
     test("should display list of projects", async ({ page }) => {
       await page.goto("/en/explore");
-      
-      // Wait for projects to load
-      await page.waitForSelector("text=Projects", { timeout: 10000 });
-      
-      // Check that project cards are visible
-      const projectCards = page.locator('[class*="project"], [class*="card"]');
-      await expect(projectCards.first()).toBeVisible();
+
+      // Wait for project cards to load (each links to /projects/<slug>)
+      const projectCard = page.locator('a[href*="/projects/"]').first();
+      await expect(projectCard).toBeVisible({ timeout: 10000 });
     });
 
     test("should filter projects by category", async ({ page }) => {
@@ -71,8 +69,10 @@ test.describe("Projects Flow", () => {
         await projectLink.click();
         await page.waitForLoadState("networkidle");
         
-        // Check for owner section
-        await expect(page.locator("text=Project Creator, text=Creator")).toBeVisible();
+        // Check for owner section (internal) or curator notice (external)
+        const ownerSection = page.getByText("Project Creator").first();
+        const curatorSection = page.getByText("Curated by Waqf").first();
+        await expect(ownerSection.or(curatorSection)).toBeVisible();
       }
     });
 
@@ -86,7 +86,7 @@ test.describe("Projects Flow", () => {
         await page.waitForLoadState("networkidle");
         
         // Check for skills section
-        await expect(page.locator("text=Tech Stack, text=Skills, text=Required")).toBeVisible();
+        await expect(page.getByText("Tech Stack").first()).toBeVisible();
       }
     });
 
@@ -100,57 +100,46 @@ test.describe("Projects Flow", () => {
         await page.waitForLoadState("networkidle");
         
         // Check for roadmap section
-        await expect(page.locator("text=Roadmap")).toBeVisible();
+        await expect(page.getByText("Project Roadmap").first()).toBeVisible();
       }
     });
   });
 
   test.describe("Project Application Flow", () => {
     test("should show apply button on project page", async ({ page }) => {
-      await page.goto("/en/explore");
-      await page.waitForTimeout(2000);
-      
-      const projectLink = page.locator('a[href*="/projects/"]').first();
-      if (await projectLink.isVisible()) {
-        await projectLink.click();
-        await page.waitForLoadState("networkidle");
-        
-        // Check for Apply button or Contribute button
-        const applyButton = page.locator('button:has-text("Apply"), button:has-text("Contribute")');
-        await expect(applyButton).toBeVisible();
-      }
+      // Use a known internal (non-external) seeded project — the explore feed's
+      // first card is a curated external project, which has no apply button.
+      await page.goto("/en/projects/halal-food-scanner");
+      await page.waitForLoadState("networkidle");
+
+      // Check for Apply/Contribute button (link to login when unauthenticated)
+      const applyButton = page.locator('button:has-text("Contribute"), a:has-text("Contribute")').first();
+      await expect(applyButton).toBeVisible();
     });
 
     test("should redirect to login when trying to apply without auth", async ({ page }) => {
-      await page.goto("/en/explore");
-      await page.waitForTimeout(2000);
-      
-      const projectLink = page.locator('a[href*="/projects/"]').first();
-      if (await projectLink.isVisible()) {
-        await projectLink.click();
-        await page.waitForLoadState("networkidle");
-        
-        // Click apply button
-        const applyButton = page.locator('button:has-text("Apply"), button:has-text("Contribute")').first();
-        await applyButton.click();
-        
-        // Should redirect to login
-        await expect(page).toHaveURL(/\/login/);
-      }
+      // Use a known internal (non-external) seeded project
+      await page.goto("/en/projects/halal-food-scanner");
+      await page.waitForLoadState("networkidle");
+
+      // Click contribute button
+      const applyButton = page.locator('a:has-text("Contribute")').first();
+      await expect(applyButton).toBeVisible();
+      await applyButton.click();
+
+      // Should redirect to login
+      await expect(page).toHaveURL(/\/login/);
     });
   });
 
   test.describe("Create Project", () => {
     test("should have create project option in dashboard", async ({ page }) => {
       // First login
-      await page.goto("/en/login");
-      await page.fill('input[type="email"]', "test@example.com");
-      await page.fill('input[type="password"]', "TestPass123");
-      await page.click('button[type="submit"]');
-      await page.waitForURL("/en/dashboard", { timeout: 15000 });
-      
+      await signInAs(page, SEEDED_USERS.omar);
+      await page.goto("/en/dashboard");
+
       // Check for create project button in dashboard
-      const createButton = page.locator('a:has-text("Create Project"), button:has-text("Create Project")');
+      const createButton = page.locator('a:has-text("Create Project")').first();
       await expect(createButton).toBeVisible();
     });
   });

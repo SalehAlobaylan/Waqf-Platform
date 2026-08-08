@@ -1,19 +1,38 @@
 import { prisma } from "@/lib/prisma";
 import { ProjectStatus } from "@prisma/client";
+import { getTranslations } from "next-intl/server";
 import { ExplorePageClient } from "@/components/explore/ExplorePageClient";
 
-export const metadata = {
-    title: "Explore Projects | Waqf",
-    description: "Discover Islamic open-source projects and contribute your skills as sadaqah jariyah",
-};
+export async function generateMetadata({
+    params,
+}: {
+    params: Promise<{ locale: string }>;
+}) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "metadata" });
+    return {
+        title: t("explore"),
+    };
+}
 
 export default async function ExplorePage() {
-    // Fetch initial projects
     const projects = await prisma.project.findMany({
         where: {
             status: ProjectStatus.OPEN,
         },
-        include: {
+        select: {
+            id: true,
+            slug: true,
+            title: true,
+            description: true,
+            category: true,
+            status: true,
+            source: true,
+            tags: true,
+            timeCommitment: true,
+            featured: true,
+            featuredImage: true,
+            createdAt: true,
             skills: {
                 include: {
                     skill: true,
@@ -38,14 +57,12 @@ export default async function ExplorePage() {
         take: 24,
     });
 
-    // Fetch skills for filter
     const skills = await prisma.skill.findMany({
         orderBy: {
             name: "asc",
         },
     });
 
-    // Transform data for client component (handle null nameAr)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const transformedProjects = projects as any;
     const transformedSkills = skills.map(s => ({
@@ -62,4 +79,3 @@ export default async function ExplorePage() {
         />
     );
 }
-
