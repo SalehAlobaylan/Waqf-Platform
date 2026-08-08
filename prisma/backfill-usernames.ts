@@ -1,7 +1,10 @@
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { ensureUniqueUsername, slugifyForUsername } from "../src/lib/username";
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+    adapter: new PrismaPg(process.env.DATABASE_URL ?? ""),
+});
 
 async function main() {
     const usersWithoutUsername = await prisma.user.findMany({

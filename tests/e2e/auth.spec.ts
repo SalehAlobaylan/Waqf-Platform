@@ -1,8 +1,11 @@
 import { test, expect } from "@playwright/test";
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { signInAs, SEEDED_USERS } from "./auth-helpers";
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+    adapter: new PrismaPg(process.env.DATABASE_URL ?? ""),
+});
 
 test.describe("Authentication Flow (Passwordless)", () => {
   test.afterAll(async () => {
