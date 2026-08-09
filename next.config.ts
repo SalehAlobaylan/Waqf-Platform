@@ -7,8 +7,9 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
   // Keep Prisma engine external so Turbopack builds don't break DB connections
   serverExternalPackages: ["@prisma/client", "prisma"],
-  // Enable standalone output for Docker
-  output: "standalone",
+  // Enable standalone output for Docker, but not on Vercel (conflicts with
+  // Vercel's build process which looks for .nft.json tracing files)
+  output: process.env.VERCEL ? undefined : "standalone",
   // Allow images from external sources (avatars, etc.)
   images: {
     remotePatterns: [
