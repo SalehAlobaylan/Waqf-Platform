@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import Link from "next/link";
@@ -9,6 +8,9 @@ import { ArrowLeft, SquareArrowOutUpRight, CircleCheck, CircleX, Loader2 } from 
 import { ApplicationStatusBadge } from "@/components/applications/ApplicationStatus";
 import { ChatWindow } from "@/components/chat/ChatWindow";
 import { ApplicationStatus } from "@prisma/client";
+import { apiFetch } from "@/lib/api/client";
+import { toast } from "@/lib/toast";
+import { translateApiError } from "@/lib/i18n/client-errors";
 
 interface ApplicationDetailClientProps {
     application: {
@@ -61,28 +63,23 @@ interface ApplicationDetailClientProps {
 export function ApplicationDetailClient({
     application,
     isOwner,
-    isContributor,
 }: ApplicationDetailClientProps) {
     const locale = useLocale();
     const t = useTranslations("applicationDetail");
-    const router = useRouter();
+    const tGlobal = useTranslations();
     const [isUpdating, setIsUpdating] = useState(false);
     const [currentStatus, setCurrentStatus] = useState(application.status);
 
     const handleStatusUpdate = async (newStatus: "ACCEPTED" | "REJECTED") => {
         setIsUpdating(true);
         try {
-            const response = await fetch(`/api/applications/${application.id}/status`, {
+            await apiFetch(`/api/applications/${application.id}/status`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status: newStatus }),
+                body: { status: newStatus },
             });
-
-            if (response.ok) {
-                setCurrentStatus(newStatus);
-            }
-        } catch (error) {
-            console.error("Failed to update status:", error);
+            setCurrentStatus(newStatus);
+        } catch (err) {
+            toast.error(translateApiError(tGlobal, err));
         } finally {
             setIsUpdating(false);
         }

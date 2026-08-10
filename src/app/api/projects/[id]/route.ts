@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAuthOrThrow } from "@/lib/auth-helpers";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { ProjectStatus } from "@prisma/client";
 import { projectUpdateSchema, routeIdParamSchema } from "@/lib/validation/schemas";
 import { parseBody, parseParams } from "@/lib/validation/parse";
-import { makeValidationError } from "@/lib/validation/errors";
+import { makeNotFoundError, makeValidationError } from "@/lib/validation/errors";
 import { getSessionUser, isAdminUserId } from "@/lib/auth-helpers";
 
 interface RouteParams {
@@ -19,7 +19,7 @@ const PUBLIC_STATUSES: ProjectStatus[] = [ProjectStatus.OPEN];
  * Fetch a single project by ID or slug
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
-  try {
+  return withApiHandler(request, "api.projects.get", async () => {
     const parsedParams = parseParams(await params, routeIdParamSchema);
     if (!parsedParams.success) {
       return NextResponse.json(parsedParams.error, { status: 400 });
@@ -62,10 +62,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     });
 
     if (!project) {
-      return NextResponse.json(
-        makeValidationError("Project not found", "id"),
-        { status: 404 }
-      );
+      return NextResponse.json(makeNotFoundError("Project not found", "id"), { status: 404 });
     }
 
     // Non-public projects are only visible to their owner and admins.
@@ -73,21 +70,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       const isOwner = user !== null && project.ownerId === user.id;
       const isAdmin = await isAdminUserId(user?.id ?? "");
       if (!isOwner && !isAdmin) {
-        return NextResponse.json(
-          makeValidationError("Project not found", "id"),
-          { status: 404 }
-        );
+        return NextResponse.json(makeNotFoundError("Project not found", "id"), { status: 404 });
       }
     }
 
     return NextResponse.json(project);
-  } catch (error) {
-    console.error("[API] Error fetching project:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch project" },
-      { status: 500 }
-    );
-  }
+  });
 }
 
 /**
@@ -95,11 +83,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
  * Update a project
  */
 export async function PUT(request: NextRequest, { params }: RouteParams) {
-  try {
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-    }
+  const ctx: ApiHandlerContext = {};
+  return withApiHandler(request, "api.projects.update", async () => {
+    const user = await requireAuthOrThrow();
+    ctx.userId = user.id;
 
     const parsedParams = parseParams(await params, routeIdParamSchema);
     if (!parsedParams.success) {
@@ -120,14 +107,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     });
 
     if (!existing) {
-      return NextResponse.json(
-        makeValidationError("Project not found", "id"),
-        { status: 404 }
-      );
+      return NextResponse.json(makeNotFoundError("Project not found", "id"), { status: 404 });
     }
 
-    if (existing.ownerId !== session.user.id) {
-      return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+    if (existing.ownerId !== user.id) {
+      return NextResponse.json({ error: "Forbidden", code: "FORBIDDEN" }, { status: 403 });
     }
 
     const {
@@ -152,7 +136,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         where: { id: organizationId },
         select: { userId: true },
       });
-      if (!org || org.userId !== session.user.id) {
+      if (!org || org.userId !== user.id) {
         return NextResponse.json(
           makeValidationError("Organization not found or not owned by you", "organizationId"),
           { status: 400 }
@@ -173,21 +157,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       }
     }
 
-    // If skills provided, replace them
-    if (skills && Array.isArray(skills)) {
-      await prisma.projectSkill.deleteMany({ where: { projectId: id } });
-      if (skills.length > 0) {
-        await prisma.projectSkill.createMany({
-          data: skills.map((s: { skillId: number; isRequired?: boolean }) => ({
-            projectId: id,
-            skillId: s.skillId,
-            isRequired: Boolean(s.isRequired ?? false),
-          })),
-        });
-      }
-    }
-
-    // Owner can only resubmit a DRAFT project for review (DRAFT -> PENDING)
+    // Owner can only resubmit a DRAFT project for review (DRAFT -> PENDING).
+    // Validated BEFORE any mutation so a rejected submission never wipes skills.
     if (newStatus) {
       const current = await prisma.project.findUnique({
         where: { id },
@@ -201,48 +172,59 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       }
     }
 
-    const project = await prisma.project.update({
-      where: { id },
-      data: {
-        ...(title && { title }),
-        ...(description && { description }),
-        ...(category && { category }),
-        ...(language && { language }),
-        ...(newSlug && { slug: newSlug }),
-        ...(timeCommitment !== undefined && { timeCommitment }),
-        ...(duration !== undefined && { duration }),
-        ...(impact !== undefined && { impact }),
-        ...(githubUrl !== undefined && { githubUrl }),
-        ...(featuredImage !== undefined && { featuredImage }),
-        ...(organizationId !== undefined && { organizationId: organizationId || null }),
-        ...(newStatus && {
-          status: newStatus,
-          adminFeedback: null,
-        }),
-      },
-      include: {
-        skills: {
-          include: {
-            skill: true,
+    const project = await prisma.$transaction(async (tx) => {
+      // If skills provided, replace them inside the transaction so a failure
+      // rolls back both the update and the skill replacement.
+      if (skills && Array.isArray(skills)) {
+        await tx.projectSkill.deleteMany({ where: { projectId: id } });
+        if (skills.length > 0) {
+          await tx.projectSkill.createMany({
+            data: skills.map((s: { skillId: number; isRequired?: boolean }) => ({
+              projectId: id,
+              skillId: s.skillId,
+              isRequired: Boolean(s.isRequired ?? false),
+            })),
+          });
+        }
+      }
+
+      return tx.project.update({
+        where: { id },
+        data: {
+          ...(title && { title }),
+          ...(description && { description }),
+          ...(category && { category }),
+          ...(language && { language }),
+          ...(newSlug && { slug: newSlug }),
+          ...(timeCommitment !== undefined && { timeCommitment }),
+          ...(duration !== undefined && { duration }),
+          ...(impact !== undefined && { impact }),
+          ...(githubUrl !== undefined && { githubUrl }),
+          ...(featuredImage !== undefined && { featuredImage }),
+          ...(organizationId !== undefined && { organizationId: organizationId || null }),
+          ...(newStatus && {
+            status: newStatus,
+            adminFeedback: null,
+          }),
+        },
+        include: {
+          skills: {
+            include: {
+              skill: true,
+            },
+          },
+          owner: {
+            select: {
+              id: true,
+              name: true,
+            },
           },
         },
-        owner: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-      },
+      });
     });
 
     return NextResponse.json(project);
-  } catch (error) {
-    console.error("[API] Error updating project:", error);
-    return NextResponse.json(
-      { error: "Failed to update project" },
-      { status: 500 }
-    );
-  }
+  }, ctx);
 }
 
 /**
@@ -250,11 +232,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
  * Delete a project
  */
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
-  try {
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-    }
+  const ctx: ApiHandlerContext = {};
+  return withApiHandler(request, "api.projects.delete", async () => {
+    const user = await requireAuthOrThrow();
+    ctx.userId = user.id;
 
     const parsedParams = parseParams(await params, routeIdParamSchema);
     if (!parsedParams.success) {
@@ -270,24 +251,15 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     });
 
     if (!existing) {
-      return NextResponse.json(
-        makeValidationError("Project not found", "id"),
-        { status: 404 }
-      );
+      return NextResponse.json(makeNotFoundError("Project not found", "id"), { status: 404 });
     }
 
-    if (existing.ownerId !== session.user.id) {
-      return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+    if (existing.ownerId !== user.id) {
+      return NextResponse.json({ error: "Forbidden", code: "FORBIDDEN" }, { status: 403 });
     }
 
     await prisma.project.delete({ where: { id } });
 
     return NextResponse.json({ message: "Project deleted" });
-  } catch (error) {
-    console.error("[API] Error deleting project:", error);
-    return NextResponse.json(
-      { error: "Failed to delete project" },
-      { status: 500 }
-    );
-  }
+  }, ctx);
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAuthOrThrow } from "@/lib/auth-helpers";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { ProjectStatus, ProjectLanguage } from "@prisma/client";
 import { projectCreateSchema, projectsQuerySchema } from "@/lib/validation/schemas";
 import { parseBody, parseQuery } from "@/lib/validation/parse";
@@ -49,7 +49,7 @@ function matchesCommitment(value: string | null, range: { min?: number; max?: nu
  * List projects with optional filters
  */
 export async function GET(request: NextRequest) {
-  try {
+  return withApiHandler(request, "api.projects.list", async () => {
     const parsedQuery = parseQuery(request, projectsQuerySchema);
     if (!parsedQuery.success) {
       return NextResponse.json(parsedQuery.error, { status: 400 });
@@ -224,13 +224,7 @@ export async function GET(request: NextRequest) {
         hasMore: offset + limit < total,
       },
     });
-  } catch (error) {
-    console.error("[API] Error fetching projects:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch projects" },
-      { status: 500 }
-    );
-  }
+  });
 }
 
 /**
@@ -238,18 +232,14 @@ export async function GET(request: NextRequest) {
  * Create a new project
  */
 export async function POST(request: NextRequest) {
-  try {
-    const session = await auth.api.getSession({ headers: await headers() });
-    
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 }
-      );
-    }
+  const ctx: ApiHandlerContext = {};
+  return withApiHandler(request, "api.projects.create", async () => {
+    const user = await requireAuthOrThrow();
+    ctx.userId = user.id;
 
-    if (!checkRateLimit(request, "project-create", { limit: 10, windowMs: 60_000 }, session.user.id)) {
-      return rateLimitedResponse();
+    const rate = checkRateLimit(request, "project-create", { limit: 10, windowMs: 60_000 }, user.id);
+    if (!rate.allowed) {
+      return rateLimitedResponse(rate);
     }
 
     const parsedBody = await parseBody(request, projectCreateSchema);
@@ -298,7 +288,7 @@ export async function POST(request: NextRequest) {
         where: { id: organizationId },
         select: { userId: true },
       });
-      if (!org || org.userId !== session.user.id) {
+      if (!org || org.userId !== user.id) {
         return NextResponse.json(
           makeValidationError("Organization not found or not owned by you", "organizationId"),
           { status: 400 }
@@ -321,7 +311,7 @@ export async function POST(request: NextRequest) {
         githubUrl,
         featuredImage: featuredImage || null,
         organizationId: organizationId || null,
-        ownerId: session.user.id,
+        ownerId: user.id,
         skills: skills?.length
           ? {
               create: skills.map((s: { skillId: number; isRequired?: boolean }) => ({
@@ -347,11 +337,5 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(project, { status: 201 });
-  } catch (error) {
-    console.error("[API] Error creating project:", error);
-    return NextResponse.json(
-      { error: "Failed to create project" },
-      { status: 500 }
-    );
-  }
+  }, ctx);
 }

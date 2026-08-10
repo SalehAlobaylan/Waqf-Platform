@@ -1,32 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { headers } from "next/headers";
 import { ProjectStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { projectCurateSchema } from "@/lib/validation/schemas";
+import { requireAdminOrThrow } from "@/lib/auth-helpers";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
+import { projectCurateSchema, pagePaginationSchema } from "@/lib/validation/schemas";
 import { parseBody, parseQuery } from "@/lib/validation/parse";
 import { makeValidationError } from "@/lib/validation/errors";
-import { pagePaginationSchema } from "@/lib/validation/schemas";
 
 /**
  * GET /api/admin/curated-projects
  * List admin-curated external projects
  */
 export async function GET(request: NextRequest) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        const user = await prisma.user.findUnique({
-            where: { id: session.user.id },
-            select: { role: true },
-        });
-
-        if (user?.role !== "ADMIN") {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-        }
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.admin.curatedProjects.list", async () => {
+        const admin = await requireAdminOrThrow();
+        ctx.userId = admin.id;
 
         const parsedQuery = parseQuery(request, pagePaginationSchema);
         if (!parsedQuery.success) {
@@ -60,13 +49,7 @@ export async function GET(request: NextRequest) {
                 totalPages: Math.ceil(total / limit),
             },
         });
-    } catch (error) {
-        console.error("[API] Curated projects list error:", error);
-        return NextResponse.json(
-            { error: "Failed to fetch curated projects" },
-            { status: 500 }
-        );
-    }
+    }, ctx);
 }
 
 /**
@@ -74,20 +57,10 @@ export async function GET(request: NextRequest) {
  * Create a new admin-curated external project
  */
 export async function POST(request: NextRequest) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        const user = await prisma.user.findUnique({
-            where: { id: session.user.id },
-            select: { role: true },
-        });
-
-        if (user?.role !== "ADMIN") {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-        }
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.admin.curatedProjects.create", async () => {
+        const admin = await requireAdminOrThrow();
+        ctx.userId = admin.id;
 
         const parsedBody = await parseBody(request, projectCurateSchema);
         if (!parsedBody.success) {
@@ -146,7 +119,7 @@ export async function POST(request: NextRequest) {
                 externalOwnerContact,
                 externalUrl,
                 curatorNotes: curatorNotes || null,
-                addedByAdminId: session.user.id,
+                addedByAdminId: admin.id,
                 ownerId: null,
                 organizationId: null,
                 status: status ? (status as ProjectStatus) : ProjectStatus.OPEN,
@@ -167,11 +140,5 @@ export async function POST(request: NextRequest) {
         });
 
         return NextResponse.json(project, { status: 201 });
-    } catch (error) {
-        console.error("[API] Curated project create error:", error);
-        return NextResponse.json(
-            { error: "Failed to create curated project" },
-            { status: 500 }
-        );
-    }
+    }, ctx);
 }

@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { CheckCheck, Loader2 } from "lucide-react";
+import { apiFetch } from "@/lib/api/client";
+import { toast } from "@/lib/toast";
+import { translateApiError } from "@/lib/i18n/client-errors";
 
 interface MarkAllReadButtonProps {
     label: string;
@@ -10,18 +14,20 @@ interface MarkAllReadButtonProps {
 
 export function MarkAllReadButton({ label }: MarkAllReadButtonProps) {
     const router = useRouter();
+    const tGlobal = useTranslations();
     const [isLoading, setIsLoading] = useState(false);
 
     const handleClick = async () => {
         if (isLoading) return;
         setIsLoading(true);
         try {
-            await fetch("/api/notifications", {
+            await apiFetch("/api/notifications", {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ markAllRead: true }),
+                body: { markAllRead: true },
             });
             router.refresh();
+        } catch (error) {
+            toast.error(translateApiError(tGlobal, error));
         } finally {
             setIsLoading(false);
         }

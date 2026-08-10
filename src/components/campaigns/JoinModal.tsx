@@ -5,6 +5,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { Loader2, Users, X, Send } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { apiFetch } from "@/lib/api/client";
+import { translateApiError } from "@/lib/i18n/client-errors";
 
 export interface JoinableRole {
     id: string;
@@ -29,6 +31,7 @@ export function JoinModal({ campaignId, campaignSlug, roles, isAuthed, isOwner, 
     const locale = useLocale();
     const t = useTranslations("campaigns.join");
     const tDetail = useTranslations("campaigns.detail");
+    const tGlobal = useTranslations();
     const router = useRouter();
 
     const openRoles = roles.filter(
@@ -57,26 +60,19 @@ export function JoinModal({ campaignId, campaignSlug, roles, isAuthed, isOwner, 
         setSubmitting(true);
         setError("");
         try {
-            const res = await fetch(`/api/campaigns/${campaignId}/joins`, {
+            await apiFetch<{ success: boolean }>(`/api/campaigns/${campaignId}/joins`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
+                body: {
                     roleId,
                     message: message || null,
                     portfolioUrl: portfolioUrl || null,
                     hoursPerWeek: hoursPerWeek === "" ? null : Number(hoursPerWeek),
-                }),
+                },
             });
-            if (!res.ok) {
-                const data = await res.json();
-                const first = data?.details?.[0]?.message ?? data?.error ?? "Failed";
-                setError(first);
-                return;
-            }
             setSubmitted(true);
             router.refresh();
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Failed");
+            setError(translateApiError(tGlobal, err));
         } finally {
             setSubmitting(false);
         }

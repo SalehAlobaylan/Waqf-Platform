@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
+import { requireAuthOrThrow } from "@/lib/auth-helpers";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { onboardingSchema } from "@/lib/validation/schemas";
 import { parseBody } from "@/lib/validation/parse";
 import { makeValidationError } from "@/lib/validation/errors";
@@ -19,14 +19,14 @@ function slugifyString(text: string) {
 }
 
 export async function POST(request: NextRequest) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.onboarding", async () => {
+        const user = await requireAuthOrThrow();
+        ctx.userId = user.id;
 
-        if (!checkRateLimit(request, "onboarding", { limit: 5, windowMs: 60_000 }, session.user.id)) {
-            return rateLimitedResponse();
+        const rate = checkRateLimit(request, "onboarding", { limit: 5, windowMs: 60_000 }, user.id);
+        if (!rate.allowed) {
+            return rateLimitedResponse(rate);
         }
 
         const parsedBody = await parseBody(request, onboardingSchema);
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
 
         const { type, orgName } = parsedBody.data;
 
-        const userId = session.user.id;
+        const userId = user.id;
 
         if (type === "CONTRIBUTOR") {
             // Check if exists
@@ -103,8 +103,5 @@ export async function POST(request: NextRequest) {
         }
 
         return NextResponse.json(makeValidationError("Invalid type", "type"), { status: 400 });
-    } catch (error) {
-        console.error("Onboarding API error:", error);
-        return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-    }
+    }, ctx);
 }

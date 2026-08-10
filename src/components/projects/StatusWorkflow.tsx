@@ -4,6 +4,9 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { CircleCheck, Circle, Loader2, AlertTriangle } from "lucide-react";
 import type { ProjectStatus } from "@prisma/client";
+import { apiFetch } from "@/lib/api/client";
+import { toast } from "@/lib/toast";
+import { translateApiError } from "@/lib/i18n/client-errors";
 
 interface StatusWorkflowProps {
     projectId: string;
@@ -16,10 +19,10 @@ const STATUS_ORDER = ["DRAFT", "PENDING", "OPEN", "IN_PROGRESS", "COMPLETED"];
 
 export function StatusWorkflow({ projectId, currentStatus, adminFeedback, locale }: StatusWorkflowProps) {
     const t = useTranslations("projects");
+    const tGlobal = useTranslations();
     const [status, setStatus] = useState(currentStatus);
     const [feedback, setFeedback] = useState(adminFeedback);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
 
     const statusLabels: Record<string, string> = {
         DRAFT: t("statusDraft"),
@@ -34,23 +37,15 @@ export function StatusWorkflow({ projectId, currentStatus, adminFeedback, locale
 
     const transition = async (newStatus: ProjectStatus) => {
         setLoading(true);
-        setError("");
         try {
-            const res = await fetch(`/api/projects/${projectId}/status`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status: newStatus }),
-            });
-            if (!res.ok) {
-                const data = await res.json();
-                throw new Error(data.error);
-            }
-            const data = await res.json();
+            const data = await apiFetch<{ status: ProjectStatus; adminFeedback: string | null }>(
+                `/api/projects/${projectId}/status`,
+                { method: "PATCH", body: { status: newStatus } }
+            );
             setStatus(data.status);
             setFeedback(data.adminFeedback);
         } catch (err) {
-            const message = err instanceof Error ? err.message : "Failed to update status";
-            setError(message);
+            toast.error(translateApiError(tGlobal, err));
         } finally {
             setLoading(false);
         }
@@ -113,11 +108,6 @@ export function StatusWorkflow({ projectId, currentStatus, adminFeedback, locale
                         <p className="text-xs text-amber-700 mt-1">{feedback}</p>
                     </div>
                 </div>
-            )}
-
-            {/* Error */}
-            {error && (
-                <div className="mb-3 p-2 rounded-lg bg-red-50 text-red-600 text-xs">{error}</div>
             )}
 
             {/* Actions */}

@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Loader2, Rocket, X } from "lucide-react";
+import { apiFetch } from "@/lib/api/client";
+import { translateApiError } from "@/lib/i18n/client-errors";
 
 interface Props {
     campaignId: string;
@@ -15,6 +17,7 @@ interface Props {
 
 export function PromoteBanner({ campaignId, projectSlug, isReadyEligible, isOwner, status }: Props) {
     const t = useTranslations("campaigns");
+    const tGlobal = useTranslations();
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
@@ -44,16 +47,10 @@ export function PromoteBanner({ campaignId, projectSlug, isReadyEligible, isOwne
         setLoading(true);
         setError("");
         try {
-            const res = await fetch(`/api/campaigns/${campaignId}/promote`, { method: "POST" });
-            if (!res.ok) {
-                const data = await res.json();
-                const msg = data?.details?.[0]?.message ?? data?.error ?? "Failed";
-                setError(msg);
-                return;
-            }
+            await apiFetch(`/api/campaigns/${campaignId}/promote`, { method: "POST" });
             router.refresh();
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Failed");
+            setError(translateApiError(tGlobal, err));
         } finally {
             setLoading(false);
         }

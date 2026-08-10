@@ -1,29 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAdminOrThrow } from "@/lib/auth-helpers";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { adminCampaignActionSchema, routeIdParamSchema } from "@/lib/validation/schemas";
 import { parseBody, parseParams } from "@/lib/validation/parse";
+import { makeNotFoundError, makeValidationError } from "@/lib/validation/errors";
 import { CampaignStatus } from "@prisma/client";
 import { notifyCampaignAdminAction } from "@/lib/campaigns/notifications";
+import { log } from "@/lib/logger";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
 }
 
 export async function POST(request: NextRequest, { params }: RouteParams) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-        const user = await prisma.user.findUnique({
-            where: { id: session.user.id },
-            select: { role: true },
-        });
-        if (user?.role !== "ADMIN") {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-        }
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.admin.campaigns.reject", async () => {
+        const admin = await requireAdminOrThrow();
+        ctx.userId = admin.id;
 
         const parsedParams = parseParams(await params, routeIdParamSchema);
         if (!parsedParams.success) {
@@ -42,10 +36,13 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             select: { status: true, ownerId: true, title: true, slug: true },
         });
         if (!campaign) {
-            return NextResponse.json({ error: "Campaign not found" }, { status: 404 });
+            return NextResponse.json(makeNotFoundError("Campaign not found", "id"), { status: 404 });
         }
         if (campaign.status !== CampaignStatus.PENDING) {
-            return NextResponse.json({ error: "Campaign is not pending review" }, { status: 400 });
+            return NextResponse.json(
+                makeValidationError("Campaign is not pending review", "status"),
+                { status: 400 }
+            );
         }
 
         const updated = await prisma.campaign.update({
@@ -65,12 +62,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
                 feedback: feedback ?? null,
             });
         } catch (err) {
-            console.error("[admin/campaigns/reject] notify failed", err);
+            log.warn("api.admin.campaigns.reject", "notify failed", undefined, err);
         }
 
         return NextResponse.json(updated);
-    } catch (error) {
-        console.error("[API] Admin reject campaign error:", error);
-        return NextResponse.json({ error: "Failed to reject campaign" }, { status: 500 });
-    }
+    }, ctx);
 }

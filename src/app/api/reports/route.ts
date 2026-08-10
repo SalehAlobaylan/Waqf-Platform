@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAuthOrThrow, requireAdminOrThrow } from "@/lib/auth-helpers";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { reportCreateSchema, reportsQuerySchema } from "@/lib/validation/schemas";
 import { parseBody, parseQuery } from "@/lib/validation/parse";
 import { makeValidationError } from "@/lib/validation/errors";
-import { requireAdmin } from "@/lib/auth-helpers";
 import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
 
 /**
@@ -14,14 +13,14 @@ import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
  * Submit a content report
  */
 export async function POST(request: NextRequest) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-        }
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.reports.create", async () => {
+        const user = await requireAuthOrThrow();
+        ctx.userId = user.id;
 
-        if (!checkRateLimit(request, "report-create", { limit: 5, windowMs: 60_000 }, session.user.id)) {
-            return rateLimitedResponse();
+        const rate = checkRateLimit(request, "report-create", { limit: 5, windowMs: 60_000 }, user.id);
+        if (!rate.allowed) {
+            return rateLimitedResponse(rate);
         }
 
         const parsedBody = await parseBody(request, reportCreateSchema);
@@ -34,7 +33,7 @@ export async function POST(request: NextRequest) {
         // Prevent duplicate reports
         const existing = await prisma.report.findFirst({
             where: {
-                reporterId: session.user.id,
+                reporterId: user.id,
                 targetType,
                 targetId,
                 status: "PENDING",
@@ -50,7 +49,7 @@ export async function POST(request: NextRequest) {
 
         const report = await prisma.report.create({
             data: {
-                reporterId: session.user.id,
+                reporterId: user.id,
                 targetType,
                 targetId,
                 reason,
@@ -59,10 +58,7 @@ export async function POST(request: NextRequest) {
         });
 
         return NextResponse.json({ report }, { status: 201 });
-    } catch (error) {
-        console.error("[API] Create report error:", error);
-        return NextResponse.json({ error: "Failed to submit report" }, { status: 500 });
-    }
+    }, ctx);
 }
 
 /**
@@ -70,9 +66,10 @@ export async function POST(request: NextRequest) {
  * List reports (admin only)
  */
 export async function GET(request: NextRequest) {
-    try {
-        const { admin, response } = await requireAdmin();
-        if (response) return response;
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.reports.list", async () => {
+        const admin = await requireAdminOrThrow();
+        ctx.userId = admin.id;
 
         const parsedQuery = parseQuery(request, reportsQuerySchema);
         if (!parsedQuery.success) {
@@ -95,8 +92,5 @@ export async function GET(request: NextRequest) {
         });
 
         return NextResponse.json({ reports });
-    } catch (error) {
-        console.error("[API] Get reports error:", error);
-        return NextResponse.json({ error: "Failed to fetch reports" }, { status: 500 });
-    }
+    }, ctx);
 }

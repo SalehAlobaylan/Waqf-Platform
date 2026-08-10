@@ -50,7 +50,7 @@ export function LoginForm() {
                 callbackURL: `/${locale}/dashboard`,
             });
             if (sendError) {
-                setError(sendError.message || t("loginError"));
+                setError(t("loginError"));
                 return;
             }
             setMode("link-sent");
@@ -70,7 +70,7 @@ export function LoginForm() {
                 type: "sign-in",
             });
             if (sendError) {
-                setError(sendError.message || t("loginError"));
+                setError(t("loginError"));
                 return;
             }
             setMode("otp-entry");
@@ -91,7 +91,7 @@ export function LoginForm() {
                 otp: code,
             });
             if (verifyError) {
-                setError(verifyError.message || t("loginError"));
+                setError(t("loginError"));
                 setOtp(Array(OTP_LENGTH).fill(""));
                 otpRefs.current[0]?.focus();
                 return;
@@ -161,8 +161,7 @@ export function LoginForm() {
                 body: JSON.stringify({ email }),
             });
             if (!res.ok) {
-                const data = await res.json().catch(() => ({}));
-                setError(data.error || t("loginError"));
+                setError(t("quickSignInError"));
                 return;
             }
             router.push(`/${locale}/dashboard`);

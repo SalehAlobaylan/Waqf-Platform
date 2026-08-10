@@ -1,16 +1,15 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAuthOrThrow } from "@/lib/auth-helpers";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { profileUpdateSchema } from "@/lib/validation/schemas";
 import { parseBody } from "@/lib/validation/parse";
 
-export async function PATCH(request: Request) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+export async function PATCH(request: NextRequest) {
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.contributors.profile.update", async () => {
+        const user = await requireAuthOrThrow();
+        ctx.userId = user.id;
 
         const parsedBody = await parseBody(request, profileUpdateSchema);
         if (!parsedBody.success) {
@@ -18,7 +17,7 @@ export async function PATCH(request: Request) {
         }
 
         const { bio, intentionStatement, discord, whatsapp, isAvailable, hoursPerWeek, selectedSkills } = parsedBody.data;
-        const userId = session.user.id;
+        const userId = user.id;
 
         const normalizedHours = hoursPerWeek ?? undefined;
 
@@ -64,8 +63,5 @@ export async function PATCH(request: Request) {
         });
 
         return NextResponse.json({ success: true, profile: updatedProfile });
-    } catch (error) {
-        console.error("Update profile API error:", error);
-        return NextResponse.json({ error: "Failed to update profile" }, { status: 500 });
-    }
+    }, ctx);
 }

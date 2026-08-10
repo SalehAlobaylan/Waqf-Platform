@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { X, Flag, Loader2, CircleCheck } from "lucide-react";
+import { apiFetch } from "@/lib/api/client";
+import { translateApiError } from "@/lib/i18n/client-errors";
 
 interface ReportModalProps {
     targetType: "PROJECT" | "USER" | "APPLICATION";
@@ -15,6 +17,7 @@ const REASONS = ["spam", "inappropriate", "harassment", "copyright", "other"] as
 
 export function ReportModal({ targetType, targetId, isOpen, onClose }: ReportModalProps) {
     const t = useTranslations("reports");
+    const tGlobal = useTranslations();
     const [reason, setReason] = useState("");
     const [details, setDetails] = useState("");
     const [loading, setLoading] = useState(false);
@@ -30,16 +33,10 @@ export function ReportModal({ targetType, targetId, isOpen, onClose }: ReportMod
         setLoading(true);
         setError("");
         try {
-            const res = await fetch("/api/reports", {
+            await apiFetch<{ success: boolean }>("/api/reports", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ targetType, targetId, reason, details }),
+                body: { targetType, targetId, reason, details },
             });
-
-            if (!res.ok) {
-                const data = await res.json();
-                throw new Error(data.error);
-            }
 
             setSubmitted(true);
             setTimeout(() => {
@@ -49,8 +46,7 @@ export function ReportModal({ targetType, targetId, isOpen, onClose }: ReportMod
                 setDetails("");
             }, 2000);
         } catch (err) {
-            const message = err instanceof Error ? err.message : "Failed to submit";
-            setError(message);
+            setError(translateApiError(tGlobal, err));
         } finally {
             setLoading(false);
         }

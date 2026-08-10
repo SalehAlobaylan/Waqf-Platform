@@ -4,9 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Briefcase, Code, ArrowRight, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { apiFetch } from "@/lib/api/client";
+import { translateApiError } from "@/lib/i18n/client-errors";
 
 export function OnboardingFlow({ locale, userName }: { locale: string, userName: string }) {
     const t = useTranslations("onboarding");
+    const tGlobal = useTranslations();
     const router = useRouter();
     const [loading, setLoading] = useState(false);
     const [selectedPath, setSelectedPath] = useState<"CONTRIBUTOR" | "CREATOR" | null>(null);
@@ -25,30 +28,19 @@ export function OnboardingFlow({ locale, userName }: { locale: string, userName:
         setError("");
 
         try {
-            const res = await fetch("/api/onboarding", {
+            await apiFetch<{ success: boolean }>("/api/onboarding", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
+                body: {
                     type: selectedPath,
                     orgName: selectedPath === "CREATOR" ? orgName : undefined,
-                }),
+                },
             });
 
-            if (!res.ok) {
-                const data = await res.json();
-                throw new Error(data.error || t("failedToComplete"));
-            }
-
             // Route to dashboard after completing onboarding
-            if (selectedPath === "CONTRIBUTOR") {
-                router.push(`/${locale}/dashboard`);
-            } else {
-                router.push(`/${locale}/dashboard`);
-            }
+            router.push(`/${locale}/dashboard`);
             router.refresh();
         } catch (err) {
-            const message = err instanceof Error ? err.message : t("unexpectedError");
-            setError(message);
+            setError(translateApiError(tGlobal, err));
             setLoading(false);
         }
     };

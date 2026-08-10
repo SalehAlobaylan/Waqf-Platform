@@ -1,22 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAuthOrThrow } from "@/lib/auth-helpers";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { CampaignStatus } from "@prisma/client";
 import { routeIdParamSchema } from "@/lib/validation/schemas";
 import { parseParams } from "@/lib/validation/parse";
-import { makeValidationError } from "@/lib/validation/errors";
+import { makeNotFoundError, makeValidationError } from "@/lib/validation/errors";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
 }
 
-export async function POST(_request: NextRequest, { params }: RouteParams) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-        }
+export async function POST(request: NextRequest, { params }: RouteParams) {
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.campaigns.cancel", async () => {
+        const user = await requireAuthOrThrow();
+        ctx.userId = user.id;
+
         const parsedParams = parseParams(await params, routeIdParamSchema);
         if (!parsedParams.success) {
             return NextResponse.json(parsedParams.error, { status: 400 });
@@ -28,13 +28,10 @@ export async function POST(_request: NextRequest, { params }: RouteParams) {
             select: { ownerId: true, status: true },
         });
         if (!existing) {
-            return NextResponse.json(
-                makeValidationError("Campaign not found", "id"),
-                { status: 404 }
-            );
+            return NextResponse.json(makeNotFoundError("Campaign not found", "id"), { status: 404 });
         }
-        if (existing.ownerId !== session.user.id) {
-            return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+        if (existing.ownerId !== user.id) {
+            return NextResponse.json({ error: "Forbidden", code: "FORBIDDEN" }, { status: 403 });
         }
         if (existing.status === "READY" || existing.status === "COMPLETED" || existing.status === "CANCELLED") {
             return NextResponse.json(
@@ -47,8 +44,5 @@ export async function POST(_request: NextRequest, { params }: RouteParams) {
             data: { status: CampaignStatus.CANCELLED },
         });
         return NextResponse.json(updated);
-    } catch (error) {
-        console.error("[API] Error cancelling campaign:", error);
-        return NextResponse.json({ error: "Failed to cancel campaign" }, { status: 500 });
-    }
+    }, ctx);
 }

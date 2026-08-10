@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { CampaignStatusBadge } from "@/components/campaigns/CampaignStatusBadge";
+import { apiFetch } from "@/lib/api/client";
+import { translateApiError } from "@/lib/i18n/client-errors";
 
 interface AdminCampaign {
     id: string;
@@ -47,6 +49,7 @@ interface Props {
 export function CampaignReviewCard({ locale }: Props) {
     const t = useTranslations("adminCampaigns");
     const tCommon = useTranslations("common");
+    const tGlobal = useTranslations();
     const isAr = locale === "ar";
 
     const [campaigns, setCampaigns] = useState<AdminCampaign[]>([]);
@@ -115,22 +118,16 @@ export function CampaignReviewCard({ locale }: Props) {
                 feedbackModal.action === "approve"
                     ? `/api/admin/campaigns/${feedbackModal.id}/approve`
                     : `/api/admin/campaigns/${feedbackModal.id}/reject`;
-            const response = await fetch(endpoint, {
+            await apiFetch(endpoint, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ feedback: feedback || null }),
+                body: { feedback: feedback || null },
             });
-            if (response.ok) {
-                setToast({ kind: "ok", text: feedbackModal.action === "approve" ? t("approved") : t("rejected") });
-                setFeedbackModal(null);
-                setFeedback("");
-                fetchCampaigns();
-            } else {
-                const data = await response.json().catch(() => ({}));
-                setToast({ kind: "err", text: data?.error ?? "Failed" });
-            }
-        } catch {
-            setToast({ kind: "err", text: "Failed" });
+            setToast({ kind: "ok", text: feedbackModal.action === "approve" ? t("approved") : t("rejected") });
+            setFeedbackModal(null);
+            setFeedback("");
+            fetchCampaigns();
+        } catch (err) {
+            setToast({ kind: "err", text: translateApiError(tGlobal, err) });
         } finally {
             setActionLoading(null);
         }

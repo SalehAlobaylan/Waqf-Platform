@@ -1,8 +1,10 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 
-export async function GET() {
-    try {
+export async function GET(request: NextRequest) {
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.stats.get", async () => {
         const [totalProjects, totalContributors, totalContributions] = await Promise.all([
             prisma.project.count(),
             prisma.contributorProfile.count(),
@@ -14,11 +16,5 @@ export async function GET() {
             totalContributors,
             totalContributions,
         });
-    } catch (error) {
-        console.error("Error fetching stats:", error);
-        return NextResponse.json(
-            { error: "Failed to fetch statistics" },
-            { status: 500 }
-        );
-    }
+    }, ctx);
 }

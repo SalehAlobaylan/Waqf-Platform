@@ -1,21 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAuthOrThrow } from "@/lib/auth-helpers";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { campaignMilestoneUpdateSchema, idSchema, routeIdParamSchema } from "@/lib/validation/schemas";
 import { parseBody, parseParams } from "@/lib/validation/parse";
-import { makeValidationError } from "@/lib/validation/errors";
+import { makeNotFoundError } from "@/lib/validation/errors";
 
 interface RouteParams {
     params: Promise<{ id: string; milestoneId: string }>;
 }
 
 export async function PUT(request: NextRequest, { params }: RouteParams) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-        }
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.campaigns.milestones.update", async () => {
+        const user = await requireAuthOrThrow();
+        ctx.userId = user.id;
+
         const parsedParams = parseParams(
             await params,
             routeIdParamSchema.extend({ milestoneId: idSchema })
@@ -35,13 +35,10 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
             include: { campaign: { select: { ownerId: true } } },
         });
         if (!milestone || milestone.campaignId !== id) {
-            return NextResponse.json(
-                makeValidationError("Milestone not found", "milestoneId"),
-                { status: 404 }
-            );
+            return NextResponse.json(makeNotFoundError("Milestone not found", "milestoneId"), { status: 404 });
         }
-        if (milestone.campaign.ownerId !== session.user.id) {
-            return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+        if (milestone.campaign.ownerId !== user.id) {
+            return NextResponse.json({ error: "Forbidden", code: "FORBIDDEN" }, { status: 403 });
         }
 
         const updated = await prisma.campaignMilestone.update({
@@ -57,18 +54,15 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
             },
         });
         return NextResponse.json(updated);
-    } catch (error) {
-        console.error("[API] Error updating milestone:", error);
-        return NextResponse.json({ error: "Failed to update milestone" }, { status: 500 });
-    }
+    }, ctx);
 }
 
-export async function DELETE(_request: NextRequest, { params }: RouteParams) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-        }
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.campaigns.milestones.delete", async () => {
+        const user = await requireAuthOrThrow();
+        ctx.userId = user.id;
+
         const parsedParams = parseParams(
             await params,
             routeIdParamSchema.extend({ milestoneId: idSchema })
@@ -83,18 +77,12 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
             include: { campaign: { select: { ownerId: true } } },
         });
         if (!milestone || milestone.campaignId !== id) {
-            return NextResponse.json(
-                makeValidationError("Milestone not found", "milestoneId"),
-                { status: 404 }
-            );
+            return NextResponse.json(makeNotFoundError("Milestone not found", "milestoneId"), { status: 404 });
         }
-        if (milestone.campaign.ownerId !== session.user.id) {
-            return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+        if (milestone.campaign.ownerId !== user.id) {
+            return NextResponse.json({ error: "Forbidden", code: "FORBIDDEN" }, { status: 403 });
         }
         await prisma.campaignMilestone.delete({ where: { id: milestoneId } });
         return NextResponse.json({ message: "Milestone deleted" });
-    } catch (error) {
-        console.error("[API] Error deleting milestone:", error);
-        return NextResponse.json({ error: "Failed to delete milestone" }, { status: 500 });
-    }
+    }, ctx);
 }

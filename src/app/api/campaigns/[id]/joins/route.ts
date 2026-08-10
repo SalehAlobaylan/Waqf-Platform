@@ -1,25 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAuthOrThrow } from "@/lib/auth-helpers";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { campaignJoinCreateSchema, routeIdParamSchema } from "@/lib/validation/schemas";
 import { parseBody, parseParams } from "@/lib/validation/parse";
-import { makeValidationError } from "@/lib/validation/errors";
+import { makeNotFoundError, makeValidationError } from "@/lib/validation/errors";
 import { canJoinCampaign } from "@/lib/campaigns/permissions";
 import { notifyCampaignOwnerOfJoin } from "@/lib/campaigns/notifications";
 import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
 import { CampaignJoinStatus, CampaignRoleStatus } from "@prisma/client";
+import { log } from "@/lib/logger";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
 }
 
-export async function GET(_request: NextRequest, { params }: RouteParams) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-        }
+export async function GET(request: NextRequest, { params }: RouteParams) {
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.campaigns.joins.list", async () => {
+        const user = await requireAuthOrThrow();
+        ctx.userId = user.id;
+
         const parsedParams = parseParams(await params, routeIdParamSchema);
         if (!parsedParams.success) {
             return NextResponse.json(parsedParams.error, { status: 400 });
@@ -31,18 +32,15 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
             select: { ownerId: true },
         });
         if (!campaign) {
-            return NextResponse.json(
-                makeValidationError("Campaign not found", "id"),
-                { status: 404 }
-            );
+            return NextResponse.json(makeNotFoundError("Campaign not found", "id"), { status: 404 });
         }
-        if (campaign.ownerId !== session.user.id) {
-            const user = await prisma.user.findUnique({
-                where: { id: session.user.id },
+        if (campaign.ownerId !== user.id) {
+            const adminUser = await prisma.user.findUnique({
+                where: { id: user.id },
                 select: { role: true },
             });
-            if (user?.role !== "ADMIN") {
-                return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+            if (adminUser?.role !== "ADMIN") {
+                return NextResponse.json({ error: "Forbidden", code: "FORBIDDEN" }, { status: 403 });
             }
         }
 
@@ -55,20 +53,18 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
             orderBy: [{ status: "asc" }, { createdAt: "desc" }],
         });
         return NextResponse.json({ joins });
-    } catch (error) {
-        console.error("[API] Error fetching campaign joins:", error);
-        return NextResponse.json({ error: "Failed to fetch joins" }, { status: 500 });
-    }
+    }, ctx);
 }
 
 export async function POST(request: NextRequest, { params }: RouteParams) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-        }
-        if (!checkRateLimit(request, "campaign-join", { limit: 10, windowMs: 60_000 }, session.user.id)) {
-            return rateLimitedResponse();
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.campaigns.joins.create", async () => {
+        const user = await requireAuthOrThrow();
+        ctx.userId = user.id;
+
+        const rate = checkRateLimit(request, "campaign-join", { limit: 10, windowMs: 60_000 }, user.id);
+        if (!rate.allowed) {
+            return rateLimitedResponse(rate);
         }
         const parsedParams = parseParams(await params, routeIdParamSchema);
         if (!parsedParams.success) {
@@ -82,7 +78,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         const { roleId, message, portfolioUrl, hoursPerWeek } = parsedBody.data;
 
         const access = await canJoinCampaign(id, {
-            userId: session.user.id,
+            userId: user.id,
             isAdmin: false,
         });
         if (!access.ok) {
@@ -97,10 +93,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             include: { campaign: { select: { id: true, slug: true, title: true, status: true } } },
         });
         if (!role || role.campaignId !== id) {
-            return NextResponse.json(
-                makeValidationError("Role not found", "roleId"),
-                { status: 404 }
-            );
+            return NextResponse.json(makeNotFoundError("Role not found", "roleId"), { status: 404 });
         }
         if (role.status === CampaignRoleStatus.CLOSED) {
             return NextResponse.json(
@@ -116,7 +109,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         }
 
         const existing = await prisma.campaignJoin.findUnique({
-            where: { campaignRoleId_contributorId: { campaignRoleId: roleId, contributorId: session.user.id } },
+            where: { campaignRoleId_contributorId: { campaignRoleId: roleId, contributorId: user.id } },
         });
         if (existing) {
             return NextResponse.json(
@@ -129,7 +122,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             data: {
                 campaignId: id,
                 campaignRoleId: roleId,
-                contributorId: session.user.id,
+                contributorId: user.id,
                 message: message ?? null,
                 portfolioUrl: portfolioUrl ?? null,
                 hoursPerWeek: hoursPerWeek ?? null,
@@ -144,17 +137,14 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         try {
             await notifyCampaignOwnerOfJoin({
                 ownerId: access.campaign!.ownerId,
-                contributorName: session.user.name,
+                contributorName: user.name,
                 campaignSlug: role.campaign.slug,
                 roleTitle: role.title,
             });
         } catch (err) {
-            console.error("[campaigns/joins] owner notification failed", err);
+            log.warn("api.campaigns.join.create", "owner notification failed", undefined, err);
         }
 
         return NextResponse.json(join, { status: 201 });
-    } catch (error) {
-        console.error("[API] Error creating campaign join:", error);
-        return NextResponse.json({ error: "Failed to submit join" }, { status: 500 });
-    }
+    }, ctx);
 }

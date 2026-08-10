@@ -8,6 +8,8 @@ import { Save, Loader2, MessageSquare, Phone } from "lucide-react";
 import { SkillSelector } from "./SkillSelector";
 import { PortfolioManager } from "./PortfolioManager";
 import type { ContributorProfile, ContributorSkill, PortfolioItem } from "@prisma/client";
+import { apiFetch } from "@/lib/api/client";
+import { translateApiError } from "@/lib/i18n/client-errors";
 
 interface EditProfileFormProps {
     initialProfile: ContributorProfile;
@@ -20,6 +22,7 @@ interface EditProfileFormProps {
 export function EditProfileForm({ initialProfile, initialSkills, initialPortfolio, locale, userHandle }: EditProfileFormProps) {
     const router = useRouter();
     const t = useTranslations("profile.edit");
+    const tGlobal = useTranslations();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState(false);
@@ -44,26 +47,19 @@ export function EditProfileForm({ initialProfile, initialSkills, initialPortfoli
         setSuccess(false);
 
         try {
-            const res = await fetch("/api/contributors/profile", {
+            await apiFetch("/api/contributors/profile", {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
+                body: {
                     ...form,
                     selectedSkills,
                     hoursPerWeek: form.hoursPerWeek ?? null,
-                })
+                },
             });
-
-            if (!res.ok) {
-                const data = await res.json();
-                throw new Error(data.error || "Failed to update profile");
-            }
 
             setSuccess(true);
             router.refresh();
         } catch (err) {
-            const message = err instanceof Error ? err.message : "An unexpected error occurred";
-            setError(message);
+            setError(translateApiError(tGlobal, err));
         } finally {
             setLoading(false);
         }

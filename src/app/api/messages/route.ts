@@ -1,24 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAuthOrThrow } from "@/lib/auth-helpers";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { messagesQuerySchema, messageCreateSchema } from "@/lib/validation/schemas";
 import { parseBody, parseQuery } from "@/lib/validation/parse";
-import { makeValidationError } from "@/lib/validation/errors";
+import { makeNotFoundError } from "@/lib/validation/errors";
 import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
 import { pusherServer, getApplicationChannel, PUSHER_EVENTS } from "@/lib/pusher";
 import { sendEventEmail } from "@/lib/event-email";
+import { log } from "@/lib/logger";
 
 /**
  * GET /api/messages
  * List messages for a conversation (application)
  */
 export async function GET(request: NextRequest) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.messages.list", async () => {
+        const user = await requireAuthOrThrow();
+        ctx.userId = user.id;
 
         const parsedQuery = parseQuery(request, messagesQuerySchema);
         if (!parsedQuery.success) {
@@ -41,17 +41,14 @@ export async function GET(request: NextRequest) {
         });
 
         if (!application) {
-            return NextResponse.json(
-                makeValidationError("Application not found", "applicationId"),
-                { status: 404 }
-            );
+            return NextResponse.json(makeNotFoundError("Application not found", "applicationId"), { status: 404 });
         }
 
-        const isContributor = application.contributorId === session.user.id;
-        const isOwner = application.project.ownerId === session.user.id;
+        const isContributor = application.contributorId === user.id;
+        const isOwner = application.project.ownerId === user.id;
 
         if (!isContributor && !isOwner) {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+            return NextResponse.json({ error: "Forbidden", code: "FORBIDDEN" }, { status: 403 });
         }
 
         // Fetch messages
@@ -75,7 +72,7 @@ export async function GET(request: NextRequest) {
         await prisma.message.updateMany({
             where: {
                 applicationId,
-                senderId: { not: session.user.id },
+                senderId: { not: user.id },
                 readAt: null,
             },
             data: {
@@ -84,13 +81,7 @@ export async function GET(request: NextRequest) {
         });
 
         return NextResponse.json({ messages });
-    } catch (error) {
-        console.error("[API] Get messages error:", error);
-        return NextResponse.json(
-            { error: "Failed to fetch messages" },
-            { status: 500 }
-        );
-    }
+    }, ctx);
 }
 
 /**
@@ -98,14 +89,14 @@ export async function GET(request: NextRequest) {
  * Send a new message
  */
 export async function POST(request: NextRequest) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.messages.create", async () => {
+        const user = await requireAuthOrThrow();
+        ctx.userId = user.id;
 
-        if (!checkRateLimit(request, "message-create", { limit: 30, windowMs: 60_000 }, session.user.id)) {
-            return rateLimitedResponse();
+        const rate = checkRateLimit(request, "message-create", { limit: 30, windowMs: 60_000 }, user.id);
+        if (!rate.allowed) {
+            return rateLimitedResponse(rate);
         }
 
         const parsedBody = await parseBody(request, messageCreateSchema);
@@ -131,24 +122,21 @@ export async function POST(request: NextRequest) {
         });
 
         if (!application) {
-            return NextResponse.json(
-                makeValidationError("Application not found", "applicationId"),
-                { status: 404 }
-            );
+            return NextResponse.json(makeNotFoundError("Application not found", "applicationId"), { status: 404 });
         }
 
-        const isContributor = application.contributorId === session.user.id;
-        const isOwner = application.project.ownerId === session.user.id;
+        const isContributor = application.contributorId === user.id;
+        const isOwner = application.project.ownerId === user.id;
 
         if (!isContributor && !isOwner) {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+            return NextResponse.json({ error: "Forbidden", code: "FORBIDDEN" }, { status: 403 });
         }
 
-        // Create message
+        // Create message (authoritative write)
         const message = await prisma.message.create({
             data: {
                 applicationId,
-                senderId: session.user.id,
+                senderId: user.id,
                 content: content.trim(),
             },
             include: {
@@ -162,48 +150,49 @@ export async function POST(request: NextRequest) {
             },
         });
 
-        // Create notification for recipient (skip if owner is absent, e.g. external project)
+        // Best-effort side effects: the message is already saved, so a
+        // notification/email/pusher failure must not fail the request.
         const recipientId = isContributor
             ? application.project.ownerId
             : application.contributorId;
 
-        if (recipientId) {
-            await prisma.notification.create({
-                data: {
-                    userId: recipientId,
-                    type: "NEW_MESSAGE",
-                    title: "New Message",
-                    content: `${session.user.name}: ${content.trim().slice(0, 50)}${content.trim().length > 50 ? "..." : ""}`,
-                    link: `/dashboard/applications/${applicationId}`,
-                },
-            });
+        try {
+            if (recipientId) {
+                await prisma.notification.create({
+                    data: {
+                        userId: recipientId,
+                        type: "NEW_MESSAGE",
+                        title: "New Message",
+                        content: `${user.name}: ${content.trim().slice(0, 50)}${content.trim().length > 50 ? "..." : ""}`,
+                        link: `/dashboard/applications/${applicationId}`,
+                    },
+                });
 
-            // Event email to the recipient
-            await sendEventEmail(recipientId, {
-                kind: "NEW_MESSAGE",
-                actorName: session.user.name ?? undefined,
-                projectTitle: application.project.title,
+                await sendEventEmail(recipientId, {
+                    kind: "NEW_MESSAGE",
+                    actorName: user.name ?? undefined,
+                    projectTitle: application.project.title,
+                    applicationId,
+                    messagePreview: content.trim().slice(0, 140),
+                });
+            }
+
+            // Trigger Pusher event for real-time updates. Awaited and caught —
+            // an unhandled rejected promise would otherwise crash/leak.
+            const pusher = pusherServer();
+            if (pusher) {
+                await pusher.trigger(
+                    getApplicationChannel(applicationId),
+                    PUSHER_EVENTS.NEW_MESSAGE,
+                    message
+                );
+            }
+        } catch (err) {
+            log.warn("api.messages.create", "post-commit side effects failed", {
                 applicationId,
-                messagePreview: content.trim().slice(0, 140),
-            });
-        }
-
-        // Trigger Pusher event for real-time updates
-        const pusher = pusherServer();
-        if (pusher) {
-            pusher.trigger(
-                getApplicationChannel(applicationId),
-                PUSHER_EVENTS.NEW_MESSAGE,
-                message
-            );
+            }, err);
         }
 
         return NextResponse.json({ message }, { status: 201 });
-    } catch (error) {
-        console.error("[API] Send message error:", error);
-        return NextResponse.json(
-            { error: "Failed to send message" },
-            { status: 500 }
-        );
-    }
+    }, ctx);
 }

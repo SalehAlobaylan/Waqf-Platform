@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAuthOrThrow } from "@/lib/auth-helpers";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { notificationPatchSchema, notificationsQuerySchema } from "@/lib/validation/schemas";
 import { parseBody, parseQuery } from "@/lib/validation/parse";
 import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
@@ -11,11 +11,10 @@ import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
  * List user's notifications
  */
 export async function GET(request: NextRequest) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.notifications.list", async () => {
+        const user = await requireAuthOrThrow();
+        ctx.userId = user.id;
 
         const parsedQuery = parseQuery(request, notificationsQuerySchema);
         if (!parsedQuery.success) {
@@ -27,7 +26,7 @@ export async function GET(request: NextRequest) {
 
         const notifications = await prisma.notification.findMany({
             where: {
-                userId: session.user.id,
+                userId: user.id,
                 ...(unreadOnly && { read: false }),
             },
             orderBy: {
@@ -39,7 +38,7 @@ export async function GET(request: NextRequest) {
         // Get unread count
         const unreadCount = await prisma.notification.count({
             where: {
-                userId: session.user.id,
+                userId: user.id,
                 read: false,
             },
         });
@@ -48,13 +47,7 @@ export async function GET(request: NextRequest) {
             notifications,
             unreadCount,
         });
-    } catch (error) {
-        console.error("[API] Get notifications error:", error);
-        return NextResponse.json(
-            { error: "Failed to fetch notifications" },
-            { status: 500 }
-        );
-    }
+    }, ctx);
 }
 
 /**
@@ -62,14 +55,14 @@ export async function GET(request: NextRequest) {
  * Mark notifications as read
  */
 export async function PATCH(request: NextRequest) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.notifications.markRead", async () => {
+        const user = await requireAuthOrThrow();
+        ctx.userId = user.id;
 
-        if (!checkRateLimit(request, "notification-patch", { limit: 30, windowMs: 60_000 }, session.user.id)) {
-            return rateLimitedResponse();
+        const rate = checkRateLimit(request, "notification-patch", { limit: 30, windowMs: 60_000 }, user.id);
+        if (!rate.allowed) {
+            return rateLimitedResponse(rate);
         }
 
         const parsedBody = await parseBody(request, notificationPatchSchema);
@@ -82,7 +75,7 @@ export async function PATCH(request: NextRequest) {
         if (markAllRead) {
             await prisma.notification.updateMany({
                 where: {
-                    userId: session.user.id,
+                    userId: user.id,
                     read: false,
                 },
                 data: {
@@ -93,7 +86,7 @@ export async function PATCH(request: NextRequest) {
             await prisma.notification.updateMany({
                 where: {
                     id: { in: notificationIds },
-                    userId: session.user.id,
+                    userId: user.id,
                 },
                 data: {
                     read: true,
@@ -102,11 +95,5 @@ export async function PATCH(request: NextRequest) {
         }
 
         return NextResponse.json({ success: true });
-    } catch (error) {
-        console.error("[API] Mark read error:", error);
-        return NextResponse.json(
-            { error: "Failed to mark notifications as read" },
-            { status: 500 }
-        );
-    }
+    }, ctx);
 }

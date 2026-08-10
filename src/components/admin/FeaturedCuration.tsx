@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Search, Star, Trash2, Calendar, Loader2 } from "lucide-react";
+import { apiFetch } from "@/lib/api/client";
+import { toast } from "@/lib/toast";
+import { translateApiError } from "@/lib/i18n/client-errors";
 
 interface FeaturedProject {
     id: string;
@@ -26,6 +29,7 @@ interface SearchResult {
 
 export function FeaturedCuration() {
     const t = useTranslations("featured");
+    const tGlobal = useTranslations();
     const [featured, setFeatured] = useState<FeaturedProject[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -83,18 +87,15 @@ export function FeaturedCuration() {
                 ? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
                 : null;
 
-            const res = await fetch("/api/admin/featured", {
+            await apiFetch("/api/admin/featured", {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ projectId, featured: shouldFeature, featuredUntil }),
+                body: { projectId, featured: shouldFeature, featuredUntil },
             });
 
-            if (res.ok) {
-                fetchFeatured();
-                setSearchQuery("");
-            }
-        } catch (error) {
-            console.error("Error toggling featured:", error);
+            fetchFeatured();
+            setSearchQuery("");
+        } catch (err) {
+            toast.error(translateApiError(tGlobal, err));
         } finally {
             setActionLoading(null);
         }

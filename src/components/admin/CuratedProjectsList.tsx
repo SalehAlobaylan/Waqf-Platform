@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import {
     Plus,
     SquareArrowOutUpRight,
@@ -15,6 +16,10 @@ import {
     CircleCheckBig,
     EyeOff
 } from "lucide-react";
+import { apiFetch } from "@/lib/api/client";
+import { toast } from "@/lib/toast";
+import { translateApiError } from "@/lib/i18n/client-errors";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 interface CuratedProject {
     id: string;
@@ -46,6 +51,14 @@ export function CuratedProjectsList({ locale }: CuratedProjectsListProps) {
     const [searchQuery, setSearchQuery] = useState("");
     const [actionLoading, setActionLoading] = useState<string | null>(null);
     const [pagination, setPagination] = useState({ page: 1, totalPages: 0, total: 0 });
+    const [deleteTarget, setDeleteTarget] = useState<CuratedProject | null>(null);
+    const [publishTarget, setPublishTarget] = useState<{
+        project: CuratedProject;
+        nextStatus: "OPEN" | "DRAFT";
+    } | null>(null);
+
+    const tGlobal = useTranslations();
+    const tCommon = useTranslations("common");
 
     const fetchProjects = useCallback(async (page = 1) => {
         try {
@@ -71,53 +84,34 @@ export function CuratedProjectsList({ locale }: CuratedProjectsListProps) {
         fetchProjects(1);
     }, [fetchProjects]);
 
-    const handleDelete = async (projectId: string) => {
-        if (
-            !confirm(
-                isAr
-                    ? "هل أنت متأكد من حذف هذا المشروع المنتقى؟"
-                    : "Are you sure you want to delete this curated project?"
-            )
-        ) {
-            return;
-        }
+    const handleDeleteConfirm = async () => {
+        if (!deleteTarget) return;
+        setActionLoading(deleteTarget.id);
         try {
-            setActionLoading(projectId);
-            const res = await fetch(`/api/admin/curated-projects/${projectId}`, {
-                method: "DELETE",
-            });
-            if (res.ok) {
-                fetchProjects(pagination.page);
-            }
+            await apiFetch(`/api/admin/curated-projects/${deleteTarget.id}`, { method: "DELETE" });
+            setDeleteTarget(null);
+            fetchProjects(pagination.page);
         } catch (error) {
-            console.error("Failed to delete curated project:", error);
+            toast.error(translateApiError(tGlobal, error));
+            throw error;
         } finally {
             setActionLoading(null);
         }
     };
 
-    const handleTogglePublish = async (projectId: string, currentStatus: string) => {
-        const nextStatus = currentStatus === "DRAFT" ? "OPEN" : "DRAFT";
-        const confirmMsg = currentStatus === "DRAFT"
-            ? (isAr ? "هل تريد نشر هذا المشروع ليظهر للزوار؟" : "Publish this project so it appears to visitors?")
-            : (isAr ? "هل تريد إلغاء نشر هذا المشروع وإخفائه عن الزوار؟" : "Unpublish this project and hide it from visitors?");
-        if (!confirm(confirmMsg)) return;
-
+    const handlePublishConfirm = async () => {
+        if (!publishTarget) return;
+        setActionLoading(publishTarget.project.id);
         try {
-            setActionLoading(projectId);
-            const res = await fetch(`/api/admin/curated-projects/${projectId}`, {
+            await apiFetch(`/api/admin/curated-projects/${publishTarget.project.id}`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status: nextStatus }),
+                body: { status: publishTarget.nextStatus },
             });
-            if (res.ok) {
-                fetchProjects(pagination.page);
-            } else {
-                const data = await res.json().catch(() => ({}));
-                alert(data.error || (isAr ? "فشل تحديث الحالة" : "Failed to update status"));
-            }
+            setPublishTarget(null);
+            fetchProjects(pagination.page);
         } catch (error) {
-            console.error("Failed to toggle curated project status:", error);
+            toast.error(translateApiError(tGlobal, error));
+            throw error;
         } finally {
             setActionLoading(null);
         }
@@ -285,7 +279,7 @@ export function CuratedProjectsList({ locale }: CuratedProjectsListProps) {
                                     </Link>
                                     {project.status === "DRAFT" ? (
                                         <button
-                                            onClick={() => handleTogglePublish(project.id, project.status)}
+                                            onClick={() => setPublishTarget({ project, nextStatus: "OPEN" })}
                                             disabled={actionLoading === project.id}
                                             className="flex items-center gap-1 px-3 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors text-sm disabled:opacity-50"
                                         >
@@ -298,7 +292,7 @@ export function CuratedProjectsList({ locale }: CuratedProjectsListProps) {
                                         </button>
                                     ) : (
                                         <button
-                                            onClick={() => handleTogglePublish(project.id, project.status)}
+                                            onClick={() => setPublishTarget({ project, nextStatus: "DRAFT" })}
                                             disabled={actionLoading === project.id}
                                             className="flex items-center gap-1 px-3 py-2 bg-amber-50 text-amber-700 rounded-lg hover:bg-amber-100 transition-colors text-sm disabled:opacity-50"
                                         >
@@ -311,7 +305,7 @@ export function CuratedProjectsList({ locale }: CuratedProjectsListProps) {
                                         </button>
                                     )}
                                     <button
-                                        onClick={() => handleDelete(project.id)}
+                                        onClick={() => setDeleteTarget(project)}
                                         disabled={actionLoading === project.id}
                                         className="flex items-center gap-1 px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors text-sm disabled:opacity-50"
                                     >
@@ -350,6 +344,35 @@ export function CuratedProjectsList({ locale }: CuratedProjectsListProps) {
                     </button>
                 </div>
             )}
+
+            <ConfirmDialog
+                open={deleteTarget !== null}
+                onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+                title={isAr ? "حذف المشروع المنتقى" : "Delete curated project"}
+                description={isAr
+                    ? "هل أنت متأكد من حذف هذا المشروع المنتقى؟ لا يمكن التراجع عن هذا الإجراء."
+                    : "Are you sure you want to delete this curated project? This action cannot be undone."}
+                confirmLabel={isAr ? "حذف" : "Delete"}
+                cancelLabel={tCommon("cancel")}
+                tone="danger"
+                onConfirm={handleDeleteConfirm}
+            />
+
+            <ConfirmDialog
+                open={publishTarget !== null}
+                onOpenChange={(open) => { if (!open) setPublishTarget(null); }}
+                title={publishTarget?.nextStatus === "OPEN"
+                    ? (isAr ? "نشر المشروع" : "Publish project")
+                    : (isAr ? "إلغاء النشر" : "Unpublish project")}
+                description={publishTarget?.nextStatus === "OPEN"
+                    ? (isAr ? "هل تريد نشر هذا المشروع ليظهر للزوار؟" : "Publish this project so it appears to visitors?")
+                    : (isAr ? "هل تريد إلغاء نشر هذا المشروع وإخفائه عن الزوار؟" : "Unpublish this project and hide it from visitors?")}
+                confirmLabel={publishTarget?.nextStatus === "OPEN"
+                    ? (isAr ? "نشر" : "Publish")
+                    : (isAr ? "إلغاء النشر" : "Unpublish")}
+                cancelLabel={tCommon("cancel")}
+                onConfirm={handlePublishConfirm}
+            />
         </div>
     );
 }

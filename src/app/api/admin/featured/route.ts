@@ -1,18 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAdminOrThrow } from "@/lib/auth-helpers";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { adminFeaturedUpdateSchema } from "@/lib/validation/schemas";
 import { parseBody } from "@/lib/validation/parse";
-import { makeValidationError } from "@/lib/validation/errors";
-import { requireAdmin } from "@/lib/auth-helpers";
+import { makeNotFoundError } from "@/lib/validation/errors";
 
 /**
  * GET /api/admin/featured
  * List currently featured projects
  */
-export async function GET() {
-    try {
-        const { admin, response } = await requireAdmin();
-        if (response) return response;
+export async function GET(request: NextRequest) {
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.admin.featured.list", async () => {
+        const admin = await requireAdminOrThrow();
+        ctx.userId = admin.id;
 
         const featured = await prisma.project.findMany({
             where: { featured: true },
@@ -30,10 +32,7 @@ export async function GET() {
         });
 
         return NextResponse.json({ projects: featured });
-    } catch (error) {
-        console.error("[API] Get featured error:", error);
-        return NextResponse.json({ error: "Failed to fetch featured" }, { status: 500 });
-    }
+    }, ctx);
 }
 
 /**
@@ -41,9 +40,10 @@ export async function GET() {
  * Update featured status of a project
  */
 export async function PUT(request: NextRequest) {
-    try {
-        const { admin, response } = await requireAdmin();
-        if (response) return response;
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.admin.featured.update", async () => {
+        const admin = await requireAdminOrThrow();
+        ctx.userId = admin.id;
 
         const parsedBody = await parseBody(request, adminFeaturedUpdateSchema);
         if (!parsedBody.success) {
@@ -54,10 +54,7 @@ export async function PUT(request: NextRequest) {
 
         const existing = await prisma.project.findUnique({ where: { id: projectId }, select: { id: true } });
         if (!existing) {
-            return NextResponse.json(
-                makeValidationError("Project not found", "projectId"),
-                { status: 404 }
-            );
+            return NextResponse.json(makeNotFoundError("Project not found", "projectId"), { status: 404 });
         }
 
         const project = await prisma.project.update({
@@ -76,8 +73,5 @@ export async function PUT(request: NextRequest) {
         });
 
         return NextResponse.json({ project });
-    } catch (error) {
-        console.error("[API] Update featured error:", error);
-        return NextResponse.json({ error: "Failed to update featured" }, { status: 500 });
-    }
+    }, ctx);
 }

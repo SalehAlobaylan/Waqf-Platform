@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { X, Send, Loader2, Link as LinkIcon, Clock } from "lucide-react";
+import { apiFetch } from "@/lib/api/client";
+import { translateApiError } from "@/lib/i18n/client-errors";
 
 interface ApplyModalProps {
     project: {
@@ -17,6 +19,7 @@ interface ApplyModalProps {
 
 export function ApplyModal({ project, isOpen, onClose }: ApplyModalProps) {
     const t = useTranslations("applications");
+    const tGlobal = useTranslations();
     const locale = useLocale();
     const router = useRouter();
 
@@ -34,28 +37,21 @@ export function ApplyModal({ project, isOpen, onClose }: ApplyModalProps) {
         setIsSubmitting(true);
 
         try {
-            const response = await fetch("/api/applications", {
+            await apiFetch<{ success: boolean }>("/api/applications", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
+                body: {
                     projectId: project.id,
                     message,
                     portfolioUrl: portfolioUrl || null,
                     hoursPerWeek: hoursPerWeek || null,
-                }),
+                },
             });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || "Failed to submit application");
-            }
 
             // Success - redirect to applications
             router.push(`/${locale}/dashboard/applications`);
             onClose();
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Something went wrong");
+            setError(translateApiError(tGlobal, err));
         } finally {
             setIsSubmitting(false);
         }

@@ -1,10 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { skillsQuerySchema } from "@/lib/validation/schemas";
 import { parseQuery } from "@/lib/validation/parse";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 
-export async function GET(request: Request) {
-    try {
+export async function GET(request: NextRequest) {
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.skills.list", async () => {
         const parsedQuery = parseQuery(request, skillsQuerySchema);
         if (!parsedQuery.success) {
             return NextResponse.json(parsedQuery.error, { status: 400 });
@@ -33,8 +35,5 @@ export async function GET(request: Request) {
         }
 
         return NextResponse.json(skills);
-    } catch (error) {
-        console.error("Skills API error:", error);
-        return NextResponse.json({ error: "Failed to fetch skills" }, { status: 500 });
-    }
+    }, ctx);
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAuthOrThrow } from "@/lib/auth-helpers";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { CampaignStatus, ProjectCategory, ProjectLanguage, Prisma } from "@prisma/client";
 import {
     campaignCreateSchema,
@@ -16,7 +16,7 @@ import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
 const PUBLIC_STATUSES: CampaignStatus[] = ["RECRUITING", "READY", "COMPLETED"];
 
 export async function GET(request: NextRequest) {
-    try {
+    return withApiHandler(request, "api.campaigns.list", async () => {
         const parsedQuery = parseQuery(request, campaignsQuerySchema);
         if (!parsedQuery.success) {
             return NextResponse.json(parsedQuery.error, { status: 400 });
@@ -94,24 +94,18 @@ export async function GET(request: NextRequest) {
                 hasMore: offset + limit < total,
             },
         });
-    } catch (error) {
-        console.error("[API] Error fetching campaigns:", error);
-        return NextResponse.json(
-            { error: "Failed to fetch campaigns" },
-            { status: 500 }
-        );
-    }
+    });
 }
 
 export async function POST(request: NextRequest) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-        }
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.campaigns.create", async () => {
+        const user = await requireAuthOrThrow();
+        ctx.userId = user.id;
 
-        if (!checkRateLimit(request, "campaign-create", { limit: 5, windowMs: 60_000 }, session.user.id)) {
-            return rateLimitedResponse();
+        const rate = checkRateLimit(request, "campaign-create", { limit: 5, windowMs: 60_000 }, user.id);
+        if (!rate.allowed) {
+            return rateLimitedResponse(rate);
         }
 
         const parsedBody = await parseBody(request, campaignCreateSchema);
@@ -127,7 +121,7 @@ export async function POST(request: NextRequest) {
                 where: { id: data.organizationId },
                 select: { userId: true },
             });
-            if (!org || org.userId !== session.user.id) {
+            if (!org || org.userId !== user.id) {
                 return NextResponse.json(
                     makeValidationError("Organization not found or not owned by you", "organizationId"),
                     { status: 400 }
@@ -157,7 +151,7 @@ export async function POST(request: NextRequest) {
 
         const campaign = await prisma.campaign.create({
             data: {
-                ownerId: session.user.id,
+                ownerId: user.id,
                 organizationId: data.organizationId || null,
                 title: data.title,
                 slug,
@@ -192,11 +186,5 @@ export async function POST(request: NextRequest) {
         });
 
         return NextResponse.json(campaign, { status: 201 });
-    } catch (error) {
-        console.error("[API] Error creating campaign:", error);
-        return NextResponse.json(
-            { error: "Failed to create campaign" },
-            { status: 500 }
-        );
-    }
+    }, ctx);
 }

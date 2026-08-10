@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { withApiHandler } from "@/lib/api/handler";
 import { routeIdParamSchema } from "@/lib/validation/schemas";
 import { parseParams } from "@/lib/validation/parse";
 import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
@@ -9,9 +10,10 @@ interface RouteParams {
 }
 
 export async function POST(request: NextRequest, { params }: RouteParams) {
-    try {
-        if (!checkRateLimit(request, "project-view", { limit: 60, windowMs: 60_000 })) {
-            return rateLimitedResponse();
+    return withApiHandler(request, "api.projects.trackView", async () => {
+        const rate = checkRateLimit(request, "project-view", { limit: 60, windowMs: 60_000 });
+        if (!rate.allowed) {
+            return rateLimitedResponse(rate);
         }
 
         const parsedParams = parseParams(await params, routeIdParamSchema);
@@ -29,8 +31,5 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         });
 
         return NextResponse.json({ success: true });
-    } catch (error) {
-        console.error("[API] View count error:", error);
-        return NextResponse.json({ error: "Failed to track view" }, { status: 500 });
-    }
+    });
 }

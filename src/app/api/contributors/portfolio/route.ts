@@ -1,14 +1,16 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { requireAuthOrThrow } from "@/lib/auth-helpers";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
+import { forbidden } from "@/lib/api/errors";
 import { portfolioCreateSchema, portfolioDeleteSchema } from "@/lib/validation/schemas";
 import { parseBody, parseQuery } from "@/lib/validation/parse";
 
-export async function POST(request: Request) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export async function POST(request: NextRequest) {
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.contributors.portfolio.create", async () => {
+        const user = await requireAuthOrThrow();
+        ctx.userId = user.id;
 
         const parsedBody = await parseBody(request, portfolioCreateSchema);
         if (!parsedBody.success) {
@@ -18,12 +20,12 @@ export async function POST(request: Request) {
         const { title, description, url, contributorId, order } = parsedBody.data;
 
         const profile = await prisma.contributorProfile.findUnique({
-            where: { userId: session.user.id },
+            where: { userId: user.id },
             select: { id: true },
         });
 
         if (!profile || profile.id !== contributorId) {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+            throw forbidden();
         }
 
         const newItem = await prisma.portfolioItem.create({
@@ -37,15 +39,14 @@ export async function POST(request: Request) {
         });
 
         return NextResponse.json(newItem);
-    } catch {
-        return NextResponse.json({ error: "Failed to create item" }, { status: 500 });
-    }
+    }, ctx);
 }
 
-export async function DELETE(request: Request) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export async function DELETE(request: NextRequest) {
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.contributors.portfolio.delete", async () => {
+        const user = await requireAuthOrThrow();
+        ctx.userId = user.id;
 
         const parsedQuery = parseQuery(request, portfolioDeleteSchema);
         if (!parsedQuery.success) {
@@ -53,11 +54,11 @@ export async function DELETE(request: Request) {
         }
 
         const profile = await prisma.contributorProfile.findUnique({
-            where: { userId: session.user.id },
+            where: { userId: user.id },
             select: { id: true },
         });
 
-        if (!profile) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        if (!profile) throw forbidden();
 
         const item = await prisma.portfolioItem.findUnique({
             where: { id: parsedQuery.data.id },
@@ -65,7 +66,7 @@ export async function DELETE(request: Request) {
         });
 
         if (!item || item.contributorId !== profile.id) {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+            throw forbidden();
         }
 
         await prisma.portfolioItem.delete({
@@ -73,7 +74,5 @@ export async function DELETE(request: Request) {
         });
 
         return NextResponse.json({ success: true });
-    } catch {
-        return NextResponse.json({ error: "Failed to delete item" }, { status: 500 });
-    }
+    }, ctx);
 }

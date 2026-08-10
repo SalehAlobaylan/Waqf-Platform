@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAdminOrThrow } from "@/lib/auth-helpers";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { adminUserUpdateSchema, routeIdParamSchema } from "@/lib/validation/schemas";
 import { parseBody, parseParams } from "@/lib/validation/parse";
 import { makeValidationError } from "@/lib/validation/errors";
@@ -15,21 +15,10 @@ interface RouteParams {
  * Update user role or ban user
  */
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        // Check if user is admin
-        const currentUser = await prisma.user.findUnique({
-            where: { id: session.user.id },
-            select: { role: true },
-        });
-
-        if (currentUser?.role !== "ADMIN") {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-        }
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.admin.users.update", async () => {
+        const admin = await requireAdminOrThrow();
+        ctx.userId = admin.id;
 
         const parsedParams = parseParams(await params, routeIdParamSchema);
         if (!parsedParams.success) {
@@ -45,7 +34,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         const { role } = parsedBody.data;
 
         // Prevent self-demotion
-        if (id === session.user.id && role !== "ADMIN") {
+        if (id === admin.id && role !== "ADMIN") {
             return NextResponse.json(
                 makeValidationError("Cannot demote yourself", "role"),
                 { status: 400 }
@@ -66,13 +55,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         });
 
         return NextResponse.json({ success: true, user: updatedUser });
-    } catch (error) {
-        console.error("[API] Admin update user error:", error);
-        return NextResponse.json(
-            { error: "Failed to update user" },
-            { status: 500 }
-        );
-    }
+    }, ctx);
 }
 
 /**
@@ -80,21 +63,10 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
  * Delete a user (admin only)
  */
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        // Check if user is admin
-        const currentUser = await prisma.user.findUnique({
-            where: { id: session.user.id },
-            select: { role: true },
-        });
-
-        if (currentUser?.role !== "ADMIN") {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-        }
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.admin.users.delete", async () => {
+        const admin = await requireAdminOrThrow();
+        ctx.userId = admin.id;
 
         const parsedParams = parseParams(await params, routeIdParamSchema);
         if (!parsedParams.success) {
@@ -104,7 +76,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         const { id } = parsedParams.data;
 
         // Prevent self-deletion
-        if (id === session.user.id) {
+        if (id === admin.id) {
             return NextResponse.json(
                 makeValidationError("Cannot delete yourself", "id"),
                 { status: 400 }
@@ -116,11 +88,5 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         });
 
         return NextResponse.json({ success: true });
-    } catch (error) {
-        console.error("[API] Admin delete user error:", error);
-        return NextResponse.json(
-            { error: "Failed to delete user" },
-            { status: 500 }
-        );
-    }
+    }, ctx);
 }

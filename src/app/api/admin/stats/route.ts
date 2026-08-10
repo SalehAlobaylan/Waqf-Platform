@@ -1,24 +1,14 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAdminOrThrow } from "@/lib/auth-helpers";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { ApplicationStatus, ProjectStatus } from "@prisma/client";
 
-export async function GET() {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        const currentUser = await prisma.user.findUnique({
-            where: { id: session.user.id },
-            select: { role: true },
-        });
-
-        if (currentUser?.role !== "ADMIN") {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-        }
+export async function GET(request: NextRequest) {
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.admin.stats", async () => {
+        const admin = await requireAdminOrThrow();
+        ctx.userId = admin.id;
 
         const now = new Date();
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -131,11 +121,5 @@ export async function GET() {
                 topContributors,
             },
         });
-    } catch (error) {
-        console.error("Error fetching admin stats:", error);
-        return NextResponse.json(
-            { error: "Failed to fetch statistics" },
-            { status: 500 }
-        );
-    }
+    }, ctx);
 }

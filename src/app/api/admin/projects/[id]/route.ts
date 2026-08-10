@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAdminOrThrow } from "@/lib/auth-helpers";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { adminProjectActionSchema, routeIdParamSchema } from "@/lib/validation/schemas";
 import { parseBody, parseParams } from "@/lib/validation/parse";
-import { makeValidationError } from "@/lib/validation/errors";
+import { makeNotFoundError, makeValidationError } from "@/lib/validation/errors";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -15,21 +15,10 @@ interface RouteParams {
  * Approve or reject a project
  */
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        // Check if user is admin
-        const user = await prisma.user.findUnique({
-            where: { id: session.user.id },
-            select: { role: true },
-        });
-
-        if (user?.role !== "ADMIN") {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-        }
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.admin.projects.action", async () => {
+        const admin = await requireAdminOrThrow();
+        ctx.userId = admin.id;
 
         const parsedParams = parseParams(await params, routeIdParamSchema);
         if (!parsedParams.success) {
@@ -51,10 +40,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         });
 
         if (!project) {
-            return NextResponse.json(
-                makeValidationError("Project not found", "id"),
-                { status: 404 }
-            );
+            return NextResponse.json(makeNotFoundError("Project not found", "id"), { status: 404 });
         }
 
         const updateData: Record<string, unknown> = {};
@@ -101,17 +87,11 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             });
         }
 
-        return NextResponse.json({ 
-            success: true, 
-            project: updatedProject 
+        return NextResponse.json({
+            success: true,
+            project: updatedProject
         });
-    } catch (error) {
-        console.error("[API] Admin project action error:", error);
-        return NextResponse.json(
-            { error: "Failed to update project" },
-            { status: 500 }
-        );
-    }
+    }, ctx);
 }
 
 /**
@@ -119,21 +99,10 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
  * Delete a project (admin only)
  */
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        // Check if user is admin
-        const user = await prisma.user.findUnique({
-            where: { id: session.user.id },
-            select: { role: true },
-        });
-
-        if (user?.role !== "ADMIN") {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-        }
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.admin.projects.delete", async () => {
+        const admin = await requireAdminOrThrow();
+        ctx.userId = admin.id;
 
         const parsedParams = parseParams(await params, routeIdParamSchema);
         if (!parsedParams.success) {
@@ -144,10 +113,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
         const project = await prisma.project.findUnique({ where: { id }, select: { id: true } });
         if (!project) {
-            return NextResponse.json(
-                makeValidationError("Project not found", "id"),
-                { status: 404 }
-            );
+            return NextResponse.json(makeNotFoundError("Project not found", "id"), { status: 404 });
         }
 
         await prisma.project.delete({
@@ -155,11 +121,5 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         });
 
         return NextResponse.json({ success: true });
-    } catch (error) {
-        console.error("[API] Admin delete project error:", error);
-        return NextResponse.json(
-            { error: "Failed to delete project" },
-            { status: 500 }
-        );
-    }
+    }, ctx);
 }

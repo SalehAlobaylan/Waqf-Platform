@@ -3,6 +3,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { Flag, CircleCheck, CircleX, Eye, Clock, Loader2 } from "lucide-react";
+import { apiFetch } from "@/lib/api/client";
+import { toast } from "@/lib/toast";
+import { translateApiError } from "@/lib/i18n/client-errors";
 
 interface Report {
     id: string;
@@ -20,6 +23,7 @@ interface Report {
 
 export function ReportQueue() {
     const t = useTranslations("reports");
+    const tGlobal = useTranslations();
     const [reports, setReports] = useState<Report[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState("PENDING");
@@ -46,18 +50,15 @@ export function ReportQueue() {
     const handleAction = async (reportId: string, status: string) => {
         setActionLoading(reportId);
         try {
-            const res = await fetch(`/api/reports/${reportId}`, {
+            await apiFetch(`/api/reports/${reportId}`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status }),
+                body: { status },
             });
-            if (res.ok) {
-                setReports(prev => prev.map(r =>
-                    r.id === reportId ? { ...r, status } : r
-                ));
-            }
-        } catch (error) {
-            console.error("Error updating report:", error);
+            setReports(prev => prev.map(r =>
+                r.id === reportId ? { ...r, status } : r
+            ));
+        } catch (err) {
+            toast.error(translateApiError(tGlobal, err));
         } finally {
             setActionLoading(null);
         }

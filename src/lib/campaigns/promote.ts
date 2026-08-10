@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { ProjectLanguage, ProjectStatus, ApplicationStatus, CampaignStatus, ProjectCategory } from "@prisma/client";
 import { notifyCampaignPromoted } from "@/lib/campaigns/notifications";
 import { ensureUniqueProjectSlug, slugifyCampaign } from "@/lib/campaigns/slug";
+import { DomainError } from "@/lib/campaigns/errors";
 
 export interface PromoteResult {
     projectId: string;
@@ -22,22 +23,22 @@ export async function promoteCampaignToProject(
     });
 
     if (!campaign) {
-        throw new Error("Campaign not found");
+        throw new DomainError("PROMOTE_CAMPAIGN_NOT_FOUND", "Campaign not found");
     }
     if (campaign.ownerId !== ownerId) {
-        throw new Error("Only the campaign owner can promote it");
+        throw new DomainError("PROMOTE_NOT_OWNER", "Only the campaign owner can promote it");
     }
     if (campaign.status === "READY") {
-        throw new Error("Campaign is already promoted");
+        throw new DomainError("PROMOTE_ALREADY_PROMOTED", "Campaign is already promoted");
     }
     if (campaign.status !== "RECRUITING" && campaign.status !== "PENDING" && campaign.status !== "DRAFT") {
-        throw new Error(`Cannot promote a campaign in status ${campaign.status}`);
+        throw new DomainError("PROMOTE_INVALID_STATUS", "Campaign cannot be promoted in its current state");
     }
 
     const requiredRoles = campaign.roles.filter((r) => r.isRequired);
     const unfilledRequired = requiredRoles.filter((r) => r.filledCount < r.count);
     if (unfilledRequired.length > 0) {
-        throw new Error("Some required roles are not fully filled yet");
+        throw new DomainError("PROMOTE_REQUIRED_ROLES", "Some required roles are not fully filled yet");
     }
 
     const baseSlug = slugifyCampaign(campaign.title);

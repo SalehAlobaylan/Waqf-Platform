@@ -2,8 +2,11 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { authClient } from "@/lib/auth-client";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
+import { apiFetch } from "@/lib/api/client";
+import { toast } from "@/lib/toast";
+import { translateApiError } from "@/lib/i18n/client-errors";
 import {
     Bell,
     Check,
@@ -36,6 +39,7 @@ const notificationIcons: Record<string, React.ElementType> = {
 export function NotificationBell() {
     const { data: session } = authClient.useSession();
     const locale = useLocale();
+    const tGlobal = useTranslations();
     const [isOpen, setIsOpen] = useState(false);
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
@@ -83,32 +87,30 @@ export function NotificationBell() {
     // Mark all as read
     const markAllRead = async () => {
         try {
-            await fetch("/api/notifications", {
+            await apiFetch("/api/notifications", {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ markAllRead: true }),
+                body: { markAllRead: true },
             });
             setNotifications(prev => prev.map(n => ({ ...n, read: true })));
             setUnreadCount(0);
-        } catch (error) {
-            console.error("Failed to mark all as read:", error);
+        } catch (err) {
+            toast.error(translateApiError(tGlobal, err));
         }
     };
 
     // Mark single as read
     const markAsRead = async (notificationId: string) => {
         try {
-            await fetch("/api/notifications", {
+            await apiFetch("/api/notifications", {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ notificationIds: [notificationId] }),
+                body: { notificationIds: [notificationId] },
             });
             setNotifications(prev =>
                 prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
             );
             setUnreadCount(prev => Math.max(0, prev - 1));
-        } catch (error) {
-            console.error("Failed to mark as read:", error);
+        } catch (err) {
+            toast.error(translateApiError(tGlobal, err));
         }
     };
 

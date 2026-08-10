@@ -7,6 +7,7 @@ import { AuthProvider } from "@/components/providers/AuthProvider";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingQuickActions } from "@/components/layout/FloatingQuickActions";
+import { Toaster } from "@/components/ui/Toaster";
 import "@/app/globals.css";
 
 export const metadata: Metadata = {
@@ -79,6 +80,7 @@ export default async function LocaleLayout({ children, params }: Props) {
                             </main>
                             <Footer />
                             <FloatingQuickActions />
+                            <Toaster />
                         </div>
                     </NextIntlClientProvider>
                 </AuthProvider>

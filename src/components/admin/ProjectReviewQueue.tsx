@@ -17,6 +17,10 @@ import {
     Loader2,
     X
 } from "lucide-react";
+import { apiFetch } from "@/lib/api/client";
+import { toast } from "@/lib/toast";
+import { translateApiError } from "@/lib/i18n/client-errors";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 interface Project {
     id: string;
@@ -59,6 +63,7 @@ export function ProjectReviewQueue({ locale }: ProjectReviewQueueProps) {
         totalPages: 0,
     });
     const [actionLoading, setActionLoading] = useState<string | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
     const [feedbackModal, setFeedbackModal] = useState<{
         projectId: string;
         action: "approve" | "reject";
@@ -68,6 +73,7 @@ export function ProjectReviewQueue({ locale }: ProjectReviewQueueProps) {
     const t = useTranslations("admin");
     const tCommon = useTranslations("common");
     const tProjects = useTranslations("projects");
+    const tGlobal = useTranslations();
     const isAr = locale === "ar";
 
     const fetchProjects = useCallback(async () => {
@@ -114,40 +120,30 @@ export function ProjectReviewQueue({ locale }: ProjectReviewQueueProps) {
     const handleAction = async (projectId: string, action: string, extraData?: Record<string, unknown>) => {
         try {
             setActionLoading(projectId);
-            const response = await fetch(`/api/admin/projects/${projectId}`, {
+            await apiFetch(`/api/admin/projects/${projectId}`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action, ...extraData }),
+                body: { action, ...extraData },
             });
-
-            if (response.ok) {
-                fetchProjects();
-                setFeedbackModal(null);
-                setFeedback("");
-            }
+            fetchProjects();
+            setFeedbackModal(null);
+            setFeedback("");
         } catch (error) {
-            console.error("Failed to perform action:", error);
+            toast.error(translateApiError(tGlobal, error));
         } finally {
             setActionLoading(null);
         }
     };
 
-    const handleDelete = async (projectId: string) => {
-        if (!confirm(isAr ? "هل أنت متأكد من حذف هذا المشروع؟" : "Are you sure you want to delete this project?")) {
-            return;
-        }
-
+    const handleDeleteConfirm = async () => {
+        if (!deleteTarget) return;
+        setActionLoading(deleteTarget.id);
         try {
-            setActionLoading(projectId);
-            const response = await fetch(`/api/admin/projects/${projectId}`, {
-                method: "DELETE",
-            });
-
-            if (response.ok) {
-                fetchProjects();
-            }
+            await apiFetch(`/api/admin/projects/${deleteTarget.id}`, { method: "DELETE" });
+            setDeleteTarget(null);
+            fetchProjects();
         } catch (error) {
-            console.error("Failed to delete project:", error);
+            toast.error(translateApiError(tGlobal, error));
+            throw error;
         } finally {
             setActionLoading(null);
         }
@@ -324,7 +320,7 @@ export function ProjectReviewQueue({ locale }: ProjectReviewQueueProps) {
                                     </a>
 
                                     <button
-                                        onClick={() => handleDelete(project.id)}
+                                        onClick={() => setDeleteTarget(project)}
                                         disabled={actionLoading === project.id}
                                         aria-label={t("delete")}
                                         className="flex items-center gap-1 px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50"
@@ -428,6 +424,19 @@ export function ProjectReviewQueue({ locale }: ProjectReviewQueueProps) {
                     </div>
                 </div>
             )}
+
+            <ConfirmDialog
+                open={deleteTarget !== null}
+                onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+                title={isAr ? "حذف المشروع" : "Delete project"}
+                description={isAr
+                    ? "هل أنت متأكد من حذف هذا المشروع؟ لا يمكن التراجع عن هذا الإجراء."
+                    : "Are you sure you want to delete this project? This action cannot be undone."}
+                confirmLabel={t("delete")}
+                cancelLabel={tCommon("cancel")}
+                tone="danger"
+                onConfirm={handleDeleteConfirm}
+            />
         </div>
     );
 }

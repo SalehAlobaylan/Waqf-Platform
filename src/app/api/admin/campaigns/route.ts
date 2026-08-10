@@ -1,23 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAdminOrThrow } from "@/lib/auth-helpers";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { adminCampaignsQuerySchema } from "@/lib/validation/schemas";
 import { parseQuery } from "@/lib/validation/parse";
 
 export async function GET(request: NextRequest) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-        const user = await prisma.user.findUnique({
-            where: { id: session.user.id },
-            select: { role: true },
-        });
-        if (user?.role !== "ADMIN") {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-        }
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.admin.campaigns.list", async () => {
+        const admin = await requireAdminOrThrow();
+        ctx.userId = admin.id;
 
         const parsedQuery = parseQuery(request, adminCampaignsQuerySchema);
         if (!parsedQuery.success) {
@@ -53,11 +45,5 @@ export async function GET(request: NextRequest) {
                 totalPages: Math.ceil(total / limit),
             },
         });
-    } catch (error) {
-        console.error("[API] Admin campaigns error:", error);
-        return NextResponse.json(
-            { error: "Failed to fetch campaigns" },
-            { status: 500 }
-        );
-    }
+    }, ctx);
 }

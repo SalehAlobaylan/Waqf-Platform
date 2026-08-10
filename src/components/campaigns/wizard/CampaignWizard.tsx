@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { useCampaignDraft } from "@/components/campaigns/wizard/useCampaignDraft";
 import { RoleBuilder } from "@/components/campaigns/wizard/RoleBuilder";
+import { apiFetch } from "@/lib/api/client";
+import { translateApiError } from "@/lib/i18n/client-errors";
 
 const STEPS = 5;
 
@@ -83,6 +85,7 @@ const LANGUAGES = [
 
 export function CampaignWizard({ locale, mode, initialData, organizations }: CampaignWizardProps) {
     const t = useTranslations("campaigns.wizard");
+    const tGlobal = useTranslations();
     const router = useRouter();
     const isAr = locale === "ar";
 
@@ -177,23 +180,15 @@ export function CampaignWizard({ locale, mode, initialData, organizations }: Cam
             const body = buildPayload();
             const url = mode === "edit" ? `/api/campaigns/${initialData!.id}` : "/api/campaigns";
             const method = mode === "edit" ? "PUT" : "POST";
-            const res = await fetch(url, {
-                method,
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body),
-            });
-            if (!res.ok) {
-                const data = await res.json();
-                setError(data?.details?.[0]?.message ?? data?.error ?? "Save failed");
-                return;
-            }
-            const created = await res.json();
+            const created = await apiFetch<{ slug: string }>(url, { method, body });
             setSuccess(t("savedDraft"));
             if (mode === "create") {
                 router.push(`/${locale}/campaigns/${created.slug}/edit`);
             } else {
                 router.refresh();
             }
+        } catch (err) {
+            setError(translateApiError(tGlobal, err));
         } finally {
             setSubmitting(false);
         }
@@ -216,39 +211,23 @@ export function CampaignWizard({ locale, mode, initialData, organizations }: Cam
             const body = buildPayload();
             let campaignId = initialData?.id;
             if (!campaignId) {
-                const res = await fetch("/api/campaigns", {
+                const created = await apiFetch<{ id: string }>("/api/campaigns", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(body),
+                    body,
                 });
-                if (!res.ok) {
-                    const data = await res.json();
-                    setError(data?.details?.[0]?.message ?? data?.error ?? "Save failed");
-                    return;
-                }
-                const created = await res.json();
                 campaignId = created.id;
             } else {
-                const res = await fetch(`/api/campaigns/${campaignId}`, {
+                await apiFetch<{ id: string }>(`/api/campaigns/${campaignId}`, {
                     method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(body),
+                    body,
                 });
-                if (!res.ok) {
-                    const data = await res.json();
-                    setError(data?.details?.[0]?.message ?? data?.error ?? "Update failed");
-                    return;
-                }
             }
 
-            const subRes = await fetch(`/api/campaigns/${campaignId}/submit`, { method: "POST" });
-            if (!subRes.ok) {
-                const data = await subRes.json();
-                setError(data?.details?.[0]?.message ?? data?.error ?? "Submit failed");
-                return;
-            }
+            await apiFetch<{ id: string }>(`/api/campaigns/${campaignId}/submit`, { method: "POST" });
             setSuccess(t("submitted"));
             router.push(`/${locale}/dashboard/campaigns`);
+        } catch (err) {
+            setError(translateApiError(tGlobal, err));
         } finally {
             setSubmitting(false);
         }

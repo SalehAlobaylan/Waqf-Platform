@@ -3,9 +3,11 @@ import { prisma } from "@/lib/prisma";
 import { ProjectStatus } from "@prisma/client";
 import { exploreQuerySchema } from "@/lib/validation/schemas";
 import { parseQuery } from "@/lib/validation/parse";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 
 export async function GET(request: NextRequest) {
-    try {
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.explore", async () => {
         const parsedQuery = parseQuery(request, exploreQuerySchema);
         if (!parsedQuery.success) {
             return NextResponse.json(parsedQuery.error, { status: 400 });
@@ -60,11 +62,5 @@ export async function GET(request: NextRequest) {
                 totalPages: Math.ceil(total / limit),
             },
         });
-    } catch (error) {
-        console.error("Error in explore API:", error);
-        return NextResponse.json(
-            { error: "Failed to fetch projects" },
-            { status: 500 }
-        );
-    }
+    }, ctx);
 }

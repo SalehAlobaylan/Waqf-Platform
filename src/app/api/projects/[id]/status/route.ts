@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAuthOrThrow } from "@/lib/auth-helpers";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { projectStatusUpdateSchema, routeIdParamSchema } from "@/lib/validation/schemas";
 import { parseBody, parseParams } from "@/lib/validation/parse";
-import { makeValidationError } from "@/lib/validation/errors";
+import { makeNotFoundError, makeValidationError } from "@/lib/validation/errors";
 import { isAdminUserId } from "@/lib/auth-helpers";
 
 interface RouteParams {
@@ -24,11 +24,10 @@ const adminTransitions: Record<string, string[]> = {
 };
 
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-        }
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.projects.updateStatus", async () => {
+        const user = await requireAuthOrThrow();
+        ctx.userId = user.id;
 
         const parsedParams = parseParams(await params, routeIdParamSchema);
         if (!parsedParams.success) {
@@ -49,14 +48,11 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         });
 
         if (!project) {
-            return NextResponse.json(
-                makeValidationError("Project not found", "id"),
-                { status: 404 }
-            );
+            return NextResponse.json(makeNotFoundError("Project not found", "id"), { status: 404 });
         }
 
-        const isOwner = project.ownerId === session.user.id;
-        const isAdmin = await isAdminUserId(session.user.id);
+        const isOwner = project.ownerId === user.id;
+        const isAdmin = await isAdminUserId(user.id);
 
         // Check valid transitions
         const currentStatus = project.status;
@@ -99,8 +95,5 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         });
 
         return NextResponse.json(updated);
-    } catch (error) {
-        console.error("[API] Status transition error:", error);
-        return NextResponse.json({ error: "Failed to update status" }, { status: 500 });
-    }
+    }, ctx);
 }

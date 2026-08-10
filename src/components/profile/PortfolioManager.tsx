@@ -22,6 +22,9 @@ import { GripVertical, Plus, Trash2, SquareArrowOutUpRight, Code } from "lucide-
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { PortfolioItem } from "@prisma/client";
+import { apiFetch } from "@/lib/api/client";
+import { toast } from "@/lib/toast";
+import { translateApiError } from "@/lib/i18n/client-errors";
 
 // -- Sortable Item Component --
 function SortableItem({ id, item, onDelete }: { id: string; item: PortfolioItem; onDelete: (id: string) => void }) {
@@ -77,6 +80,7 @@ function SortableItem({ id, item, onDelete }: { id: string; item: PortfolioItem;
 // -- Main Manager Component --
 export function PortfolioManager({ initialItems, locale, contributorId }: { initialItems: PortfolioItem[]; locale: string; contributorId: string }) {
     const t = useTranslations("profile.edit");
+    const tGlobal = useTranslations();
     const [items, setItems] = useState(initialItems);
     const [isAdding, setIsAdding] = useState(false);
     const [newItem, setNewItem] = useState({ title: "", description: "", url: "" });
@@ -99,46 +103,42 @@ export function PortfolioManager({ initialItems, locale, contributorId }: { init
 
         // API Call to reorder
         try {
-            await fetch("/api/contributors/portfolio/reorder", {
+            await apiFetch("/api/contributors/portfolio/reorder", {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ items: newItems.map((item, index) => ({ id: item.id, order: index })) })
+                body: { items: newItems.map((item, index) => ({ id: item.id, order: index })) }
             });
         } catch (err) {
-            console.error(err);
+            setItems(items);
+            toast.error(translateApiError(tGlobal, err));
         }
     };
 
     const handleAdd = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const res = await fetch("/api/contributors/portfolio", {
+            const added = await apiFetch<PortfolioItem>("/api/contributors/portfolio", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ ...newItem, order: items.length, contributorId })
+                body: { ...newItem, order: items.length, contributorId }
             });
-
-            if (res.ok) {
-                const added = await res.json();
-                setItems([...items, added]);
-                setIsAdding(false);
-                setNewItem({ title: "", description: "", url: "" });
-                router.refresh();
-            }
+            setItems([...items, added]);
+            setIsAdding(false);
+            setNewItem({ title: "", description: "", url: "" });
+            router.refresh();
         } catch (err) {
-            console.error(err);
+            toast.error(translateApiError(tGlobal, err));
         }
     };
 
     const handleDelete = async (id: string) => {
         try {
-            const res = await fetch(`/api/contributors/portfolio?id=${id}`, { method: "DELETE" });
-            if (res.ok) {
-                setItems(items.filter(i => i.id !== id));
-                router.refresh();
-            }
+            await apiFetch(`/api/contributors/portfolio`, {
+                method: "DELETE",
+                query: { id },
+            });
+            setItems(items.filter(i => i.id !== id));
+            router.refresh();
         } catch (err) {
-            console.error(err);
+            toast.error(translateApiError(tGlobal, err));
         }
     };
 

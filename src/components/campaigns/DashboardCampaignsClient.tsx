@@ -7,6 +7,9 @@ import Link from "next/link";
 import { Check, X, Loader2, Megaphone, ChevronRight } from "lucide-react";
 import { CampaignStatusBadge } from "@/components/campaigns/CampaignStatusBadge";
 import { CampaignOverallProgress } from "@/components/campaigns/ProgressBar";
+import { apiFetch } from "@/lib/api/client";
+import { toast } from "@/lib/toast";
+import { translateApiError } from "@/lib/i18n/client-errors";
 
 export interface OwnerCampaignItem {
     id: string;
@@ -36,6 +39,7 @@ interface Props {
 
 export function DashboardCampaignsClient({ campaigns, joinsByCampaign }: Props) {
     const t = useTranslations("dashboardCampaigns");
+    const tGlobal = useTranslations();
     const locale = useLocale();
     const router = useRouter();
     const [openId, setOpenId] = useState<string | null>(null);
@@ -45,12 +49,13 @@ export function DashboardCampaignsClient({ campaigns, joinsByCampaign }: Props) 
     const decide = async (joinId: string, status: "ACCEPTED" | "REJECTED", campaignId: string) => {
         setBusy(joinId);
         try {
-            await fetch(`/api/campaigns/${campaignId}/joins/${joinId}`, {
+            await apiFetch(`/api/campaigns/${campaignId}/joins/${joinId}`, {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status }),
+                body: { status },
             });
             startTransition(() => router.refresh());
+        } catch (error) {
+            toast.error(translateApiError(tGlobal, error));
         } finally {
             setBusy(null);
         }

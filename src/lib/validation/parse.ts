@@ -21,6 +21,7 @@ export async function parseBody<T>(request: Request, schema: ZodSchema<T>): Prom
             success: false,
             error: {
                 error: "Validation failed",
+                code: "INVALID_JSON",
                 details: [{ path: "", message: "Invalid JSON payload" }],
             },
         };

@@ -5,6 +5,9 @@ import { authClient } from "@/lib/auth-client";
 import { useTranslations } from "next-intl";
 import { Send, Loader2, ArrowDown } from "lucide-react";
 import { MessageBubble } from "./MessageBubble";
+import { apiFetch } from "@/lib/api/client";
+import { toast } from "@/lib/toast";
+import { translateApiError } from "@/lib/i18n/client-errors";
 
 interface Message {
     id: string;
@@ -26,6 +29,7 @@ interface ChatWindowProps {
 
 export function ChatWindow({ applicationId, initialMessages = [], recipientName }: ChatWindowProps) {
     const t = useTranslations("chat");
+    const tGlobal = useTranslations();
     const { data: session } = authClient.useSession();
     const [messages, setMessages] = useState<Message[]>(initialMessages);
     const [newMessage, setNewMessage] = useState("");
@@ -107,24 +111,18 @@ export function ChatWindow({ applicationId, initialMessages = [], recipientName 
         setMessages((prev) => [...prev, optimisticMessage]);
 
         try {
-            const response = await fetch("/api/messages", {
+            const data = await apiFetch<{ message: Message }>("/api/messages", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ applicationId, content }),
+                body: { applicationId, content },
             });
-
-            if (response.ok) {
-                const data = await response.json();
-                // Replace optimistic message with real one
-                setMessages((prev) =>
-                    prev.map((m) => m.id === optimisticMessage.id ? data.message : m)
-                );
-            } else {
-                // Remove optimistic message on error
-                setMessages((prev) => prev.filter((m) => m.id !== optimisticMessage.id));
-            }
+            // Replace optimistic message with real one
+            setMessages((prev) =>
+                prev.map((m) => m.id === optimisticMessage.id ? data.message : m)
+            );
         } catch (error) {
+            // Remove optimistic message on error and surface the failure
             setMessages((prev) => prev.filter((m) => m.id !== optimisticMessage.id));
+            toast.error(translateApiError(tGlobal, error));
         } finally {
             setIsSending(false);
         }

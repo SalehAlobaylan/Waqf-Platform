@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { CampaignRoleStatus, CampaignJoinStatus } from "@prisma/client";
+import { DomainError } from "@/lib/campaigns/errors";
 
 export async function acceptJoin(joinId: string): Promise<void> {
     await prisma.$transaction(async (tx) => {
@@ -7,15 +8,15 @@ export async function acceptJoin(joinId: string): Promise<void> {
             where: { id: joinId },
             include: { role: true },
         });
-        if (!join) throw new Error("Join not found");
+        if (!join) throw new DomainError("JOIN_NOT_FOUND", "Join not found");
         if (join.status !== "PENDING") {
-            throw new Error(`Join is in status ${join.status}`);
+            throw new DomainError("JOIN_NOT_PENDING", "Join has already been processed");
         }
         if (join.role.status === CampaignRoleStatus.CLOSED) {
-            throw new Error("Role is closed");
+            throw new DomainError("ROLE_CLOSED", "Role is closed");
         }
         if (join.role.filledCount >= join.role.count) {
-            throw new Error("Role is already full");
+            throw new DomainError("ROLE_FULL", "Role is already full");
         }
 
         await tx.campaignJoin.update({
@@ -49,15 +50,15 @@ export async function withdrawJoin(joinId: string, contributorId: string): Promi
             where: { id: joinId },
             include: { role: true, campaign: { select: { status: true } } },
         });
-        if (!join) throw new Error("Join not found");
+        if (!join) throw new DomainError("JOIN_NOT_FOUND", "Join not found");
         if (join.contributorId !== contributorId) {
-            throw new Error("Not your join");
+            throw new DomainError("JOIN_NOT_YOURS", "Not your join");
         }
         if (join.status !== "PENDING" && join.status !== "ACCEPTED") {
-            throw new Error("Join cannot be withdrawn");
+            throw new DomainError("JOIN_CANNOT_WITHDRAW", "Join cannot be withdrawn");
         }
         if (join.campaign.status !== "RECRUITING" && join.campaign.status !== "DRAFT") {
-            throw new Error("Campaign is no longer editable");
+            throw new DomainError("CAMPAIGN_NOT_EDITABLE", "Campaign is no longer editable");
         }
         const wasAccepted = join.status === CampaignJoinStatus.ACCEPTED;
         await tx.campaignJoin.update({

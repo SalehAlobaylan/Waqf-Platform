@@ -1,27 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAuthOrThrow } from "@/lib/auth-helpers";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { ApplicationStatus } from "@prisma/client";
 import {
     applicationCreateSchema,
     applicationsQuerySchema,
 } from "@/lib/validation/schemas";
 import { parseBody, parseQuery } from "@/lib/validation/parse";
-import { makeValidationError } from "@/lib/validation/errors";
+import { makeNotFoundError, makeValidationError } from "@/lib/validation/errors";
 import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
 import { sendEventEmail } from "@/lib/event-email";
+import { log } from "@/lib/logger";
 
 /**
  * GET /api/applications
  * List applications (user's own or project owner's incoming)
  */
 export async function GET(request: NextRequest) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.applications.list", async () => {
+        const user = await requireAuthOrThrow();
+        ctx.userId = user.id;
 
         const parsedQuery = parseQuery(request, applicationsQuerySchema);
         if (!parsedQuery.success) {
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
             applications = await prisma.application.findMany({
                 where: {
                     project: {
-                        ownerId: session.user.id,
+                        ownerId: user.id,
                     },
                     ...(status && { status: status as ApplicationStatus }),
                     ...(projectId && { projectId }),
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
             // Get user's own applications
             applications = await prisma.application.findMany({
                 where: {
-                    contributorId: session.user.id,
+                    contributorId: user.id,
                     ...(status && { status: status as ApplicationStatus }),
                 },
                 include: {
@@ -95,9 +95,9 @@ export async function GET(request: NextRequest) {
                             status: true,
                             owner: {
                                 select: {
-                            id: true,
-                            name: true,
-                            image: true,
+                                    id: true,
+                                    name: true,
+                                    image: true,
                                 },
                             },
                         },
@@ -115,13 +115,7 @@ export async function GET(request: NextRequest) {
         }
 
         return NextResponse.json({ applications });
-    } catch (error) {
-        console.error("[API] Get applications error:", error);
-        return NextResponse.json(
-            { error: "Failed to fetch applications" },
-            { status: 500 }
-        );
-    }
+    }, ctx);
 }
 
 /**
@@ -129,14 +123,14 @@ export async function GET(request: NextRequest) {
  * Submit a new application
  */
 export async function POST(request: NextRequest) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.applications.create", async () => {
+        const user = await requireAuthOrThrow();
+        ctx.userId = user.id;
 
-        if (!checkRateLimit(request, "application-create", { limit: 10, windowMs: 60_000 }, session.user.id)) {
-            return rateLimitedResponse();
+        const rate = checkRateLimit(request, "application-create", { limit: 10, windowMs: 60_000 }, user.id);
+        if (!rate.allowed) {
+            return rateLimitedResponse(rate);
         }
 
         const parsedBody = await parseBody(request, applicationCreateSchema);
@@ -153,10 +147,7 @@ export async function POST(request: NextRequest) {
         });
 
         if (!project) {
-            return NextResponse.json(
-                makeValidationError("Project not found", "projectId"),
-                { status: 404 }
-            );
+            return NextResponse.json(makeNotFoundError("Project not found", "projectId"), { status: 404 });
         }
 
         if (project.status !== "OPEN") {
@@ -175,7 +166,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Check if user is the project owner
-        if (project.ownerId === session.user.id) {
+        if (project.ownerId === user.id) {
             return NextResponse.json(
                 makeValidationError("You cannot apply to your own project", "projectId"),
                 { status: 400 }
@@ -187,7 +178,7 @@ export async function POST(request: NextRequest) {
             where: {
                 projectId_contributorId: {
                     projectId,
-                    contributorId: session.user.id,
+                    contributorId: user.id,
                 },
             },
         });
@@ -203,11 +194,11 @@ export async function POST(request: NextRequest) {
         const application = await prisma.application.create({
             data: {
                 projectId,
-                contributorId: session.user.id,
+                contributorId: user.id,
                 message,
                 portfolioUrl,
-            hoursPerWeek: hoursPerWeek ?? null,
-        },
+                hoursPerWeek: hoursPerWeek ?? null,
+            },
             include: {
                 project: {
                     select: {
@@ -219,34 +210,35 @@ export async function POST(request: NextRequest) {
             },
         });
 
-        // Create notification for project owner (skip for ownerless external projects)
+        // Best-effort side effects: the application is already committed, so a
+        // notification/email failure must not fail the request.
         if (project.ownerId) {
-            await prisma.notification.create({
-                data: {
-                    userId: project.ownerId,
-                    type: "NEW_APPLICATION",
-                    title: "New Application Received",
-                    content: `${session.user.name} has applied to your project`,
-                    link: `/projects/${application.project.slug}/applications`,
-                },
-            });
+            try {
+                await prisma.notification.create({
+                    data: {
+                        userId: project.ownerId,
+                        type: "NEW_APPLICATION",
+                        title: "New Application Received",
+                        content: `${user.name} has applied to your project`,
+                        link: `/projects/${application.project.slug}/applications`,
+                    },
+                });
 
-            // Event email to the project owner
-            await sendEventEmail(project.ownerId, {
-                kind: "NEW_APPLICATION",
-                actorName: session.user.name ?? undefined,
-                projectTitle: application.project.title,
-                projectSlug: application.project.slug,
-                applicationId: application.id,
-            });
+                await sendEventEmail(project.ownerId, {
+                    kind: "NEW_APPLICATION",
+                    actorName: user.name ?? undefined,
+                    projectTitle: application.project.title,
+                    projectSlug: application.project.slug,
+                    applicationId: application.id,
+                });
+            } catch (err) {
+                log.warn("api.applications.create", "owner notification failed after commit", {
+                    projectId,
+                    ownerId: project.ownerId,
+                }, err);
+            }
         }
 
         return NextResponse.json({ application }, { status: 201 });
-    } catch (error) {
-        console.error("[API] Create application error:", error);
-        return NextResponse.json(
-            { error: "Failed to submit application" },
-            { status: 500 }
-        );
-    }
+    }, ctx);
 }

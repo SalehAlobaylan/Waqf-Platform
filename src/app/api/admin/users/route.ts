@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAdminOrThrow } from "@/lib/auth-helpers";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { adminUsersQuerySchema } from "@/lib/validation/schemas";
 import { parseQuery, normalizeQueryValue } from "@/lib/validation/parse";
 
@@ -10,21 +10,10 @@ import { parseQuery, normalizeQueryValue } from "@/lib/validation/parse";
  * List all users for admin management
  */
 export async function GET(request: NextRequest) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        // Check if user is admin
-        const currentUser = await prisma.user.findUnique({
-            where: { id: session.user.id },
-            select: { role: true },
-        });
-
-        if (currentUser?.role !== "ADMIN") {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-        }
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.admin.users.list", async () => {
+        const admin = await requireAdminOrThrow();
+        ctx.userId = admin.id;
 
         const parsedQuery = parseQuery(request, adminUsersQuerySchema);
         if (!parsedQuery.success) {
@@ -78,11 +67,5 @@ export async function GET(request: NextRequest) {
                 totalPages: Math.ceil(total / limit),
             },
         });
-    } catch (error) {
-        console.error("[API] Admin users error:", error);
-        return NextResponse.json(
-            { error: "Failed to fetch users" },
-            { status: 500 }
-        );
-    }
+    }, ctx);
 }

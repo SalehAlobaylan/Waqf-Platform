@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAuthOrThrow } from "@/lib/auth-helpers";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { campaignRoleCreateSchema, routeIdParamSchema } from "@/lib/validation/schemas";
 import { parseBody, parseParams } from "@/lib/validation/parse";
-import { makeValidationError } from "@/lib/validation/errors";
+import { makeNotFoundError, makeValidationError } from "@/lib/validation/errors";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
 }
 
-export async function GET(_request: NextRequest, { params }: RouteParams) {
-    try {
+export async function GET(request: NextRequest, { params }: RouteParams) {
+    return withApiHandler(request, "api.campaigns.roles.list", async () => {
         const parsedParams = parseParams(await params, routeIdParamSchema);
         if (!parsedParams.success) {
             return NextResponse.json(parsedParams.error, { status: 400 });
@@ -23,18 +23,15 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
             orderBy: { createdAt: "asc" },
         });
         return NextResponse.json({ roles });
-    } catch (error) {
-        console.error("[API] Error fetching campaign roles:", error);
-        return NextResponse.json({ error: "Failed to fetch roles" }, { status: 500 });
-    }
+    });
 }
 
 export async function POST(request: NextRequest, { params }: RouteParams) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-        }
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.campaigns.roles.create", async () => {
+        const user = await requireAuthOrThrow();
+        ctx.userId = user.id;
+
         const parsedParams = parseParams(await params, routeIdParamSchema);
         if (!parsedParams.success) {
             return NextResponse.json(parsedParams.error, { status: 400 });
@@ -50,13 +47,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             select: { ownerId: true, status: true },
         });
         if (!campaign) {
-            return NextResponse.json(
-                makeValidationError("Campaign not found", "id"),
-                { status: 404 }
-            );
+            return NextResponse.json(makeNotFoundError("Campaign not found", "id"), { status: 404 });
         }
-        if (campaign.ownerId !== session.user.id) {
-            return NextResponse.json({ error: "Not authorized" }, { status: 403 });
+        if (campaign.ownerId !== user.id) {
+            return NextResponse.json({ error: "Forbidden", code: "FORBIDDEN" }, { status: 403 });
         }
         if (campaign.status === "READY" || campaign.status === "COMPLETED" || campaign.status === "CANCELLED") {
             return NextResponse.json(
@@ -87,8 +81,5 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             include: { skill: true },
         });
         return NextResponse.json(role, { status: 201 });
-    } catch (error) {
-        console.error("[API] Error creating campaign role:", error);
-        return NextResponse.json({ error: "Failed to create role" }, { status: 500 });
-    }
+    }, ctx);
 }

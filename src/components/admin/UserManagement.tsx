@@ -14,6 +14,10 @@ import {
     FolderKanban,
     FileCheck
 } from "lucide-react";
+import { apiFetch } from "@/lib/api/client";
+import { toast } from "@/lib/toast";
+import { translateApiError } from "@/lib/i18n/client-errors";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 interface UserData {
     id: string;
@@ -44,9 +48,11 @@ export function UserManagement({ locale }: UserManagementProps) {
     });
     const [actionLoading, setActionLoading] = useState<string | null>(null);
     const [openMenu, setOpenMenu] = useState<string | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<UserData | null>(null);
 
     const t = useTranslations("admin");
     const tCommon = useTranslations("common");
+    const tGlobal = useTranslations();
     const isAr = locale === "ar";
 
     const fetchUsers = useCallback(async () => {
@@ -90,45 +96,29 @@ export function UserManagement({ locale }: UserManagementProps) {
     const handleRoleChange = async (userId: string, newRole: "USER" | "ADMIN") => {
         try {
             setActionLoading(userId);
-            const response = await fetch(`/api/admin/users/${userId}`, {
+            await apiFetch(`/api/admin/users/${userId}`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ role: newRole }),
+                body: { role: newRole },
             });
-
-            if (response.ok) {
-                fetchUsers();
-            } else {
-                const error = await response.json();
-                alert(error.error);
-            }
+            fetchUsers();
         } catch (error) {
-            console.error("Failed to update role:", error);
+            toast.error(translateApiError(tGlobal, error));
         } finally {
             setActionLoading(null);
             setOpenMenu(null);
         }
     };
 
-    const handleDelete = async (userId: string) => {
-        if (!confirm(isAr ? "هل أنت متأكد من حذف هذا المستخدم؟" : "Are you sure you want to delete this user?")) {
-            return;
-        }
-
+    const handleDeleteConfirm = async () => {
+        if (!deleteTarget) return;
+        setActionLoading(deleteTarget.id);
         try {
-            setActionLoading(userId);
-            const response = await fetch(`/api/admin/users/${userId}`, {
-                method: "DELETE",
-            });
-
-            if (response.ok) {
-                fetchUsers();
-            } else {
-                const error = await response.json();
-                alert(error.error);
-            }
+            await apiFetch(`/api/admin/users/${deleteTarget.id}`, { method: "DELETE" });
+            setDeleteTarget(null);
+            fetchUsers();
         } catch (error) {
-            console.error("Failed to delete user:", error);
+            toast.error(translateApiError(tGlobal, error));
+            throw error;
         } finally {
             setActionLoading(null);
         }
@@ -297,7 +287,7 @@ export function UserManagement({ locale }: UserManagementProps) {
                                     )}
                                     <hr className="my-1 border-secondary-200" />
                                     <button
-                                        onClick={() => handleDelete(user.id)}
+                                        onClick={() => setDeleteTarget(user)}
                                         className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                                     >
                                         <Trash2 className="w-4 h-4" />
@@ -338,6 +328,19 @@ export function UserManagement({ locale }: UserManagementProps) {
                     </button>
                 </div>
             )}
+
+            <ConfirmDialog
+                open={deleteTarget !== null}
+                onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+                title={isAr ? "حذف المستخدم" : "Delete user"}
+                description={isAr
+                    ? "هل أنت متأكد من حذف هذا المستخدم؟ لا يمكن التراجع عن هذا الإجراء."
+                    : "Are you sure you want to delete this user? This action cannot be undone."}
+                confirmLabel={t("delete")}
+                cancelLabel={tCommon("cancel")}
+                tone="danger"
+                onConfirm={handleDeleteConfirm}
+            />
         </div>
     );
 }

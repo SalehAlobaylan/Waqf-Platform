@@ -1,7 +1,7 @@
-import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { unauthorized, forbidden } from "@/lib/api/errors";
 
 export interface SessionUser {
     id: string;
@@ -25,8 +25,10 @@ export async function getSessionUser(): Promise<SessionUser | null> {
 /**
  * Role is always re-fetched from the DB so a demoted admin loses elevated
  * access immediately (session cookie caches are not authoritative).
+ * Returns false immediately for an empty id to avoid a pointless DB query.
  */
 export async function isAdminUserId(userId: string): Promise<boolean> {
+    if (!userId) return false;
     const user = await prisma.user.findUnique({
         where: { id: userId },
         select: { role: true },
@@ -40,37 +42,21 @@ export async function isAdminUser(user: SessionUser | null): Promise<boolean> {
 }
 
 /**
- * Guard: returns the user, or a 401/403 NextResponse when not allowed.
+ * Guard: returns the session user or throws a 401 AppError. Throw-based so it
+ * composes with `withApiHandler`; catches render the standard error shape.
  */
-export async function requireAuth(): Promise<{
-    user: SessionUser | null;
-    response: NextResponse | null;
-}> {
+export async function requireAuthOrThrow(): Promise<SessionUser> {
     const user = await getSessionUser();
-    if (!user) {
-        return {
-            user: null,
-            response: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
-        };
-    }
-    return { user, response: null };
+    if (!user) throw unauthorized();
+    return user;
 }
 
 /**
- * Guard: returns the admin user, or a 401/403 NextResponse when not allowed.
+ * Guard: returns the session user only when they are an admin (role re-fetched
+ * from the DB), otherwise throws 401/403 AppErrors.
  */
-export async function requireAdmin(): Promise<{
-    admin: SessionUser | null;
-    response: NextResponse | null;
-}> {
-    const { user, response } = await requireAuth();
-    if (response) return { admin: null, response };
-
-    if (!(await isAdminUserId(user!.id))) {
-        return {
-            admin: null,
-            response: NextResponse.json({ error: "Forbidden" }, { status: 403 }),
-        };
-    }
-    return { admin: user, response: null };
+export async function requireAdminOrThrow(): Promise<SessionUser> {
+    const user = await requireAuthOrThrow();
+    if (!(await isAdminUserId(user.id))) throw forbidden();
+    return user;
 }

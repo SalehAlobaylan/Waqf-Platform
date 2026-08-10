@@ -558,6 +558,8 @@
         "statusHistory": "Status History",
         "accept": "Accept",
         "reject": "Reject",
+        "acceptConfirm": "Accept this application? The contributor will be notified.",
+        "rejectConfirm": "Reject this application? The contributor will be notified.",
         "pending": "Pending",
         "accepted": "Accepted",
         "rejected": "Rejected",
@@ -1043,5 +1045,17 @@
         "title": "Something went wrong",
         "description": "An unexpected error occurred while loading this page. Please try again.",
         "retry": "Try Again"
+    },
+    "errors": {
+        "unauthorized": "You must be signed in to continue.",
+        "forbidden": "You don't have permission to do that.",
+        "notFound": "The requested resource was not found.",
+        "validationFailed": "Please check your input and try again.",
+        "invalidJson": "The request could not be parsed.",
+        "conflict": "This action conflicts with the current state.",
+        "rateLimited": "Too many requests. Please try again later.",
+        "internal": "Something went wrong. Please try again.",
+        "serviceUnavailable": "This service is temporarily unavailable.",
+        "unexpected": "Something went wrong. Please try again."
     }
 }

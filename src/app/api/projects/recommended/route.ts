@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
+import { requireAuthOrThrow } from "@/lib/auth-helpers";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import {
   getRecommendedProjects,
   ContributorMatchData,
@@ -11,17 +11,13 @@ import {
 import { ProjectStatus } from "@prisma/client";
 import { recommendedProjectsQuerySchema } from "@/lib/validation/schemas";
 import { parseQuery } from "@/lib/validation/parse";
-import { makeValidationError } from "@/lib/validation/errors";
+import { makeNotFoundError } from "@/lib/validation/errors";
 
 export async function GET(request: NextRequest) {
-  try {
-    const session = await auth.api.getSession({ headers: await headers() });
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 }
-      );
-    }
+  const ctx: ApiHandlerContext = {};
+  return withApiHandler(request, "api.projects.recommended", async () => {
+    const user = await requireAuthOrThrow();
+    ctx.userId = user.id;
 
     const parsedQuery = parseQuery(request, recommendedProjectsQuerySchema);
 
@@ -30,7 +26,7 @@ export async function GET(request: NextRequest) {
     }
 
     const { limit, offset, category } = parsedQuery.data;
-    const userId = session.user.id;
+    const userId = user.id;
 
     // Fetch contributor profile with skills
     const contributor = await prisma.contributorProfile.findUnique({
@@ -46,7 +42,7 @@ export async function GET(request: NextRequest) {
 
     if (!contributor) {
       return NextResponse.json(
-        makeValidationError("Contributor profile not found. Please complete your profile.", "userId"),
+        makeNotFoundError("Contributor profile not found. Please complete your profile.", "userId"),
         { status: 404 }
       );
     }
@@ -137,11 +133,5 @@ export async function GET(request: NextRequest) {
     };
 
     return NextResponse.json(response);
-  } catch (error) {
-    console.error("[API] Error fetching recommended projects:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch recommendations" },
-      { status: 500 }
-    );
-  }
+  }, ctx);
 }

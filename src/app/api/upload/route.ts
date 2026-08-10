@@ -1,22 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { headers } from "next/headers";
 import { UTApi } from "uploadthing/server";
+import { requireAuthOrThrow } from "@/lib/auth-helpers";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
+import { AppError } from "@/lib/api/errors";
 import { makeValidationError } from "@/lib/validation/errors";
 import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB — keep in sync with uploadthing/core.ts
 
 const utapi = new UTApi();
 
 export async function POST(request: NextRequest) {
-    try {
-        const session = await auth.api.getSession({ headers: await headers() });
-        if (!session?.user?.id) {
-            return NextResponse.json({ error: "Authentication required" }, { status: 401 });
-        }
+    const ctx: ApiHandlerContext = {};
+    return withApiHandler(request, "api.upload", async () => {
+        const user = await requireAuthOrThrow();
+        ctx.userId = user.id;
 
         const today = new Date().toISOString().slice(0, 10);
-        if (!checkRateLimit(request, "upload", { limit: 20, windowMs: 24 * 60 * 60 * 1000 }, `${session.user.id}:${today}`)) {
-            return rateLimitedResponse();
+        const rate = checkRateLimit(request, "upload", { limit: 20, windowMs: 24 * 60 * 60 * 1000 }, `${user.id}:${today}`);
+        if (!rate.allowed) {
+            return rateLimitedResponse(rate);
         }
 
         const formData = await request.formData();
@@ -29,15 +32,13 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Validate file size (5MB max)
-        if (file.size > 5 * 1024 * 1024) {
+        if (file.size > MAX_FILE_SIZE) {
             return NextResponse.json(
                 makeValidationError("File too large. Max 5MB.", "file"),
                 { status: 400 }
             );
         }
 
-        // Validate file type
         const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
         if (!allowedTypes.includes(file.type)) {
             return NextResponse.json(
@@ -49,15 +50,9 @@ export async function POST(request: NextRequest) {
         const [upload] = await utapi.uploadFiles([file]);
 
         if (upload.error) {
-            return NextResponse.json(
-                { error: "Failed to upload file" },
-                { status: 500 }
-            );
+            throw new AppError({ status: 500, code: "INTERNAL", message: "Failed to upload file" });
         }
 
         return NextResponse.json({ url: upload.data.url }, { status: 201 });
-    } catch (error) {
-        console.error("[API] Upload error:", error);
-        return NextResponse.json({ error: "Failed to upload file" }, { status: 500 });
-    }
+    }, ctx);
 }

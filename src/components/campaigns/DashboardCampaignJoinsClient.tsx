@@ -6,6 +6,9 @@ import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { Loader2, X, Megaphone, Clock, CircleCheck, CircleX, Hourglass } from "lucide-react";
 import { CampaignStatusBadge } from "@/components/campaigns/CampaignStatusBadge";
+import { apiFetch } from "@/lib/api/client";
+import { toast } from "@/lib/toast";
+import { translateApiError } from "@/lib/i18n/client-errors";
 
 export interface MyJoinItem {
     id: string;
@@ -29,6 +32,7 @@ interface Props {
 
 export function DashboardCampaignJoinsClient({ joins }: Props) {
     const t = useTranslations("dashboardCampaignJoins");
+    const tGlobal = useTranslations();
     const locale = useLocale();
     const router = useRouter();
     const [busy, setBusy] = useState<string | null>(null);
@@ -39,12 +43,13 @@ export function DashboardCampaignJoinsClient({ joins }: Props) {
         try {
             const join = joins.find((j) => j.id === joinId);
             if (!join) return;
-            await fetch(`/api/campaigns/${join.campaign.id}/joins/${joinId}`, {
+            await apiFetch(`/api/campaigns/${join.campaign.id}/joins/${joinId}`, {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status: "WITHDRAWN" }),
+                body: { status: "WITHDRAWN" },
             });
             startTransition(() => router.refresh());
+        } catch (error) {
+            toast.error(translateApiError(tGlobal, error));
         } finally {
             setBusy(null);
         }

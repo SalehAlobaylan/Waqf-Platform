@@ -1,18 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
-
-interface RateLimitEntry {
-    count: number;
-    resetTime: number;
-}
-
-interface RateLimitConfig {
-    windowMs: number;
-    max: number;
-}
+import { log } from "@/lib/logger";
 
 export interface RateLimitOptions {
     limit: number;
     windowMs: number;
+}
+
+export interface RateLimitResult {
+    allowed: boolean;
+    /** Seconds until the window resets. 0 when the request is allowed. */
+    retryAfterSeconds: number;
 }
 
 interface Bucket {
@@ -20,11 +17,10 @@ interface Bucket {
     resetAt: number;
 }
 
-const store = new Map<string, RateLimitEntry>();
-
 // In-memory sliding window per (scope, ip, suffix). Note: this is
-// per-instance state — correct for a single-instance deployment, and must be
-// replaced with a shared store (Redis/Upstash) before scaling horizontally.
+// per-instance state — correct for a single-instance deployment. Before
+// scaling horizontally, replace with a shared store (e.g. Upstash/Redis) by
+// swapping the Map for a Lua-backed INCR+EXPIRE implementation.
 const buckets = new Map<string, Bucket>();
 
 const CLEANUP_INTERVAL = 5 * 60 * 1000;
@@ -34,95 +30,100 @@ function cleanup() {
     const now = Date.now();
     if (now - lastCleanup < CLEANUP_INTERVAL) return;
     lastCleanup = now;
-    for (const [key, entry] of store) {
-        if (now > entry.resetTime) {
-            store.delete(key);
-        }
-    }
     for (const [key, bucket] of buckets) {
         if (bucket.resetAt <= now) buckets.delete(key);
     }
 }
 
+/**
+ * Client IP for rate-limit bucketing. `x-real-ip` is preferred because it is
+ * set by the reverse proxy and cannot be spoofed by the caller; `x-forwarded-for`
+ * is only trusted as a fallback.
+ */
 function getClientIp(request: NextRequest): string {
+    const realIp = request.headers.get("x-real-ip");
+    if (realIp) return realIp;
     const forwarded = request.headers.get("x-forwarded-for");
     if (forwarded) {
         return forwarded.split(",")[0].trim();
     }
-    const realIp = request.headers.get("x-real-ip");
-    if (realIp) return realIp;
     return "unknown";
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type NextHandler = (request: NextRequest, ...args: any[]) => any;
-
-export function rateLimit(
-    config: RateLimitConfig,
-    handler: NextHandler
-): NextHandler {
-    return async (request: NextRequest, ...args: unknown[]) => {
-        cleanup();
-
-        const ip = getClientIp(request);
-        const now = Date.now();
-        const key = `rate-limit:${request.method}:${ip}`;
-
-        const entry = store.get(key);
-
-        if (!entry || now > entry.resetTime) {
-            store.set(key, { count: 1, resetTime: now + config.windowMs });
-            return handler(request, ...args);
-        }
-
-        if (entry.count >= config.max) {
-            return new NextResponse(
-                JSON.stringify({ error: "Too many requests. Please try again later." }),
-                {
-                    status: 429,
-                    headers: {
-                        "Content-Type": "application/json",
-                        "Retry-After": String(Math.ceil((entry.resetTime - now) / 1000)),
-                    },
-                }
-            );
-        }
-
-        entry.count++;
-        return handler(request, ...args);
-    };
-}
-
-export function parseIpForRateLimit(request: NextRequest): string {
-    return getClientIp(request);
-}
-
 /**
- * Returns true when the request is within the limit, false when rate-limited.
+ * Fixed-window rate limiter. Returns the result of consuming one unit from
+ * the bucket for `scope` + client IP (+ optional `suffix`, e.g. a user id or
+ * date bucket). When over the limit it also logs a structured trip warning.
  */
 export function checkRateLimit(
     request: NextRequest,
     scope: string,
     options: RateLimitOptions,
     suffix = ""
-): boolean {
+): RateLimitResult {
     cleanup();
     const now = Date.now();
-    const key = `${scope}:${getClientIp(request)}:${suffix}`;
+    const ip = getClientIp(request);
+    const key = `${scope}:${ip}:${suffix}`;
     const bucket = buckets.get(key);
 
     if (!bucket || bucket.resetAt <= now) {
         buckets.set(key, { count: 1, resetAt: now + options.windowMs });
-        return true;
+        return { allowed: true, retryAfterSeconds: 0 };
     }
-    if (bucket.count >= options.limit) return false;
+    if (bucket.count >= options.limit) {
+        const retryAfterSeconds = Math.max(1, Math.ceil((bucket.resetAt - now) / 1000));
+        log.warn("rate-limit", "request rate limited", {
+            scope,
+            ip,
+            suffix,
+            retryAfterSeconds,
+        });
+        return { allowed: false, retryAfterSeconds };
+    }
     bucket.count += 1;
-    return true;
+    return { allowed: true, retryAfterSeconds: 0 };
 }
 
-export function rateLimitedResponse() {
+const RATE_LIMITED_MESSAGE = "Too many requests. Please try again later.";
+
+/**
+ * Standard 429 response. Always uses the same message and `RATE_LIMITED` code
+ * as `rateLimited()` in `@/lib/api/errors`, and carries `Retry-After` when a
+ * result is provided.
+ */
+export function rateLimitedResponse(result?: RateLimitResult) {
     return NextResponse.json(
-        { error: "Too many requests, please try again later" },
-        { status: 429 }
+        { error: RATE_LIMITED_MESSAGE, code: "RATE_LIMITED" },
+        {
+            status: 429,
+            ...(result?.retryAfterSeconds
+                ? { headers: { "Retry-After": String(result.retryAfterSeconds) } }
+                : {}),
+        }
     );
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type NextHandler = (request: NextRequest, ...args: any[]) => any;
+
+interface RateLimitConfig {
+    windowMs: number;
+    max: number;
+}
+
+/**
+ * Route-wrapper middleware (used by the better-auth catch-all route).
+ * Delegates to the same store, message, and Retry-After handling as
+ * `checkRateLimit`/`rateLimitedResponse` so there is exactly one implementation.
+ */
+export function rateLimit(config: RateLimitConfig, handler: NextHandler): NextHandler {
+    return async (request: NextRequest, ...args: unknown[]) => {
+        const result = checkRateLimit(request, `better-auth:${request.method}`, {
+            limit: config.max,
+            windowMs: config.windowMs,
+        });
+        if (!result.allowed) return rateLimitedResponse(result);
+        return handler(request, ...args);
+    };
 }

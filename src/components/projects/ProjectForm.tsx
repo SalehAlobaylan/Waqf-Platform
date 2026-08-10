@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import { SiGithub } from "@icons-pack/react-simple-icons";
 import Link from "next/link";
+import { apiFetch, ApiError, type ApiErrorDetail } from "@/lib/api/client";
+import { translateApiError } from "@/lib/i18n/client-errors";
 
 interface ProjectFormProps {
     locale: string;
@@ -51,6 +53,7 @@ function slugify(text: string) {
 
 export function ProjectForm({ locale, mode, initialData, organizations }: ProjectFormProps) {
     const t = useTranslations("projects");
+    const tGlobal = useTranslations();
     const router = useRouter();
     const isCurate = mode === "curate";
 
@@ -100,11 +103,11 @@ export function ProjectForm({ locale, mode, initialData, organizations }: Projec
         }
         const timer = setTimeout(async () => {
             try {
-                const res = await fetch(`/api/skills?search=${encodeURIComponent(skillSearch)}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    setSkillResults(data.filter((s: { id: number }) => !selectedSkills.some(ss => ss.skillId === s.id)));
-                }
+                const data = await apiFetch<Array<{ id: number; name: string; nameAr: string | null }>>(
+                    `/api/skills`,
+                    { query: { search: skillSearch } }
+                );
+                setSkillResults(data.filter((s) => !selectedSkills.some(ss => ss.skillId === s.id)));
             } catch { /* ignore */ }
         }, 300);
         return () => clearTimeout(timer);
@@ -117,18 +120,22 @@ export function ProjectForm({ locale, mode, initialData, organizations }: Projec
             formData.append("file", file);
             const res = await fetch("/api/upload", { method: "POST", body: formData });
             if (!res.ok) {
-                const data = await res.json();
-                throw new Error(data.error);
+                const data = await res.json().catch(() => null);
+                throw new ApiError({
+                    status: res.status,
+                    code: (data as { code?: string } | null)?.code ?? "INTERNAL",
+                    message: (data as { error?: string } | null)?.error ?? `Request failed with status ${res.status}`,
+                    details: (data as { details?: ApiErrorDetail[] } | null)?.details,
+                });
             }
             const { url } = await res.json();
             setFeaturedImage(url);
         } catch (err) {
-            const message = err instanceof Error ? err.message : "Failed to upload image";
-            setError(message);
+            setError(translateApiError(tGlobal, err));
         } finally {
             setImageUploading(false);
         }
-    }, []);
+    }, [tGlobal]);
 
     const handleDrop = useCallback((e: React.DragEvent) => {
         e.preventDefault();
@@ -180,26 +187,17 @@ export function ProjectForm({ locale, mode, initialData, organizations }: Projec
                 };
 
                 const res = initialData
-                    ? await fetch(`/api/admin/curated-projects/${initialData.id}`, {
+                    ? await apiFetch<{ slug?: string }>(`/api/admin/curated-projects/${initialData.id}`, {
                         method: "PATCH",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(payload),
+                        body: payload,
                     })
-                    : await fetch("/api/admin/curated-projects", {
+                    : await apiFetch<{ slug?: string }>("/api/admin/curated-projects", {
                         method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(payload),
+                        body: payload,
                     });
 
-                if (!res.ok) {
-                    const data = await res.json();
-                    throw new Error(data.error || "Failed to save curated project");
-                }
-
-                const curatedProject = await res.json();
                 setSuccess(initialData ? t("projectUpdated") : t("projectCreated"));
                 setTimeout(() => router.push(`/${locale}/admin/projects/curated`), 1200);
-                void curatedProject;
                 return;
             }
 
@@ -219,33 +217,23 @@ export function ProjectForm({ locale, mode, initialData, organizations }: Projec
                 ...(submitForReview ? { status: "PENDING" } : {}),
             };
 
-            let res: Response;
+            let project: { slug: string };
             if (mode === "create") {
-                res = await fetch("/api/projects", {
+                project = await apiFetch<{ slug: string }>("/api/projects", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload),
+                    body: payload,
                 });
             } else {
-                res = await fetch(`/api/projects/${initialData!.id}`, {
+                project = await apiFetch<{ slug: string }>(`/api/projects/${initialData!.id}`, {
                     method: "PUT",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload),
+                    body: payload,
                 });
             }
-
-            if (!res.ok) {
-                const data = await res.json();
-                throw new Error(data.error || "Failed to save project");
-            }
-
-            const project = await res.json();
 
             setSuccess(mode === "create" ? t("projectCreated") : t("projectUpdated"));
             setTimeout(() => router.push(`/${locale}/projects/${project.slug}`), 1200);
         } catch (err) {
-            const message = err instanceof Error ? err.message : "An error occurred";
-            setError(message);
+            setError(translateApiError(tGlobal, err));
         } finally {
             setSaving(false);
         }

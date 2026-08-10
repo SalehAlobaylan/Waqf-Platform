@@ -52,7 +52,7 @@ export function SignupForm() {
                 callbackURL: `/${locale}/onboarding`,
             });
             if (sendError) {
-                setError(sendError.message || t("signupError"));
+                setError(t("signupError"));
                 return;
             }
             setMode("link-sent");
@@ -72,7 +72,7 @@ export function SignupForm() {
                 type: "sign-in",
             });
             if (sendError) {
-                setError(sendError.message || t("signupError"));
+                setError(t("signupError"));
                 return;
             }
             setMode("otp-entry");
@@ -93,7 +93,7 @@ export function SignupForm() {
                 otp: code,
             });
             if (verifyError) {
-                setError(verifyError.message || t("signupError"));
+                setError(t("signupError"));
                 setOtp(Array(OTP_LENGTH).fill(""));
                 otpRefs.current[0]?.focus();
                 return;

@@ -4,6 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Check, Loader2, Circle, ListChecks } from "lucide-react";
+import { apiFetch } from "@/lib/api/client";
+import { toast } from "@/lib/toast";
+import { translateApiError } from "@/lib/i18n/client-errors";
 
 export interface MilestoneItem {
     id: string;
@@ -20,6 +23,7 @@ interface Props {
 
 export function MilestoneList({ campaignId, initialMilestones, canEdit }: Props) {
     const t = useTranslations("campaigns");
+    const tGlobal = useTranslations();
     const router = useRouter();
     const [items, setItems] = useState(initialMilestones);
     const [newTitle, setNewTitle] = useState("");
@@ -34,14 +38,14 @@ export function MilestoneList({ campaignId, initialMilestones, canEdit }: Props)
         const next = !target.isDone;
         setItems((prev) => prev.map((m) => (m.id === id ? { ...m, isDone: next } : m)));
         try {
-            await fetch(`/api/campaigns/${campaignId}/milestones/${id}`, {
+            await apiFetch(`/api/campaigns/${campaignId}/milestones/${id}`, {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ isDone: next }),
+                body: { isDone: next },
             });
             router.refresh();
-        } catch {
+        } catch (error) {
             setItems((prev) => prev.map((m) => (m.id === id ? { ...m, isDone: !next } : m)));
+            toast.error(translateApiError(tGlobal, error));
         } finally {
             setSaving(null);
         }
@@ -51,17 +55,15 @@ export function MilestoneList({ campaignId, initialMilestones, canEdit }: Props)
         if (!newTitle.trim()) return;
         setAdding(true);
         try {
-            const res = await fetch(`/api/campaigns/${campaignId}/milestones`, {
+            const created = await apiFetch<MilestoneItem>(`/api/campaigns/${campaignId}/milestones`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ title: newTitle.trim() }),
+                body: { title: newTitle.trim() },
             });
-            if (res.ok) {
-                const created = await res.json();
-                setItems((prev) => [...prev, created]);
-                setNewTitle("");
-                router.refresh();
-            }
+            setItems((prev) => [...prev, created]);
+            setNewTitle("");
+            router.refresh();
+        } catch (error) {
+            toast.error(translateApiError(tGlobal, error));
         } finally {
             setAdding(false);
         }
@@ -71,13 +73,11 @@ export function MilestoneList({ campaignId, initialMilestones, canEdit }: Props)
         if (!canEdit) return;
         setSaving(id);
         try {
-            const res = await fetch(`/api/campaigns/${campaignId}/milestones/${id}`, {
-                method: "DELETE",
-            });
-            if (res.ok) {
-                setItems((prev) => prev.filter((m) => m.id !== id));
-                router.refresh();
-            }
+            await apiFetch(`/api/campaigns/${campaignId}/milestones/${id}`, { method: "DELETE" });
+            setItems((prev) => prev.filter((m) => m.id !== id));
+            router.refresh();
+        } catch (error) {
+            toast.error(translateApiError(tGlobal, error));
         } finally {
             setSaving(null);
         }

@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { routeIdParamSchema } from "@/lib/validation/schemas";
 import { parseParams } from "@/lib/validation/parse";
-import { makeValidationError } from "@/lib/validation/errors";
+import { makeNotFoundError } from "@/lib/validation/errors";
+import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -13,7 +14,8 @@ interface RouteParams {
  * Fetch a contributor profile by user ID
  */
 export async function GET(request: NextRequest, { params }: RouteParams) {
-  try {
+  const ctx: ApiHandlerContext = {};
+  return withApiHandler(request, "api.contributors.get", async () => {
     const parsedParams = parseParams(await params, routeIdParamSchema);
     if (!parsedParams.success) {
       return NextResponse.json(parsedParams.error, { status: 400 });
@@ -45,7 +47,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     if (!user) {
       return NextResponse.json(
-        makeValidationError("User not found", "id"),
+        makeNotFoundError("User not found", "id"),
         { status: 404 }
       );
     }
@@ -73,11 +75,5 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     };
 
     return NextResponse.json(profile);
-  } catch (error) {
-    console.error("[API] Error fetching contributor:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch contributor" },
-      { status: 500 }
-    );
-  }
+  }, ctx);
 }
