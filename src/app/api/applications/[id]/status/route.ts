@@ -8,6 +8,7 @@ import { parseBody, parseParams } from "@/lib/validation/parse";
 import { makeNotFoundError, makeValidationError } from "@/lib/validation/errors";
 import { sendEventEmail } from "@/lib/event-email";
 import { log } from "@/lib/logger";
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -22,6 +23,11 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     return withApiHandler(request, "api.applications.updateStatus", async () => {
         const user = await requireAuthOrThrow();
         ctx.userId = user.id;
+
+        const rate = checkRateLimit(request, "application-status-update", { limit: 20, windowMs: 60_000 }, user.id);
+        if (!rate.allowed) {
+            return rateLimitedResponse(rate);
+        }
 
         const parsedParams = parseParams(await params, routeIdParamSchema);
         if (!parsedParams.success) {

@@ -5,6 +5,7 @@ import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { campaignMilestoneUpdateSchema, idSchema, routeIdParamSchema } from "@/lib/validation/schemas";
 import { parseBody, parseParams } from "@/lib/validation/parse";
 import { makeNotFoundError } from "@/lib/validation/errors";
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
 
 interface RouteParams {
     params: Promise<{ id: string; milestoneId: string }>;
@@ -15,6 +16,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     return withApiHandler(request, "api.campaigns.milestones.update", async () => {
         const user = await requireAuthOrThrow();
         ctx.userId = user.id;
+
+        const rate = checkRateLimit(request, "campaign-milestone-update", { limit: 30, windowMs: 60_000 }, user.id);
+        if (!rate.allowed) {
+            return rateLimitedResponse(rate);
+        }
 
         const parsedParams = parseParams(
             await params,
@@ -62,6 +68,11 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     return withApiHandler(request, "api.campaigns.milestones.delete", async () => {
         const user = await requireAuthOrThrow();
         ctx.userId = user.id;
+
+        const rate = checkRateLimit(request, "campaign-milestone-delete", { limit: 30, windowMs: 60_000 }, user.id);
+        if (!rate.allowed) {
+            return rateLimitedResponse(rate);
+        }
 
         const parsedParams = parseParams(
             await params,

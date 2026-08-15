@@ -6,7 +6,9 @@ import { ProjectStatus } from "@prisma/client";
 import { projectUpdateSchema, routeIdParamSchema } from "@/lib/validation/schemas";
 import { parseBody, parseParams } from "@/lib/validation/parse";
 import { makeNotFoundError, makeValidationError } from "@/lib/validation/errors";
+import { assertSkillsExist } from "@/lib/validation/skills";
 import { getSessionUser, isAdminUserId } from "@/lib/auth-helpers";
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -88,6 +90,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const user = await requireAuthOrThrow();
     ctx.userId = user.id;
 
+    const rate = checkRateLimit(request, "project-update", { limit: 20, windowMs: 60_000 }, user.id);
+    if (!rate.allowed) {
+      return rateLimitedResponse(rate);
+    }
+
     const parsedParams = parseParams(await params, routeIdParamSchema);
     if (!parsedParams.success) {
       return NextResponse.json(parsedParams.error, { status: 400 });
@@ -129,6 +136,14 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       skills,
       status: newStatus,
     } = parsedBody.data;
+
+    // Reject unknown skill ids before any mutation (400 instead of FK 409)
+    if (skills && skills.length) {
+      const skillError = await assertSkillsExist(skills.map((s) => s.skillId));
+      if (skillError) {
+        return NextResponse.json(skillError, { status: 400 });
+      }
+    }
 
     // Organization must belong to the project owner (mirrors campaign routes)
     if (organizationId) {
@@ -236,6 +251,11 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   return withApiHandler(request, "api.projects.delete", async () => {
     const user = await requireAuthOrThrow();
     ctx.userId = user.id;
+
+    const rate = checkRateLimit(request, "project-delete", { limit: 10, windowMs: 60_000 }, user.id);
+    if (!rate.allowed) {
+      return rateLimitedResponse(rate);
+    }
 
     const parsedParams = parseParams(await params, routeIdParamSchema);
     if (!parsedParams.success) {

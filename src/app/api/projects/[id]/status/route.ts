@@ -6,6 +6,7 @@ import { projectStatusUpdateSchema, routeIdParamSchema } from "@/lib/validation/
 import { parseBody, parseParams } from "@/lib/validation/parse";
 import { makeNotFoundError, makeValidationError } from "@/lib/validation/errors";
 import { isAdminUserId } from "@/lib/auth-helpers";
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -28,6 +29,11 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     return withApiHandler(request, "api.projects.updateStatus", async () => {
         const user = await requireAuthOrThrow();
         ctx.userId = user.id;
+
+        const rate = checkRateLimit(request, "project-status-update", { limit: 20, windowMs: 60_000 }, user.id);
+        if (!rate.allowed) {
+            return rateLimitedResponse(rate);
+        }
 
         const parsedParams = parseParams(await params, routeIdParamSchema);
         if (!parsedParams.success) {

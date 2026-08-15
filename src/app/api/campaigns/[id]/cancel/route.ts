@@ -6,6 +6,7 @@ import { CampaignStatus } from "@prisma/client";
 import { routeIdParamSchema } from "@/lib/validation/schemas";
 import { parseParams } from "@/lib/validation/parse";
 import { makeNotFoundError, makeValidationError } from "@/lib/validation/errors";
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -16,6 +17,11 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     return withApiHandler(request, "api.campaigns.cancel", async () => {
         const user = await requireAuthOrThrow();
         ctx.userId = user.id;
+
+        const rate = checkRateLimit(request, "campaign-cancel", { limit: 10, windowMs: 60_000 }, user.id);
+        if (!rate.allowed) {
+            return rateLimitedResponse(rate);
+        }
 
         const parsedParams = parseParams(await params, routeIdParamSchema);
         if (!parsedParams.success) {

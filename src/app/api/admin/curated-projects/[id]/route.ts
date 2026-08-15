@@ -6,6 +6,7 @@ import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { projectCurateUpdateSchema, routeIdParamSchema } from "@/lib/validation/schemas";
 import { parseBody, parseParams } from "@/lib/validation/parse";
 import { makeNotFoundError } from "@/lib/validation/errors";
+import { assertSkillsExist } from "@/lib/validation/skills";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -71,6 +72,14 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         }
 
         const { skills, status, ...rest } = parsedBody.data;
+
+        if (skills?.length) {
+            const skillError = await assertSkillsExist(skills.map((s) => s.skillId));
+            if (skillError) {
+                return NextResponse.json(skillError, { status: 400 });
+            }
+        }
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const data: any = { ...rest };
         if (status) data.status = status as ProjectStatus;

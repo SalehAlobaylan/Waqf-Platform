@@ -6,6 +6,7 @@ import { ProjectStatus, ProjectLanguage } from "@prisma/client";
 import { projectCreateSchema, projectsQuerySchema } from "@/lib/validation/schemas";
 import { parseBody, parseQuery } from "@/lib/validation/parse";
 import { makeValidationError } from "@/lib/validation/errors";
+import { assertSkillsExist } from "@/lib/validation/skills";
 import { getSessionUser, isAdminUserId } from "@/lib/auth-helpers";
 import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
 import { calculateMatchScore } from "@/lib/matching/engine";
@@ -262,6 +263,14 @@ export async function POST(request: NextRequest) {
       skills,
       status: newStatus,
     } = parsedBody.data;
+
+    // Reject unknown skill ids before any mutation (400 instead of FK 409)
+    if (skills?.length) {
+      const skillError = await assertSkillsExist(skills.map((s) => s.skillId));
+      if (skillError) {
+        return NextResponse.json(skillError, { status: 400 });
+      }
+    }
 
     // Generate or use custom slug
     const baseSlug = customSlug

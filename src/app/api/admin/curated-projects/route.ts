@@ -6,6 +6,7 @@ import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { projectCurateSchema, pagePaginationSchema } from "@/lib/validation/schemas";
 import { parseBody, parseQuery } from "@/lib/validation/parse";
 import { makeValidationError } from "@/lib/validation/errors";
+import { assertSkillsExist } from "@/lib/validation/skills";
 
 /**
  * GET /api/admin/curated-projects
@@ -85,6 +86,13 @@ export async function POST(request: NextRequest) {
             featured,
             skills,
         } = parsedBody.data;
+
+        if (skills?.length) {
+            const skillError = await assertSkillsExist(skills.map((s) => s.skillId));
+            if (skillError) {
+                return NextResponse.json(skillError, { status: 400 });
+            }
+        }
 
         const baseSlug = customSlug
             ? customSlug.toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-|-$/g, "")

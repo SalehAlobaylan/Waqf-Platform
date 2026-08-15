@@ -5,12 +5,18 @@ import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { forbidden } from "@/lib/api/errors";
 import { portfolioCreateSchema, portfolioDeleteSchema } from "@/lib/validation/schemas";
 import { parseBody, parseQuery } from "@/lib/validation/parse";
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
     const ctx: ApiHandlerContext = {};
     return withApiHandler(request, "api.contributors.portfolio.create", async () => {
         const user = await requireAuthOrThrow();
         ctx.userId = user.id;
+
+        const rate = checkRateLimit(request, "portfolio-create", { limit: 30, windowMs: 60_000 }, user.id);
+        if (!rate.allowed) {
+            return rateLimitedResponse(rate);
+        }
 
         const parsedBody = await parseBody(request, portfolioCreateSchema);
         if (!parsedBody.success) {
@@ -47,6 +53,11 @@ export async function DELETE(request: NextRequest) {
     return withApiHandler(request, "api.contributors.portfolio.delete", async () => {
         const user = await requireAuthOrThrow();
         ctx.userId = user.id;
+
+        const rate = checkRateLimit(request, "portfolio-delete", { limit: 30, windowMs: 60_000 }, user.id);
+        if (!rate.allowed) {
+            return rateLimitedResponse(rate);
+        }
 
         const parsedQuery = parseQuery(request, portfolioDeleteSchema);
         if (!parsedQuery.success) {

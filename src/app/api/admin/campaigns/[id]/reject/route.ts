@@ -8,6 +8,7 @@ import { makeNotFoundError, makeValidationError } from "@/lib/validation/errors"
 import { CampaignStatus } from "@prisma/client";
 import { notifyCampaignAdminAction } from "@/lib/campaigns/notifications";
 import { log } from "@/lib/logger";
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -18,6 +19,11 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     return withApiHandler(request, "api.admin.campaigns.reject", async () => {
         const admin = await requireAdminOrThrow();
         ctx.userId = admin.id;
+
+        const rate = checkRateLimit(request, "admin-campaign-reject", { limit: 30, windowMs: 60_000 }, admin.id);
+        if (!rate.allowed) {
+            return rateLimitedResponse(rate);
+        }
 
         const parsedParams = parseParams(await params, routeIdParamSchema);
         if (!parsedParams.success) {

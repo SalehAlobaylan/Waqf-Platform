@@ -54,3 +54,17 @@ Validation contract assertions:
 | `/api/projects/[id]` | PUT | empty body, unauthenticated | `401` | auth precedence |
 | `/api/projects/[id]/status` | PATCH | invalid status, unauthenticated | `401` | auth precedence |
 | `/api/reports/[id]` | PATCH | invalid status, unauthenticated | `401/403` | auth/role precedence |
+
+## Hardening (Phase 3)
+
+| Route | Method | Input | Expected | Path |
+| --- | --- | --- | --- | --- |
+| `/api/campaigns` | POST | body > 1 MB | `400` | `""` (too large) |
+| `/api/campaigns` | POST | whitespace-only required fields | `400` | `title` |
+| `/api/campaigns` | POST | `startsAt` in the past | `400` | `startsAt` |
+| `/api/campaigns` | POST | `recruitmentDeadline` before `startsAt` | `400` | `recruitmentDeadline` |
+| `/api/contributors/profile` | PATCH | unknown `selectedSkills` id | `400` | `selectedSkills` |
+| `/api/projects` | POST | unknown `skills` id | `400` | `skills` |
+| `/api/admin/featured` | PUT | missing `featured` | `400` | `featured` |
+| `/api/admin/featured` | PUT | `featuredUntil` in the past (featuring) | `400` | `featuredUntil` |
+| `/api/upload` | POST | MIME spoof (content ≠ declared type) | `400` | `file` |

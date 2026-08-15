@@ -5,6 +5,7 @@ import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { reportUpdateSchema, routeIdParamSchema } from "@/lib/validation/schemas";
 import { parseBody, parseParams } from "@/lib/validation/parse";
 import { makeNotFoundError } from "@/lib/validation/errors";
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
 
 interface RouteParams {
     params: Promise<{ id: string }>;
@@ -19,6 +20,11 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     return withApiHandler(request, "api.reports.update", async () => {
         const admin = await requireAdminOrThrow();
         ctx.userId = admin.id;
+
+        const rate = checkRateLimit(request, "report-update", { limit: 30, windowMs: 60_000 }, admin.id);
+        if (!rate.allowed) {
+            return rateLimitedResponse(rate);
+        }
 
         const parsedParams = parseParams(await params, routeIdParamSchema);
         if (!parsedParams.success) {

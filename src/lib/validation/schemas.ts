@@ -14,6 +14,52 @@ const optionalTrimmedString = (min?: number, max?: number) => {
     );
 };
 
+/**
+ * Required free-text field: trims surrounding whitespace and rejects
+ * whitespace-only input (trimming collapses it below `min`).
+ */
+const requiredTrimmedString = (min: number, max: number) =>
+    z.preprocess(
+        (value) => {
+            if (typeof value !== "string") return value;
+            return value.trim();
+        },
+        z.string().min(min, `Must be at least ${min} characters`).max(max)
+    );
+
+/**
+ * Optional nullable free-text field: trims surrounding whitespace and maps
+ * whitespace-only values to `null` so clients can "clear" a field.
+ */
+const optionalNullableTrimmedString = (max: number) =>
+    z.preprocess(
+        (value) => {
+            if (value === null || value === undefined) return value;
+            if (typeof value !== "string") return value;
+            const trimmed = value.trim();
+            return trimmed.length > 0 ? trimmed : null;
+        },
+        z.string().max(max).optional().nullable()
+    );
+
+/**
+ * URL field: trims leading/trailing whitespace before validating so URLs
+ * pasted with stray spaces neither fail nor get stored untrimmed.
+ */
+const urlSchema = z.preprocess(
+    (value) => (typeof value === "string" ? value.trim() : value),
+    z.string().url("Must be a valid URL")
+);
+
+/** Optional nullable URL field with the same trimming behavior. */
+const nullableUrlSchema = z.preprocess(
+    (value) => {
+        if (value === null || value === undefined) return value;
+        return typeof value === "string" ? value.trim() : value;
+    },
+    z.string().url("Must be a valid URL").optional().nullable()
+);
+
 const projectListStatusSchema = z.preprocess(
     (value) => {
         if (typeof value !== "string") return value;
@@ -90,6 +136,7 @@ const externalContactSchema = z
     .string()
     .min(2, "Contact is required")
     .max(160)
+    .trim()
     .refine(
         (value) =>
             /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ||
@@ -100,42 +147,42 @@ const externalContactSchema = z
 
 export const projectCurateSchema = z
     .object({
-        title: z.string().min(3).max(120),
+        title: requiredTrimmedString(3, 120),
         customSlug: slugSchema.optional().nullable(),
-        description: z.string().min(20).max(5000),
+        description: requiredTrimmedString(20, 5000),
         category: projectCategorySchema,
         language: projectLanguageSchema.optional(),
-        impact: z.string().max(500).optional().nullable(),
-        timeCommitment: z.string().max(120).optional().nullable(),
-        duration: z.string().max(120).optional().nullable(),
-        featuredImage: z.string().url().optional().nullable(),
-        externalUrl: z.string().url("Must be a valid URL"),
-        externalOwnerName: z.string().min(2).max(80),
+        impact: optionalNullableTrimmedString(500),
+        timeCommitment: optionalNullableTrimmedString(120),
+        duration: optionalNullableTrimmedString(120),
+        featuredImage: nullableUrlSchema,
+        externalUrl: urlSchema,
+        externalOwnerName: requiredTrimmedString(2, 80),
         externalOwnerContact: externalContactSchema,
-        curatorNotes: z.string().max(2000).optional().nullable(),
+        curatorNotes: optionalNullableTrimmedString(2000),
         status: projectStatusSchema.optional(),
         featured: z.boolean().optional(),
-        skills: z.array(projectSkillSchema).optional(),
+        skills: z.array(projectSkillSchema).max(30).optional(),
     })
     .strip();
 
 export const projectCurateUpdateSchema = z
     .object({
-        title: z.string().min(3).max(120).optional(),
-        description: z.string().min(20).max(5000).optional(),
+        title: requiredTrimmedString(3, 120).optional(),
+        description: requiredTrimmedString(20, 5000).optional(),
         category: projectCategorySchema.optional(),
         language: projectLanguageSchema.optional(),
-        impact: z.string().max(500).optional().nullable(),
-        timeCommitment: z.string().max(120).optional().nullable(),
-        duration: z.string().max(120).optional().nullable(),
-        featuredImage: z.string().url().optional().nullable(),
-        externalUrl: z.string().url().optional(),
-        externalOwnerName: z.string().min(2).max(80).optional(),
+        impact: optionalNullableTrimmedString(500),
+        timeCommitment: optionalNullableTrimmedString(120),
+        duration: optionalNullableTrimmedString(120),
+        featuredImage: nullableUrlSchema,
+        externalUrl: urlSchema.optional(),
+        externalOwnerName: requiredTrimmedString(2, 80).optional(),
         externalOwnerContact: externalContactSchema.optional(),
-        curatorNotes: z.string().max(2000).optional().nullable(),
+        curatorNotes: optionalNullableTrimmedString(2000),
         status: projectStatusSchema.optional(),
         featured: z.boolean().optional(),
-        skills: z.array(projectSkillSchema).optional(),
+        skills: z.array(projectSkillSchema).max(30).optional(),
     })
     .refine((data) => Object.keys(data).length > 0, {
         message: "At least one field is required",
@@ -145,36 +192,36 @@ export const projectCurateUpdateSchema = z
 
 export const projectCreateSchema = z
     .object({
-        title: z.string().min(3).max(120),
-        description: z.string().min(20).max(5000),
+        title: requiredTrimmedString(3, 120),
+        description: requiredTrimmedString(20, 5000),
         category: projectCategorySchema,
         language: projectLanguageSchema.optional(),
-        timeCommitment: z.string().max(120).optional().nullable(),
-        duration: z.string().max(120).optional().nullable(),
-        impact: z.string().max(500).optional().nullable(),
-        githubUrl: z.string().url().optional().nullable(),
-        featuredImage: z.string().url().optional().nullable(),
+        timeCommitment: optionalNullableTrimmedString(120),
+        duration: optionalNullableTrimmedString(120),
+        impact: optionalNullableTrimmedString(500),
+        githubUrl: nullableUrlSchema,
+        featuredImage: nullableUrlSchema,
         organizationId: idSchema.optional().nullable(),
         customSlug: slugSchema.optional().nullable(),
-        skills: z.array(projectSkillSchema).optional(),
+        skills: z.array(projectSkillSchema).max(30).optional(),
         status: z.enum(["PENDING"]).optional(),
     })
     .strip();
 
 export const projectUpdateSchema = z
     .object({
-        title: z.string().min(3).max(120).optional(),
-        description: z.string().min(20).max(5000).optional(),
+        title: requiredTrimmedString(3, 120).optional(),
+        description: requiredTrimmedString(20, 5000).optional(),
         category: projectCategorySchema.optional(),
         language: projectLanguageSchema.optional(),
-        timeCommitment: z.string().max(120).optional().nullable(),
-        duration: z.string().max(120).optional().nullable(),
-        impact: z.string().max(500).optional().nullable(),
-        githubUrl: z.string().url().optional().nullable(),
-        featuredImage: z.string().url().optional().nullable(),
+        timeCommitment: optionalNullableTrimmedString(120),
+        duration: optionalNullableTrimmedString(120),
+        impact: optionalNullableTrimmedString(500),
+        githubUrl: nullableUrlSchema,
+        featuredImage: nullableUrlSchema,
         organizationId: idSchema.optional().nullable(),
         slug: slugSchema.optional(),
-        skills: z.array(projectSkillSchema).optional(),
+        skills: z.array(projectSkillSchema).max(30).optional(),
         status: z.enum(["PENDING"]).optional(),
     })
     .refine((data) => Object.keys(data).length > 0, {
@@ -206,8 +253,8 @@ export const campaignSenioritySchema = z.enum(["JUNIOR", "MID", "SENIOR", "ANY"]
 export const campaignRoleCreateSchema = z
     .object({
         skillId: z.coerce.number().int().positive(),
-        title: z.string().min(1).max(120),
-        description: z.string().max(1000).optional().nullable(),
+        title: requiredTrimmedString(1, 120),
+        description: optionalNullableTrimmedString(1000),
         count: z.coerce.number().int().min(1).max(50),
         seniority: campaignSenioritySchema.optional(),
         isRequired: z.boolean().optional(),
@@ -216,8 +263,8 @@ export const campaignRoleCreateSchema = z
 
 export const campaignRoleUpdateSchema = z
     .object({
-        title: z.string().min(1).max(120).optional(),
-        description: z.string().max(1000).optional().nullable(),
+        title: requiredTrimmedString(1, 120).optional(),
+        description: optionalNullableTrimmedString(1000),
         count: z.coerce.number().int().min(1).max(50).optional(),
         seniority: campaignSenioritySchema.optional(),
         isRequired: z.boolean().optional(),
@@ -231,52 +278,64 @@ export const campaignRoleUpdateSchema = z
 
 export const campaignCreateSchema = z
     .object({
-        title: z.string().min(2).max(120),
-        pitch: z.string().min(10).max(500),
-        problem: z.string().min(10).max(5000),
-        outcome: z.string().max(2000).optional().nullable(),
+        title: requiredTrimmedString(2, 120),
+        pitch: requiredTrimmedString(10, 500),
+        problem: requiredTrimmedString(10, 5000),
+        outcome: optionalNullableTrimmedString(2000),
         category: projectCategorySchema.optional().nullable(),
         language: projectLanguageSchema.optional(),
-        country: z.string().max(80).optional().nullable(),
+        country: optionalNullableTrimmedString(80),
         startsAt: z.coerce.date().optional().nullable(),
         recruitmentDeadline: z.coerce.date().optional().nullable(),
-        contactEmail: z.string().email().max(200).optional().nullable(),
-        coverImage: z.string().url().optional().nullable(),
+        contactEmail: z.string().trim().email().max(200).optional().nullable(),
+        coverImage: nullableUrlSchema,
         organizationId: idSchema.optional().nullable(),
         customSlug: slugSchema.optional().nullable(),
-        tags: z.array(z.string().min(1).max(40)).max(20).optional(),
+        tags: z.array(z.string().trim().min(1).max(40)).max(20).optional(),
         roles: z.array(campaignRoleCreateSchema).max(20).optional(),
     })
-    .strip();
+    .strip()
+    .refine((data) => !data.startsAt || data.startsAt.getTime() >= Date.now(), {
+        message: "Campaign start date cannot be in the past",
+        path: ["startsAt"],
+    })
+    .refine((data) => !data.recruitmentDeadline || !data.startsAt || data.recruitmentDeadline > data.startsAt, {
+        message: "Recruitment deadline must be after the campaign start date",
+        path: ["recruitmentDeadline"],
+    });
 
 export const campaignUpdateSchema = z
     .object({
-        title: z.string().min(2).max(120).optional(),
-        pitch: z.string().min(10).max(500).optional(),
-        problem: z.string().min(10).max(5000).optional(),
-        outcome: z.string().max(2000).optional().nullable(),
+        title: requiredTrimmedString(2, 120).optional(),
+        pitch: requiredTrimmedString(10, 500).optional(),
+        problem: requiredTrimmedString(10, 5000).optional(),
+        outcome: optionalNullableTrimmedString(2000),
         category: projectCategorySchema.optional(),
         language: projectLanguageSchema.optional(),
-        country: z.string().max(80).optional().nullable(),
+        country: optionalNullableTrimmedString(80),
         startsAt: z.coerce.date().optional().nullable(),
         recruitmentDeadline: z.coerce.date().optional().nullable(),
-        contactEmail: z.string().email().max(200).optional().nullable(),
-        coverImage: z.string().url().optional().nullable(),
+        contactEmail: z.string().trim().email().max(200).optional().nullable(),
+        coverImage: nullableUrlSchema,
         organizationId: idSchema.optional().nullable(),
         slug: slugSchema.optional(),
-        tags: z.array(z.string().min(1).max(40)).max(20).optional(),
+        tags: z.array(z.string().trim().min(1).max(40)).max(20).optional(),
     })
     .refine((data) => Object.keys(data).length > 0, {
         message: "At least one field is required",
         path: ["title"],
     })
-    .strip();
+    .strip()
+    .refine((data) => !data.recruitmentDeadline || !data.startsAt || data.recruitmentDeadline > data.startsAt, {
+        message: "Recruitment deadline must be after the campaign start date",
+        path: ["recruitmentDeadline"],
+    });
 
 export const campaignJoinCreateSchema = z
     .object({
         roleId: idSchema,
-        message: z.string().max(2000).optional().nullable(),
-        portfolioUrl: z.string().url().optional().nullable(),
+        message: optionalNullableTrimmedString(2000),
+        portfolioUrl: nullableUrlSchema,
         hoursPerWeek: z.coerce.number().int().min(0).max(168).optional().nullable(),
     })
     .strip();
@@ -289,16 +348,16 @@ export const campaignJoinUpdateSchema = z
 
 export const campaignMilestoneCreateSchema = z
     .object({
-        title: z.string().min(1).max(160),
-        description: z.string().max(1000).optional().nullable(),
+        title: requiredTrimmedString(1, 160),
+        description: optionalNullableTrimmedString(1000),
         order: z.coerce.number().int().min(0).max(100).optional(),
     })
     .strip();
 
 export const campaignMilestoneUpdateSchema = z
     .object({
-        title: z.string().min(1).max(160).optional(),
-        description: z.string().max(1000).optional().nullable(),
+        title: requiredTrimmedString(1, 160).optional(),
+        description: optionalNullableTrimmedString(1000),
         order: z.coerce.number().int().min(0).max(100).optional(),
         isDone: z.boolean().optional(),
     })
@@ -310,7 +369,7 @@ export const campaignMilestoneUpdateSchema = z
 
 export const adminCampaignActionSchema = z
     .object({
-        feedback: z.string().max(1000).optional().nullable(),
+        feedback: optionalNullableTrimmedString(1000),
     })
     .strip();
 
@@ -343,8 +402,8 @@ export const reportCreateSchema = z
     .object({
         targetType: z.enum(["PROJECT", "USER", "APPLICATION"]),
         targetId: idSchema,
-        reason: z.string().min(3).max(200),
-        details: z.string().max(1000).optional().nullable(),
+        reason: requiredTrimmedString(3, 200),
+        details: optionalNullableTrimmedString(1000),
     })
     .strip();
 
@@ -357,13 +416,13 @@ export const reportUpdateSchema = z
 export const projectStatusUpdateSchema = z
     .object({
         status: projectStatusSchema,
-        adminFeedback: z.string().max(1000).optional().nullable(),
+        adminFeedback: optionalNullableTrimmedString(1000),
     })
     .strip();
 
 export const notificationPatchSchema = z
     .object({
-        notificationIds: z.array(idSchema).optional(),
+        notificationIds: z.array(idSchema).max(100).optional(),
         markAllRead: z.boolean().optional(),
     })
     .strip()
@@ -375,7 +434,7 @@ export const notificationPatchSchema = z
 export const adminProjectActionSchema = z
     .object({
         action: z.enum(["approve", "reject", "feature", "unfeature"]).optional(),
-        feedback: z.string().max(1000).optional().nullable(),
+        feedback: optionalNullableTrimmedString(1000),
         featured: z.boolean().optional(),
     })
     .strip()
@@ -387,16 +446,20 @@ export const adminProjectActionSchema = z
 export const adminFeaturedUpdateSchema = z
     .object({
         projectId: idSchema,
-        featured: z.boolean().optional(),
+        featured: z.boolean(),
         featuredUntil: z.coerce.date().optional().nullable(),
     })
-    .strip();
+    .strip()
+    .refine((data) => !data.featured || !data.featuredUntil || data.featuredUntil.getTime() >= Date.now(), {
+        message: "Featured expiry date cannot be in the past",
+        path: ["featuredUntil"],
+    });
 
 export const applicationCreateSchema = z
     .object({
         projectId: idSchema,
-        message: z.string().max(2000).optional().nullable(),
-        portfolioUrl: z.string().url().optional().nullable(),
+        message: optionalNullableTrimmedString(2000),
+        portfolioUrl: nullableUrlSchema,
         hoursPerWeek: z.coerce.number().int().min(0).max(168).optional().nullable(),
     })
     .strip();
@@ -404,24 +467,21 @@ export const applicationCreateSchema = z
 export const applicationStatusUpdateSchema = z
     .object({
         status: z.enum(["ACCEPTED", "REJECTED"]),
-        feedback: z.string().max(1000).optional().nullable(),
+        feedback: optionalNullableTrimmedString(1000),
     })
     .strip();
 
 export const messageCreateSchema = z
     .object({
         applicationId: idSchema,
-        content: z
-            .string()
-            .max(2000)
-            .refine((value) => value.trim().length > 0, "Content is required"),
+        content: requiredTrimmedString(1, 2000),
     })
     .strip();
 
 export const onboardingSchema = z
     .object({
         type: z.enum(["CONTRIBUTOR", "CREATOR"]),
-        orgName: z.string().min(2).max(120).optional().nullable(),
+        orgName: requiredTrimmedString(2, 120).optional().nullable(),
     })
     .strip()
     .refine((data) => (data.type === "CREATOR" ? !!data.orgName : true), {
@@ -431,21 +491,21 @@ export const onboardingSchema = z
 
 export const profileUpdateSchema = z
     .object({
-        bio: z.string().max(800).optional().nullable(),
-        intentionStatement: z.string().max(800).optional().nullable(),
-        discord: z.string().max(64).optional().nullable(),
-        whatsapp: z.string().max(32).optional().nullable(),
+        bio: optionalNullableTrimmedString(800),
+        intentionStatement: optionalNullableTrimmedString(800),
+        discord: optionalNullableTrimmedString(64),
+        whatsapp: optionalNullableTrimmedString(32),
         isAvailable: z.boolean().optional(),
         hoursPerWeek: z.coerce.number().int().min(0).max(168).optional().nullable(),
-        selectedSkills: z.array(z.coerce.number().int().positive()).optional(),
+        selectedSkills: z.array(z.coerce.number().int().positive()).max(30).optional(),
     })
     .strip();
 
 export const portfolioCreateSchema = z
     .object({
-        title: z.string().min(1).max(120),
-        description: z.string().max(500).optional().nullable(),
-        url: z.string().url(),
+        title: requiredTrimmedString(1, 120),
+        description: optionalNullableTrimmedString(500),
+        url: urlSchema,
         contributorId: idSchema,
         order: z.coerce.number().int().min(0).optional(),
     })
@@ -464,7 +524,8 @@ export const portfolioReorderSchema = z
                     order: z.coerce.number().int().min(0),
                 })
             )
-            .min(1),
+            .min(1)
+            .max(50),
     })
     .strip();
 

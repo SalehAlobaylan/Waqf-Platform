@@ -6,6 +6,7 @@ import { campaignRoleUpdateSchema, idSchema, routeIdParamSchema } from "@/lib/va
 import { parseBody, parseParams } from "@/lib/validation/parse";
 import { makeNotFoundError, makeValidationError } from "@/lib/validation/errors";
 import { CampaignRoleStatus } from "@prisma/client";
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
 
 interface RouteParams {
     params: Promise<{ id: string; roleId: string }>;
@@ -16,6 +17,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     return withApiHandler(request, "api.campaigns.roles.update", async () => {
         const user = await requireAuthOrThrow();
         ctx.userId = user.id;
+
+        const rate = checkRateLimit(request, "campaign-role-update", { limit: 30, windowMs: 60_000 }, user.id);
+        if (!rate.allowed) {
+            return rateLimitedResponse(rate);
+        }
 
         const parsedParams = parseParams(await params, routeIdParamSchema.extend({ roleId: idSchema }));
         if (!parsedParams.success) {
@@ -82,6 +88,11 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     return withApiHandler(request, "api.campaigns.roles.delete", async () => {
         const user = await requireAuthOrThrow();
         ctx.userId = user.id;
+
+        const rate = checkRateLimit(request, "campaign-role-delete", { limit: 30, windowMs: 60_000 }, user.id);
+        if (!rate.allowed) {
+            return rateLimitedResponse(rate);
+        }
 
         const parsedParams = parseParams(await params, routeIdParamSchema.extend({ roleId: idSchema }));
         if (!parsedParams.success) {

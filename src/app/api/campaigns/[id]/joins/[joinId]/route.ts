@@ -9,6 +9,7 @@ import { acceptJoin, rejectJoin, withdrawJoin } from "@/lib/campaigns/joins";
 import { notifyContributorJoinDecision } from "@/lib/campaigns/notifications";
 import { DomainError } from "@/lib/campaigns/errors";
 import { log } from "@/lib/logger";
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
 
 interface RouteParams {
     params: Promise<{ id: string; joinId: string }>;
@@ -41,6 +42,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     return withApiHandler(request, "api.campaigns.joins.update", async () => {
         const user = await requireAuthOrThrow();
         ctx.userId = user.id;
+
+        const rate = checkRateLimit(request, "campaign-join-decision", { limit: 30, windowMs: 60_000 }, user.id);
+        if (!rate.allowed) {
+            return rateLimitedResponse(rate);
+        }
 
         const parsedParams = parseParams(await params, routeIdParamSchema.extend({ joinId: idSchema }));
         if (!parsedParams.success) {

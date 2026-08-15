@@ -5,12 +5,18 @@ import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { forbidden } from "@/lib/api/errors";
 import { portfolioReorderSchema } from "@/lib/validation/schemas";
 import { parseBody } from "@/lib/validation/parse";
+import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
 
 export async function PUT(request: NextRequest) {
     const ctx: ApiHandlerContext = {};
     return withApiHandler(request, "api.contributors.portfolio.reorder", async () => {
         const user = await requireAuthOrThrow();
         ctx.userId = user.id;
+
+        const rate = checkRateLimit(request, "portfolio-reorder", { limit: 30, windowMs: 60_000 }, user.id);
+        if (!rate.allowed) {
+            return rateLimitedResponse(rate);
+        }
 
         const parsedBody = await parseBody(request, portfolioReorderSchema);
         if (!parsedBody.success) {
