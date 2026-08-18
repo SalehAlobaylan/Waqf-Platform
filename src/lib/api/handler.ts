@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { isAppError, ErrorResponseBody } from "@/lib/api/errors";
 import { mapPrismaError } from "@/lib/api/prisma-errors";
 import { log } from "@/lib/logger";
+import { recordSystemError } from "@/lib/system-error-log";
 
 /**
  * Converts any thrown value into the standardized error response shape.

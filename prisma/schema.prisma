@@ -456,3 +456,26 @@ model CampaignMilestone {
 
   @@index([campaignId, order])
 }
+
+// ============ SYSTEM / OPS ============
+
+/**
+ * Persisted server error records (see Plan: Option B — self-contained error log).
+ * Written best-effort from the withApiHandler catch path so admin can triage
+ * production 5xx failures without an external monitoring service.
+ */
+model SystemErrorLog {
+  id        String   @id @default(cuid())
+  scope     String
+  code      String
+  status    Int
+  message   String
+  method    String
+  path      String
+  userId    String?
+  stack     String?
+  createdAt DateTime @default(now())
+
+  @@index([status, createdAt])
+  @@index([createdAt])
+}
