@@ -37,11 +37,8 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
-      - name: Sync database schema
-        run: npx prisma db push
-
-      - name: Mark initial migration as applied
-        run: npx prisma migrate resolve --applied 0001_init || true
+      - name: Apply database migrations
+        run: npx prisma migrate deploy
 
       - name: Seed database
         run: npm run db:seed
@@ -142,14 +139,20 @@ jobs:
       - name: Check for migration needed
         run: |
           npx prisma migrate diff \
-            --from-url "$DATABASE_URL" \
-            --to-schema-datamodel prisma/schema.prisma \
+            --from-config-datasource \
+            --to-schema prisma/schema.prisma \
             --script > migration.sql 2>&1 || true
 
-          if grep -q "SELECT COUNT" migration.sql; then
+          # Ignore the migration-managed full-text search index: Prisma cannot
+          # model the GIN/tsvector index or its trigger-managed function, so it
+          # is created by migration 0002 and always appears in the diff. Any
+          # other CREATE/ALTER/DROP means the database is genuinely out of sync.
+          grep -v 'project_search_idx' migration.sql > drift.sql || true
+
+          if grep -qE '^[[:space:]]*(CREATE|ALTER|DROP|TRUNCATE|INSERT)[[:space:]]' drift.sql; then
             echo "Database is out of sync with schema"
-            cat migration.sql
+            cat drift.sql
             exit 1
           else
-            echo "Database schema is in sync"
+            echo "Database schema is in sync (migration-managed full-text search index ignored)"
           fi

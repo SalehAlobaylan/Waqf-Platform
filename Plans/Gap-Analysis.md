@@ -350,3 +350,20 @@ running seeded app in the steps listed.
 6. Analytics + cron (Gap 6)
 7. README on-ramp (Gap 7)
 ```
+
+## 11. Database schema drift & full-text search index (resolved)
+
+The dev database had drifted from both the schema and the migration history:
+
+- `User.role` existed as `text` (migrations declare the `UserRole` enum) — `prisma db push` refused to proceed because it would have dropped and recreated the column, losing every role.
+- `Message_applicationId_idx` / `Message_senderId_idx` were missing (they are declared in the schema).
+- `project_search_idx` exists on the live DB and is **permanently unmappable**: Prisma cannot model a GIN index over an `Unsupported("tsvector")` column nor the trigger-managed function that fills it (created by migration `0002`).
+
+Resolution:
+
+- New migration `0003_fix_schema_drift` promotes `role` to the enum with a data-preserving `USING` cast (the `'USER'::text` default is dropped first), recreates the message indexes idempotently, and re-ensures the search index.
+- `npm run db:push` now runs `prisma migrate deploy` (additive-only sync). Running `prisma db push` directly will silently drop `project_search_idx` and break full-text search.
+- CI `db-check` was using Prisma-6 flags (`--from-url`, `--to-schema-datamodel`) that Prisma 7 removed, so it was passing on error text rather than an empty diff. It now uses `--from-config-datasource` / `--to-schema` and tolerates exactly the single migration-managed `project_search_idx` statement, failing on any other drift.
+- Optional: set `datasource.shadowDatabaseUrl` in `prisma.config.ts` to a disposable Neon branch if you want `migrate dev` / `migrate diff --from-migrations` to replay the chain locally.
+
+> Status note on Gap 1: implemented as a **self-contained system error log** (Option B — Prisma `SystemErrorLog` table + admin UI), not Sentry, per product decision.

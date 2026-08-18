@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
-    ScrollText,
     Loader2,
     RefreshCw,
     Trash2,
@@ -70,7 +69,7 @@ export function SystemLogViewer() {
     const handleClear = async () => {
         setClearing(true);
         try {
-            const res = await apiFetch<{ deleted: number }>("/api/admin/system-logs", {
+            await apiFetch<{ deleted: number }>("/api/admin/system-logs", {
                 method: "DELETE",
                 query: { olderThanDays: 30 },
             });

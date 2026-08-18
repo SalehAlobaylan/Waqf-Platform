@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "type-check": "tsc --noEmit",
-    "db:push": "prisma db push",
+    "db:push": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "db:backfill-usernames": "tsx prisma/backfill-usernames.ts",
     "db:studio": "prisma studio",
