@@ -92,6 +92,16 @@ export const pagePaginationSchema = z.object({
     limit: z.coerce.number().int().min(1).max(50).default(20),
 });
 
+/**
+ * Admin system-logs list query: extends pagination with optional status/code
+ * filters. Values are passed through parseQuery as raw strings, so both sides
+ * of the coerce handle the absent case gracefully.
+ */
+export const systemLogsQuerySchema = pagePaginationSchema.extend({
+    status: z.coerce.number().int().min(100).max(599).optional(),
+    code: z.string().trim().max(40).optional(),
+});
+
 export const sortSchema = z.enum(["recommended", "newest", "oldest"]).default("newest");
 
 export const userRoleSchema = z.enum(["USER", "ADMIN"]);

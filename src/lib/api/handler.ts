@@ -134,6 +134,23 @@ export async function withApiHandler(
             origin: origin.origin,
             userId: context?.userId,
         }, error);
+
+        // Persist server-side failures (5xx) for the admin System Logs page.
+        // Best-effort: recordSystemError never throws, so the response is
+        // unaffected by a failing log write.
+        if (status >= 500) {
+            await recordSystemError({
+                scope,
+                status,
+                code: body.code,
+                message: body.error,
+                method: request.method,
+                path,
+                userId: context?.userId,
+                stack: error instanceof Error ? error.stack ?? null : null,
+            });
+        }
+
         return NextResponse.json(body, { status });
     }
 }

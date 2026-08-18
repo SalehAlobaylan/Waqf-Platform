@@ -9,6 +9,7 @@
         "edit": "تعديل",
         "delete": "حذف",
         "loading": "جاري التحميل...",
+        "refresh": "تحديث",
         "notFound": "غير موجود",
         "goBack": "العودة",
         "previous": "السابق",
@@ -304,7 +305,15 @@
         "activeProjects": "المشاريع النشطة",
         "acceptanceRate": "نسبة القبول",
         "thisMonth": "هذا الشهر",
-        "thisWeek": "هذا الأسبوع"
+        "thisWeek": "هذا الأسبوع",
+        "systemLogs": "سجل النظام",
+        "systemLogsDescription": "سجلات أخطاء الخادم المسجلة تلقائيًا. لا يتم تخزين محتوى الطلبات أبدًا.",
+        "filterAll": "الكل",
+        "filterServerErrors": "أخطاء الخادم (5xx)",
+        "noLogs": "لا توجد سجلات أخطاء بعد",
+        "clearOld": "حذف السجلات الأقدم من 30 يومًا",
+        "logsCleared": "تم حذف السجلات القديمة",
+        "stackTrace": "تتبع الاستدعاء"
     },
     "onboarding": {
         "welcome": "مرحباً بك، {name}",
@@ -702,6 +711,7 @@
         "adminFeatured": "المشاريع المميزة | وقف",
         "adminReports": "البلاغات | وقف",
         "adminAnalytics": "التحليلات | وقف",
+        "adminSystemLogs": "سجل النظام | وقف",
         "adminCuratedProjects": "مشاريع منتقاة | وقف",
         "adminNewCuratedProject": "مشروع منتقى جديد | وقف",
         "adminEditCuratedProject": "تعديل مشروع منتقى | وقف",

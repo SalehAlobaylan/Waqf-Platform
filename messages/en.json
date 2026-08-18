@@ -9,6 +9,7 @@
         "edit": "Edit",
         "delete": "Delete",
         "loading": "Loading...",
+        "refresh": "Refresh",
         "notFound": "Not Found",
         "goBack": "Go Back",
         "previous": "Previous",
@@ -304,7 +305,15 @@
         "activeProjects": "Active Projects",
         "acceptanceRate": "Acceptance Rate",
         "thisMonth": "this month",
-        "thisWeek": "this week"
+        "thisWeek": "this week",
+        "systemLogs": "System Logs",
+        "systemLogsDescription": "Server-side error records captured automatically. Request bodies are never stored.",
+        "filterAll": "All",
+        "filterServerErrors": "5xx errors",
+        "noLogs": "No error logs recorded yet",
+        "clearOld": "Clear older than 30 days",
+        "logsCleared": "Old logs cleared",
+        "stackTrace": "Stack trace"
     },
     "onboarding": {
         "welcome": "Welcome, {name}",
@@ -702,6 +711,7 @@
         "adminFeatured": "Featured Projects | Waqf",
         "adminReports": "Reports | Waqf",
         "adminAnalytics": "Analytics | Waqf",
+        "adminSystemLogs": "System Logs | Waqf",
         "adminCuratedProjects": "Curated Projects | Waqf",
         "adminNewCuratedProject": "New Curated Project | Waqf",
         "adminEditCuratedProject": "Edit Curated Project | Waqf",

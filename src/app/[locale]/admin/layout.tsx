@@ -12,7 +12,8 @@ import {
     Shield,
     ChevronRight,
     Globe,
-    Megaphone
+    Megaphone,
+    ScrollText
 } from "lucide-react";
 
 type Props = {
@@ -73,6 +74,11 @@ export default async function AdminLayout({ params, children }: Props) {
             href: `/${locale}/admin/analytics`,
             icon: BarChart3,
             label: isAr ? "الإحصائيات" : "Analytics",
+        },
+        {
+            href: `/${locale}/admin/system-logs`,
+            icon: ScrollText,
+            label: isAr ? "سجل النظام" : "System Logs",
         },
     ];
 
