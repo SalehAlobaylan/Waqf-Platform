@@ -1,0 +1,19 @@
+name: Weekly Report
+
+on:
+  schedule:
+    # Monday 06:00 UTC
+    - cron: '0 6 * * 1'
+  workflow_dispatch: {}
+
+jobs:
+  send:
+    name: Send weekly summary email
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger weekly report endpoint
+        run: |
+          curl -fsS -X POST \
+            -H "x-cron-secret: ${{ secrets.WEEKLY_REPORT_SECRET }}" \
+            "${{ secrets.WEEKLY_REPORT_URL }}"

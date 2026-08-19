@@ -19,7 +19,7 @@
 | 3 | Rate-limit store is in-memory | Medium | M | Swap `Map` for Upstash/Vercel Redis behind the same API |
 | 4 | No unit tests for pure logic | Medium | M | Add Vitest; test matching engine, username slugify, schemas |
 | 5 | GitHub integration (PRD §6) | Medium | L | Reuse existing GitHub OAuth; fetch profile + top languages |
-| 6 | Product/traffic analytics | Low | S–M | Vercel Web Analytics + a Vercel Cron on the existing stats API |
+| 6 | Product/traffic analytics | Low | S–M | First-party page views or self-hosted Umami + a GitHub Actions weekly report |
 | 7 | Developer-onboarding README | Low | S | Replace boilerplate README with real setup/run/test docs |
 
 **Recommended order**: 1 → 2 → 3 → 4 first (protects what exists), then 5–7.
@@ -284,23 +284,49 @@ so the missing piece is *traffic/user-journey* data and *scheduled* reports.
 
 ### Simple solutions (independent, small)
 
-- **Traffic**: add Vercel Web Analytics (`@vercel/analytics` + `<Analytics />`
-  in the root layout, plus `@vercel/speed-insights` for Core Web Vitals). First
-  party, GDPR-friendly, one line.
-- **Weekly report**: add a Vercel Cron (`vercel.json` `crons`) hitting a small
-  route (e.g. `POST /api/admin/weekly-report`, admin-guarded via secret header)
-  that reuses `src/app/api/admin/stats/route.ts` queries and emails the numbers
+Constraint: **no Vercel-only tooling** — the app may move off Vercel to another
+PaaS, so both pieces must run on any host.
+
+- **Traffic** (decision deferred — both are provider-agnostic):
+  - **First-party Postgres** — a small `PageView` table + `POST
+    /api/analytics/ingest` route (no cookies, hashed IP / no PII), plus a
+    `<script>` or fetch tag in the root layout. Zero new infra or vendors; it is
+    "just your own Postgres", so it runs anywhere and the admin stats route can
+    read the same DB.
+  - **Self-hosted Umami** — run Umami (open-source, GDPR-friendly) as its own
+    instance on whatever PaaS you choose; richer dashboard, but one extra
+    service to deploy/configure.
+- **Weekly report**: add a **GitHub Actions `schedule:` workflow** (reliably
+  host-independent — GitHub is already the repo home) that hits a small route
+  (e.g. `POST /api/admin/weekly-report`, admin-guarded via a secret header)
+  reusing `src/app/api/admin/stats/route.ts` queries and emailing the numbers
   via the existing `sendEmail` (`src/lib/email.ts`).
 
 ### Why worth it
 
 You cannot tune onboarding or measure the north-star metric without *some*
-signal. These two give coverage with almost no code.
+signal. These two give coverage with almost no code and no vendor lock-in.
 
-**Verification**: view the Vercel Analytics dashboard after a deploy; confirm the
-cron fires in Vercel logs and the email arrives.
+**Verification**: with the first-party option, confirm page views land in the
+`PageView` table and show on the admin stats page after real traffic; with Umami,
+view its dashboard. Confirm the GitHub Actions `schedule` run fires (Actions log)
+and the email arrives.
 
 **Effort**: S–M. **Risk**: low.
+
+> Status note: direction agreed — weekly-report **cron will be a GitHub
+> Actions `schedule:` workflow**, not a Vercel Cron. Traffic-analytics provider
+> (first-party Postgres vs self-hosted Umami) is **deferred**; both remain
+> PaaS-agnostic. CSP stays report-only until the choice is made.
+>
+> Status note: the weekly report is **implemented** — `POST
+> /api/admin/weekly-report` (`src/app/api/admin/weekly-report/route.ts`),
+> guarded by a timing-safe `x-cron-secret` header (`WEEKLY_REPORT_SECRET`, 404
+> when unset), rate-limited, and emailed via the existing `sendEmail`. Stats are
+> shared with the admin page through `getPlatformStats` (`src/lib/stats.ts`).
+> The cron lives in `.github/workflows/weekly-report.yml` (`schedule:` Monday
+> 06:00 UTC + `workflow_dispatch`), so it runs from GitHub regardless of the
+> app host. Wire the Actions secrets `WEEKLY_REPORT_URL` + `WEEKLY_REPORT_SECRET`.
 
 ---
 
@@ -340,8 +366,10 @@ running seeded app in the steps listed.
   the matching engine safe to touch while building GitHub feature work.
 - Gaps 1 and 2 are both "one file + config" changes and can be done in the same
   working session with no interference.
-- Gap 2's CSP must be reconciled with Gap 5/6 later (script/connect directives
-  for analytics) — keep the CSP in report-only until those are decided.
+- Gap 2's CSP must be reconciled with Gap 6 later: first-party analytics needs
+  no new CSP directives (same origin), while self-hosted Umami would need its
+  host in `script-src`/`connect-src`. Keep the CSP report-only until the choice
+  is made.
 - The in-memory rate-limit fallback (Gap 3) keeps local dev and CI free of
   external accounts — important because the Playwright suite bursts through
   `/api/auth/*`.
@@ -354,7 +382,7 @@ running seeded app in the steps listed.
 3. Redis rate limits (Gap 3) — store swap, fallback to Map
 4. Vitest + unit tests (Gap 4) — protects engine/schemas before more features
 5. GitHub integration (Gap 5) — biggest feature; comes after the safety net
-6. Analytics + cron (Gap 6)
+6. GitHub Actions weekly-report cron (Gap 6) — then choose the analytics provider
 7. README on-ramp (Gap 7)
 ```
 

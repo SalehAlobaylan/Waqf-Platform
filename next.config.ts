@@ -17,7 +17,7 @@ const securityHeaders = [
 
 // Report-only until violations are measured (see Plans/Gap-Analysis.md §3).
 // Tighten (drop 'unsafe-inline'/'unsafe-eval') and switch to
-// Content-Security-Policy once Gap 5/6 directives are decided.
+// Content-Security-Policy once Gap 6's analytics provider is decided.
 const contentSecurityPolicy = [
     "default-src 'self'",
     "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
