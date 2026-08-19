@@ -55,6 +55,9 @@ jobs:
           ENABLE_DEV_LOGIN: "true"
           NEXT_PUBLIC_ENABLE_DEV_LOGIN: "true"
 
+      - name: Run Unit Tests
+        run: npm run test:unit
+
       - name: Run E2E Tests
         run: npm test
         env:

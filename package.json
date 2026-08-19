@@ -20,6 +20,7 @@
     "audit:check": "tsx scripts/check-audit.ts",
     "postinstall": "prisma generate",
     "test": "playwright test",
+    "test:unit": "vitest run",
     "test:validation": "playwright test tests/e2e/api",
     "test:validation:headed": "playwright test tests/e2e/api --headed",
     "test:ui": "playwright test --ui",
@@ -71,6 +72,7 @@
     "prisma": "^7.9.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.11",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.11"
   }
 }
