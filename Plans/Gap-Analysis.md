@@ -358,6 +358,11 @@ running seeded app in the steps listed.
 
 **Effort**: S. **Risk**: none.
 
+> Status note: implemented — `README.md` is now a real on-ramp covering the
+> setup/`.env`/seed/dev-sign-in flow, a verification-commands table, and links
+> to `PRODUCT.md`, `context/PRD.md`, `DESIGN.md`, `Plans/`, and
+> `tests/e2e/README.md`.
+
 ---
 
 ## 9. Cross-cutting notes & dependencies
