@@ -106,6 +106,26 @@ export const sortSchema = z.enum(["recommended", "newest", "oldest"]).default("n
 
 export const userRoleSchema = z.enum(["USER", "ADMIN"]);
 
+/**
+ * GitHub username: alphanumeric plus inner hyphens, 1-39 chars (GitHub's own
+ * naming rules). Trimmed before validation so stray whitespace is forgiven.
+ */
+export const githubUsernameSchema = z
+    .string()
+    .trim()
+    .min(1, "GitHub username is required")
+    .max(39, "GitHub username is too long")
+    .regex(
+        /^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$/,
+        "GitHub usernames may only contain letters, numbers, and single hyphens"
+    );
+
+/** PATCH /api/contributors/github body. `force` bypasses the fetch cache. */
+export const githubUpdateSchema = z.object({
+    username: githubUsernameSchema,
+    force: z.boolean().optional(),
+});
+
 export const projectStatusSchema = z.enum([
     "DRAFT",
     "PENDING",

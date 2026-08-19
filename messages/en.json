@@ -638,6 +638,17 @@
             "closeSkills": "Close skill selector",
             "searchSkillPlaceholder": "Search skills...",
             "noSkills": "No skills selected yet"
+        },
+        "github": {
+            "title": "GitHub",
+            "description": "Connect your GitHub to verify your skills and show your public stats on your profile card.",
+            "placeholder": "e.g. salehalobaylan",
+            "connect": "Connect GitHub",
+            "update": "Update",
+            "refresh": "Refresh",
+            "followers": "Followers",
+            "publicRepos": "Public repos",
+            "usernameRequired": "Enter a GitHub username first."
         }
     },
     "settings": {

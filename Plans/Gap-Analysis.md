@@ -263,6 +263,13 @@ profile card renders fetched data; confirm a bogus username returns a clean 400.
 **Effort**: L for the MVP (schema, route, UI, tests). **Risk**: low-medium —
 unauthenticated GitHub API has rate limits; cache and rate-limit accordingly.
 
+> Status note: implemented as the **MVP** — `PATCH /api/contributors/github`
+> (auth + rate-limited) validates and stores a `githubUsername`, fetches the
+> public profile over the unauthenticated API (`src/lib/github.ts`, 10-min
+> in-process cache, `force` bypass), and persists it in `githubData`. The
+> profile settings page renders the GitHub card (`GitHubCard.tsx`) with
+> update/refresh actions. No new dependency, no OAuth token exchange.
+
 ---
 
 ## 7. Gap 6 — Product/traffic analytics

@@ -638,6 +638,17 @@
             "closeSkills": "إغلاق قائمة المهارات",
             "searchSkillPlaceholder": "ابحث عن مهارة...",
             "noSkills": "لم يتم اختيار مهارات بعد"
+        },
+        "github": {
+            "title": "جيت هاب",
+            "description": "اربط حساب جيت هاب للتحقق من مهاراتك وعرض إحصائياتك العامة على بطاقة ملفك.",
+            "placeholder": "مثال: salehalobaylan",
+            "connect": "ربط جيت هاب",
+            "update": "تحديث",
+            "refresh": "تحديث البيانات",
+            "followers": "المتابعون",
+            "publicRepos": "المستودعات العامة",
+            "usernameRequired": "أدخل اسم مستخدم جيت هاب أولاً."
         }
     },
     "settings": {

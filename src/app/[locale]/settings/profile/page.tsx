@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
 import { EditProfileForm } from "@/components/profile/EditProfileForm";
+import { GitHubCard } from "@/components/profile/GitHubCard";
+import { parseGithubData } from "@/lib/github";
 import type { ContributorProfile, ContributorSkill, PortfolioItem } from "@prisma/client";
 
 export async function generateMetadata({
@@ -60,12 +62,20 @@ export default async function SettingsProfilePage({
     const userHandle = user?.username ?? user?.id ?? session.user.id;
 
     return (
-        <EditProfileForm
-            initialProfile={mainProfile as ContributorProfile}
-            initialSkills={transformedSkills as ContributorSkill[]}
-            initialPortfolio={portfolioItems as PortfolioItem[]}
-            locale={locale}
-            userHandle={userHandle}
-        />
+        <div>
+            <EditProfileForm
+                initialProfile={mainProfile as ContributorProfile}
+                initialSkills={transformedSkills as ContributorSkill[]}
+                initialPortfolio={portfolioItems as PortfolioItem[]}
+                locale={locale}
+                userHandle={userHandle}
+            />
+            <div className="mt-4 bg-white rounded-2xl border border-waqf-border p-6">
+                <GitHubCard
+                    initialUsername={profile.githubUsername}
+                    initialData={parseGithubData(profile.githubData)}
+                />
+            </div>
+        </div>
     );
 }
