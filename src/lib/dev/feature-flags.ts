@@ -1,12 +1,11 @@
 /**
- * Dev sign-in helper. Off by default. Requires BOTH:
- *   - ENABLE_DEV_LOGIN=true (explicit operator opt-in)
- *   - NODE_ENV !== "production" (safety net against prod enablement)
+ * Dev sign-in helper. Off by default. Requires explicit operator opt-in:
+ *   - ENABLE_DEV_LOGIN=true
  *
- * In production better-auth uses the `__Secure-` cookie prefix; this
- * helper writes the unprefixed name and would silently fail to mint a
- * session — hence the extra prod guard.
+ * WARNING: when enabled in production this endpoint allows anyone to sign
+ * in as any user (including admins) knowing only their email.
+ *
+ * Cookie naming follows better-auth: the `__Secure-` prefix is used on
+ * HTTPS (production) deployments.
  */
-export const DEV_LOGIN_ENABLED =
-    process.env.ENABLE_DEV_LOGIN === "true" &&
-    process.env.NODE_ENV !== "production";
+export const DEV_LOGIN_ENABLED = process.env.ENABLE_DEV_LOGIN === "true";

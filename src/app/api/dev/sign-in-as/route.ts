@@ -11,7 +11,10 @@ import { log } from "@/lib/logger";
 export const dynamic = "force-dynamic";
 
 const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
-const COOKIE_NAME = "better-auth.session_token";
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
+const COOKIE_NAME = IS_PRODUCTION
+    ? "__Secure-better-auth.session_token"
+    : "better-auth.session_token";
 
 function signCookieValue(value: string, secret: string): string {
     const signature = createHmac("sha256", secret)
@@ -27,11 +30,8 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Not found" }, { status: 404 });
         }
 
-        // Defense-in-depth: feature flag should already exclude production,
-        // but fail loudly if someone bypasses the env.
-        if (process.env.NODE_ENV === "production") {
-            log.error("api.dev.signInAs", "called in production — refusing");
-            return NextResponse.json({ error: "Not found" }, { status: 404 });
+        if (IS_PRODUCTION) {
+            log.warn("api.dev.signInAs", "dev sign-in used in production — ENABLE_DEV_LOGIN is on");
         }
 
         let body: { email?: string };
@@ -75,6 +75,7 @@ export async function POST(request: NextRequest) {
         cookieStore.set(COOKIE_NAME, signed, {
             httpOnly: true,
             sameSite: "lax",
+            secure: IS_PRODUCTION,
             path: "/",
             maxAge: SESSION_DURATION_MS / 1000,
         });
