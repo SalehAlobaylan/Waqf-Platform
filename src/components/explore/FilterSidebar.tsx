@@ -174,7 +174,7 @@ export function FilterSidebar({ filters, onFilterChange, skills, locale = "en" }
             {hasFilters && (
                 <div className="px-6 pb-6 flex flex-wrap gap-2">
                     {filters.category && (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary-50 text-primary-700 rounded-lg text-xs font-medium">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary-50 text-primary-700 rounded text-xs font-medium">
                             {categories.find((c) => c.value === filters.category)?.label[locale === "ar" ? "ar" : "en"]}
                             <button onClick={() => updateFilter("category", undefined)}>
                                 <X className="w-3 h-3" />
@@ -186,7 +186,7 @@ export function FilterSidebar({ filters, onFilterChange, skills, locale = "en" }
                         return (
                             <span
                                 key={skillId}
-                                className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary-50 text-primary-700 rounded-lg text-xs font-medium"
+                                className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary-50 text-primary-700 rounded text-xs font-medium"
                             >
                                 {locale === "ar" ? skill?.nameAr : skill?.name}
                                 <button onClick={() => toggleSkill(skillId)}>

@@ -116,3 +116,93 @@ html[dir="ltr"] body {
 html {
   scroll-behavior: smooth;
 }
+
+/* Hero load-in */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise {
+  animation: rise 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise {
+    animation: none;
+  }
+}
+
+/* Scroll reveal — CSS-only, no JS needed */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@supports (animation-timeline: view()) {
+  .reveal {
+    animation: fade-in linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 55%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal {
+      animation: none;
+    }
+  }
+}
+
+/* Headline underline draw */
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.draw {
+  stroke-dasharray: 220;
+  stroke-dashoffset: 220;
+  animation: draw 0.8s cubic-bezier(0.22, 1, 0.36, 1) 0.9s forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .draw {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Mobile menu drop-in */
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.menu-in {
+  animation: menu-in 0.25s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-in {
+    animation: none;
+  }
+}

@@ -7,7 +7,6 @@ import {
     FolderKanban,
     FileCheck,
     TrendingUp,
-    TrendingDown,
     Calendar,
     BarChart3,
     PieChart,
@@ -103,16 +102,17 @@ export function AnalyticsDashboard({ locale }: AnalyticsDashboardProps) {
     const totalProjectsByStatus = Object.values(stats.breakdown.projectsByStatus).reduce((a, b) => a + b, 0);
     const totalApplicationsByStatus = Object.values(stats.breakdown.applicationsByStatus).reduce((a, b) => a + b, 0);
 
+    // Palette mirrors the CSS tokens: slate-400, accent-500, primary scale
     const statusColors: Record<string, string> = {
         DRAFT: "#94a3b8",
-        PENDING: "#f59e0b",
-        OPEN: "#22c55e",
-        IN_PROGRESS: "#3b82f6",
-        COMPLETED: "#10b981",
-        CANCELLED: "#ef4444",
-        ACCEPTED: "#22c55e",
-        REJECTED: "#ef4444",
-        WITHDRAWN: "#6b7280",
+        PENDING: "#d4a056",
+        OPEN: "#1f705d",
+        IN_PROGRESS: "#258e78",
+        COMPLETED: "#195c4c",
+        CANCELLED: "#dc2626",
+        ACCEPTED: "#1f705d",
+        REJECTED: "#dc2626",
+        WITHDRAWN: "#94a3b8",
     };
 
     return (
@@ -162,7 +162,7 @@ export function AnalyticsDashboard({ locale }: AnalyticsDashboardProps) {
             {/* Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Project Status Breakdown */}
-                <div className="bg-white rounded-2xl border border-secondary-200 p-6">
+                <div className="bg-white rounded-lg border border-secondary-200 p-6">
                     <div className="flex items-center gap-3 mb-6">
                         <div className="p-2 rounded-lg bg-primary-100 text-primary-600">
                             <PieChart className="w-5 h-5" />
@@ -238,7 +238,7 @@ export function AnalyticsDashboard({ locale }: AnalyticsDashboardProps) {
                 </div>
 
                 {/* Application Status Breakdown */}
-                <div className="bg-white rounded-2xl border border-secondary-200 p-6">
+                <div className="bg-white rounded-lg border border-secondary-200 p-6">
                     <div className="flex items-center gap-3 mb-6">
                         <div className="p-2 rounded-lg bg-green-100 text-green-600">
                             <BarChart3 className="w-5 h-5" />
@@ -291,7 +291,7 @@ export function AnalyticsDashboard({ locale }: AnalyticsDashboardProps) {
 
             {/* Activity Summary */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white rounded-2xl border border-secondary-200 p-6">
+                <div className="bg-white rounded-lg border border-secondary-200 p-6">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="p-2 rounded-lg bg-blue-100 text-blue-600">
                             <Calendar className="w-5 h-5" />
@@ -325,7 +325,7 @@ export function AnalyticsDashboard({ locale }: AnalyticsDashboardProps) {
                     </div>
                 </div>
 
-                <div className="bg-white rounded-2xl border border-secondary-200 p-6">
+                <div className="bg-white rounded-lg border border-secondary-200 p-6">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="p-2 rounded-lg bg-amber-100 text-amber-600">
                             <FileCheck className="w-5 h-5" />
@@ -350,7 +350,7 @@ export function AnalyticsDashboard({ locale }: AnalyticsDashboardProps) {
                     </div>
                 </div>
 
-                <div className="bg-white rounded-2xl border border-secondary-200 p-6">
+                <div className="bg-white rounded-lg border border-secondary-200 p-6">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="p-2 rounded-lg bg-green-100 text-green-600">
                             <TrendingUp className="w-5 h-5" />
@@ -390,9 +390,9 @@ interface MetricCardProps {
 
 function MetricCard({ label, value, growth, growthLabel, icon: Icon, color }: MetricCardProps) {
     return (
-        <div className="bg-white rounded-2xl border border-secondary-200 p-6">
+        <div className="bg-white rounded-lg border border-secondary-200 p-6">
             <div className="flex items-start justify-between mb-4">
-                <div className={`p-3 rounded-xl ${color} text-white`}>
+                <div className={`p-3 rounded-md ${color} text-white`}>
                     <Icon className="w-5 h-5" />
                 </div>
                 {growth !== undefined && growth > 0 && (

@@ -97,25 +97,19 @@ export function CampaignsListClient({ initialCampaigns, total, pageSize }: Props
 
     return (
         <div className="max-w-[1280px] mx-auto px-4 md:px-10 py-10">
-            <header className="mb-8 flex flex-col gap-3">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-primary-600/10 text-primary-700 flex items-center justify-center">
-                        <Megaphone className="w-5 h-5" />
-                    </div>
-                    <h1 className="text-3xl md:text-4xl font-black tracking-tight text-secondary-900">
+            <header className="mb-8 flex items-end justify-between gap-6">
+                <div>
+                    <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-secondary-900">
                         {t("title")}
                     </h1>
+                    <p className="mt-2 text-secondary-500 max-w-2xl">{t("subtitle")}</p>
                 </div>
-                <p className="text-secondary-600 max-w-2xl">{t("subtitle")}</p>
-                <div className="mt-2">
-                    <Link
-                        href={`/${locale}/campaigns/new`}
-                        className="inline-flex items-center gap-2 rounded-xl h-11 px-5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-bold shadow-sm transition-colors"
-                    >
-                        <Megaphone className="w-4 h-4" />
-                        {t("startCampaign")}
-                    </Link>
-                </div>
+                <Link
+                    href={`/${locale}/campaigns/new`}
+                    className="shrink-0 inline-flex items-center gap-2 rounded-md h-10 px-5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-semibold transition-colors"
+                >
+                    {t("startCampaign")}
+                </Link>
             </header>
 
             <div className="mb-6 flex flex-col md:flex-row gap-3">
@@ -126,7 +120,7 @@ export function CampaignsListClient({ initialCampaigns, total, pageSize }: Props
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         placeholder={t("filters.searchPlaceholder")}
-                        className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-waqf-border bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-100 outline-none text-sm"
+                        className="w-full pl-10 pr-3 py-2.5 rounded-md border border-waqf-border bg-white focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none text-sm"
                     />
                 </div>
                 {hasFilters && (
@@ -139,7 +133,7 @@ export function CampaignsListClient({ initialCampaigns, total, pageSize }: Props
                 )}
             </div>
 
-            <div className="mb-8 flex flex-wrap gap-2">
+            <div className="mb-8 flex flex-wrap gap-x-5 gap-y-2 border-b border-waqf-border pb-3">
                 <FilterChip
                     active={!category}
                     onClick={() => setCategory(undefined)}
@@ -203,10 +197,10 @@ function FilterChip({
     return (
         <button
             onClick={onClick}
-            className={`rounded-full px-4 py-1.5 text-xs font-semibold border transition-colors ${
+            className={`-mb-[13px] border-b-2 pb-3 text-sm font-medium transition-colors ${
                 active
-                    ? "bg-primary-600 border-primary-600 text-white"
-                    : "bg-white border-waqf-border text-secondary-600 hover:border-primary-300"
+                    ? "border-primary-600 text-primary-700"
+                    : "border-transparent text-secondary-500 hover:text-secondary-900"
             }`}
         >
             {label}

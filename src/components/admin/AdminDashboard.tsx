@@ -13,7 +13,6 @@ import {
     CircleX,
     CircleAlert,
     ArrowUpRight,
-    ArrowDownRight
 } from "lucide-react";
 
 interface Stats {
@@ -87,7 +86,7 @@ export function AdminDashboard({ locale }: AdminDashboardProps) {
                 <div className="h-8 bg-secondary-200 rounded w-48"></div>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                     {[...Array(4)].map((_, i) => (
-                        <div key={i} className="h-32 bg-secondary-200 rounded-xl"></div>
+                        <div key={i} className="h-32 bg-secondary-200 rounded-md"></div>
                     ))}
                 </div>
             </div>
@@ -112,7 +111,7 @@ export function AdminDashboard({ locale }: AdminDashboardProps) {
             change: stats.growth.newUsersThisMonth,
             changeLabel: t("thisMonth"),
             icon: Users,
-            color: "bg-blue-500",
+            color: "bg-primary-600",
         },
         {
             label: t("totalProjects"),
@@ -128,7 +127,7 @@ export function AdminDashboard({ locale }: AdminDashboardProps) {
             change: stats.growth.newApplicationsThisWeek,
             changeLabel: t("thisWeek"),
             icon: FileCheck,
-            color: "bg-amber-500",
+            color: "bg-accent-500",
         },
         {
             label: t("acceptanceRate"),
@@ -136,7 +135,7 @@ export function AdminDashboard({ locale }: AdminDashboardProps) {
             change: null,
             changeLabel: "",
             icon: TrendingUp,
-            color: "bg-green-500",
+            color: "bg-primary-700",
         },
     ];
 
@@ -159,10 +158,10 @@ export function AdminDashboard({ locale }: AdminDashboardProps) {
                     return (
                         <div
                             key={index}
-                            className="bg-white rounded-2xl p-6 border border-secondary-100 shadow-sm"
+                            className="bg-white rounded-lg p-6 border border-secondary-100 shadow-sm"
                         >
                             <div className="flex items-start justify-between mb-4">
-                                <div className={`p-3 rounded-xl ${card.color} text-white`}>
+                                <div className={`p-3 rounded-md ${card.color} text-white`}>
                                     <Icon className="w-5 h-5" />
                                 </div>
                                 {card.change !== null && card.change > 0 && (
@@ -185,7 +184,7 @@ export function AdminDashboard({ locale }: AdminDashboardProps) {
             {/* Action Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Pending Projects */}
-                <div className="bg-white rounded-2xl p-6 border border-secondary-100 shadow-sm">
+                <div className="bg-white rounded-lg p-6 border border-secondary-100 shadow-sm">
                     <div className="flex items-center justify-between mb-6">
                         <div className="flex items-center gap-3">
                             <div className="p-2 rounded-lg bg-amber-100 text-amber-600">
@@ -212,7 +211,7 @@ export function AdminDashboard({ locale }: AdminDashboardProps) {
                         {stats.recent.projects.slice(0, 3).map((project) => (
                             <div
                                 key={project.id}
-                                className="flex items-center justify-between p-3 bg-secondary-50 rounded-xl"
+                                className="flex items-center justify-between p-3 bg-secondary-50 rounded-md"
                             >
                                 <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center text-sm font-bold text-primary-700">
@@ -234,7 +233,7 @@ export function AdminDashboard({ locale }: AdminDashboardProps) {
                 </div>
 
                 {/* Project Status Breakdown */}
-                <div className="bg-white rounded-2xl p-6 border border-secondary-100 shadow-sm">
+                <div className="bg-white rounded-lg p-6 border border-secondary-100 shadow-sm">
                     <h3 className="font-semibold text-secondary-900 mb-6">
                         {isAr ? "حالة المشاريع" : "Project Status"}
                     </h3>
@@ -266,7 +265,7 @@ export function AdminDashboard({ locale }: AdminDashboardProps) {
             </div>
 
             {/* Top Contributors */}
-            <div className="bg-white rounded-2xl p-6 border border-secondary-100 shadow-sm">
+            <div className="bg-white rounded-lg p-6 border border-secondary-100 shadow-sm">
                 <h3 className="font-semibold text-secondary-900 mb-6">
                     {isAr ? "أكثر المساهمين نشاطاً" : "Top Contributors"}
                 </h3>
@@ -275,7 +274,7 @@ export function AdminDashboard({ locale }: AdminDashboardProps) {
                     {stats.recent.topContributors.map((contributor, index) => (
                         <div
                             key={contributor.id}
-                            className="flex flex-col items-center p-4 bg-secondary-50 rounded-xl"
+                            className="flex flex-col items-center p-4 bg-secondary-50 rounded-md"
                         >
                             <div className="relative mb-3">
                                 <div className="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center text-lg font-bold text-primary-700">
@@ -301,9 +300,9 @@ export function AdminDashboard({ locale }: AdminDashboardProps) {
 
 function StatusBadge({ status }: { status: string }) {
     const config: Record<string, { icon: React.ElementType; color: string }> = {
-        PENDING: { icon: Clock, color: "bg-amber-100 text-amber-700" },
-        OPEN: { icon: CircleCheckBig, color: "bg-green-100 text-green-700" },
-        CANCELLED: { icon: CircleX, color: "bg-red-100 text-red-700" },
+        PENDING: { icon: Clock, color: "bg-accent-50 text-accent-700" },
+        OPEN: { icon: CircleCheckBig, color: "bg-primary-50 text-primary-700" },
+        CANCELLED: { icon: CircleX, color: "bg-red-50 text-red-700" },
     };
 
     const { icon: Icon, color } = config[status] || config.PENDING;

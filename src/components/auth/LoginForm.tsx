@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { Loader2, Mail, ArrowLeft, Zap } from "lucide-react";
-import { SiGithub, SiGooglechrome } from "@icons-pack/react-simple-icons";
+import { SiGithub, SiGoogle } from "@icons-pack/react-simple-icons";
 import { SEEDED_USERS } from "@/lib/dev/seeded-users";
 
 type Mode = "form" | "link-sent" | "otp-entry";
@@ -184,7 +184,7 @@ export function LoginForm() {
             {/* Header */}
             <div className="text-center mb-8">
                 <div className="flex justify-center mb-4">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 text-white font-bold text-2xl shadow-lg">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-primary-600/10 text-primary-700 font-arabic font-bold text-2xl">
                         و
                     </div>
                 </div>
@@ -206,7 +206,7 @@ export function LoginForm() {
                 <>
                     <button
                         onClick={handleGitHub}
-                        className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-secondary-900 text-white rounded-xl font-medium hover:bg-secondary-800 transition-all duration-200 mb-3 shadow-sm hover:shadow-md"
+                        className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-secondary-900 text-white rounded-md font-medium hover:bg-secondary-800 transition-colors mb-3"
                     >
                         <SiGithub size={20} />
                         {t("continueWithGitHub")}
@@ -214,9 +214,9 @@ export function LoginForm() {
 
                     <button
                         onClick={handleGoogle}
-                        className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white text-secondary-900 border border-secondary-200 rounded-xl font-medium hover:bg-secondary-50 transition-all duration-200 mb-6 shadow-sm hover:shadow-md"
+                        className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-white text-secondary-900 border border-waqf-border rounded-md font-medium hover:bg-secondary-50 transition-colors mb-6"
                     >
-                        <SiGooglechrome size={20} />
+                        <SiGoogle size={20} />
                         {t("continueWithGoogle")}
                     </button>
 
@@ -252,7 +252,7 @@ export function LoginForm() {
                                     placeholder={t("emailPlaceholder")}
                                     required
                                     dir="ltr"
-                                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-secondary-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 bg-secondary-50 focus:bg-white"
+                                    className="w-full pl-10 pr-4 py-3 rounded-md border border-waqf-border focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-colors bg-white"
                                 />
                             </div>
                         </div>
@@ -260,7 +260,7 @@ export function LoginForm() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-xl font-medium hover:from-primary-700 hover:to-primary-800 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            className="w-full py-3 bg-primary-600 text-white rounded-md font-semibold hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
                             {loading ? (
                                 <>
@@ -274,10 +274,10 @@ export function LoginForm() {
                     </form>
 
                     {IS_DEV && (
-                        <div className="mt-6 p-4 rounded-xl bg-amber-50 border border-amber-200">
+                        <div className="mt-6 p-4 rounded-lg bg-accent-50 border border-accent-200">
                             <div className="flex items-center gap-2 mb-3">
-                                <Zap size={14} className="text-amber-600" />
-                                <span className="text-xs font-semibold text-amber-800 uppercase tracking-wide">
+                                <Zap size={14} className="text-accent-700" />
+                                <span className="text-xs font-semibold text-accent-800">
                                     {t("devQuickSignIn")}
                                 </span>
                             </div>
@@ -290,7 +290,7 @@ export function LoginForm() {
                                             type="button"
                                             onClick={() => handleQuickSignIn(u.email)}
                                             disabled={quickSigningIn !== null}
-                                            className="px-3 py-2 text-sm font-medium bg-white text-amber-900 border border-amber-300 rounded-lg hover:bg-amber-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                                            className="px-3 py-2 text-sm font-medium bg-white text-secondary-900 border border-waqf-border rounded-md hover:bg-secondary-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
                                         >
                                             {isLoading ? (
                                                 <Loader2 className="animate-spin" size={14} />
@@ -377,7 +377,7 @@ export function LoginForm() {
                                 onChange={(e) => handleOtpChange(i, e.target.value)}
                                 onKeyDown={(e) => handleOtpKeyDown(i, e)}
                                 disabled={verifying}
-                                className="w-12 h-14 text-center text-2xl font-bold rounded-xl border border-secondary-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all duration-200 bg-secondary-50 focus:bg-white disabled:opacity-50"
+                                className="w-12 h-14 text-center text-2xl font-bold rounded-md border border-waqf-border focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition-colors bg-white disabled:opacity-50"
                             />
                         ))}
                     </div>

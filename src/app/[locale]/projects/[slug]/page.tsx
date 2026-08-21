@@ -5,9 +5,9 @@ import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import {
-    BookOpen, Heart, Star, Share2, SquareArrowOutUpRight,
-    Calendar, Users, Clock, CircleCheck, Circle,
-    ChevronRight, GitPullRequest, CircleAlert, Eye, Sparkles
+    Heart, Star, Share2, SquareArrowOutUpRight,
+    Calendar, Users, Clock,
+    ChevronRight, CircleAlert, Eye
 } from "lucide-react";
 import { SiGithub } from "@icons-pack/react-simple-icons";
 import { ViewTracker } from "@/components/projects/ViewTracker";
@@ -15,37 +15,13 @@ import { SimilarProjects } from "@/components/projects/SimilarProjects";
 import { StatusWorkflow } from "@/components/projects/StatusWorkflow";
 import { ReportButton } from "@/components/reports/ReportButton";
 import { ApplyButton } from "@/components/applications/ApplyButton";
+import { StatusBadge } from "@/components/ui/Badge";
+import { getCategoryLabel, getCategoryTint } from "@/lib/categories";
+import { cn } from "@/lib/utils";
 
 interface ProjectPageProps {
     params: Promise<{ locale: string; slug: string }>;
 }
-
-const categoryIcons: Record<string, { emoji: string; bgClass: string; textClass: string }> = {
-    QURAN: { emoji: "📖", bgClass: "bg-indigo-100", textClass: "text-indigo-700" },
-    PRAYER: { emoji: "🕌", bgClass: "bg-emerald-100", textClass: "text-emerald-700" },
-    CHARITY: { emoji: "🤲", bgClass: "bg-amber-100", textClass: "text-amber-700" },
-    EDUCATION: { emoji: "📚", bgClass: "bg-blue-100", textClass: "text-blue-700" },
-    COMMUNITY: { emoji: "👥", bgClass: "bg-purple-100", textClass: "text-purple-700" },
-    TOOLS: { emoji: "⚙️", bgClass: "bg-slate-100", textClass: "text-slate-700" },
-};
-
-const categoryLabels: Record<string, { en: string; ar: string }> = {
-    QURAN: { en: "Quran", ar: "القرآن" },
-    PRAYER: { en: "Prayer", ar: "الصلاة" },
-    CHARITY: { en: "Charity", ar: "الصدقة" },
-    EDUCATION: { en: "Education", ar: "التعليم" },
-    COMMUNITY: { en: "Community", ar: "المجتمع" },
-    TOOLS: { en: "Tools", ar: "الأدوات" },
-};
-
-const statusLabels: Record<string, { en: string; ar: string; color: string }> = {
-    DRAFT: { en: "Draft", ar: "مسودة", color: "bg-secondary-100 text-secondary-600" },
-    PENDING: { en: "Pending Review", ar: "قيد المراجعة", color: "bg-amber-100 text-amber-700" },
-    OPEN: { en: "Open", ar: "مفتوح", color: "bg-green-100 text-green-700" },
-    IN_PROGRESS: { en: "In Progress", ar: "قيد التنفيذ", color: "bg-blue-100 text-blue-700" },
-    COMPLETED: { en: "Completed", ar: "مكتمل", color: "bg-primary-100 text-primary-700" },
-    CANCELLED: { en: "Cancelled", ar: "ملغى", color: "bg-red-100 text-red-700" },
-};
 
 export async function generateMetadata({ params }: ProjectPageProps) {
     const { slug } = await params;
@@ -64,7 +40,6 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     const { locale, slug } = await params;
     const session = await auth.api.getSession({ headers: await headers() });
     const t = await getTranslations({ locale, namespace: "projectDetail" });
-    const tc = await getTranslations({ locale, namespace: "common" });
 
     const project = await prisma.project.findUnique({
         where: { slug },
@@ -103,9 +78,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
         : null;
     const requiredSkills = project.skills.filter((s) => s.isRequired);
     const optionalSkills = project.skills.filter((s) => !s.isRequired);
-    const icon = categoryIcons[project.category] || { emoji: "📦", bgClass: "bg-gray-100", textClass: "text-gray-700" };
-    const catLabel = categoryLabels[project.category];
-    const stLabel = statusLabels[project.status];
+    const tint = getCategoryTint(project.category);
 
     return (
         <div className="min-h-screen bg-waqf-bg">
@@ -119,9 +92,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                         {t("breadcrumbs.explore")}
                     </Link>
                     <ChevronRight className="w-3.5 h-3.5 rtl:rotate-180" />
-                    <span className="text-secondary-400">
-                        {catLabel ? catLabel[locale as "ar" | "en"] : project.category}
-                    </span>
+                    <span>{getCategoryLabel(project.category, locale)}</span>
                     <ChevronRight className="w-3.5 h-3.5 rtl:rotate-180" />
                     <span className="text-secondary-900 font-medium truncate max-w-[200px]">{project.title}</span>
                 </nav>
@@ -130,7 +101,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             {/* Featured Image */}
             {project.featuredImage && (
                 <div className="max-w-[1280px] mx-auto px-6 pt-4">
-                    <div className="rounded-2xl overflow-hidden border border-waqf-border shadow-sm">
+                    <div className="rounded-lg overflow-hidden border border-waqf-border">
                         <img src={project.featuredImage} alt={project.title} className="w-full h-64 md:h-80 object-cover" />
                     </div>
                 </div>
@@ -139,14 +110,13 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             {/* External / Curated Banner */}
             {isExternal && project.externalUrl && (
                 <div className="max-w-[1280px] mx-auto px-6 pt-4">
-                    <div className="rounded-2xl border border-purple-200 bg-gradient-to-br from-purple-50 to-white p-6 md:p-8 shadow-sm">
+                    <div className="rounded-lg border border-accent-200 bg-accent-50/60 p-6 md:p-8">
                         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                             <div className="flex-1">
-                                <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold mb-2">
-                                    <Sparkles className="w-3.5 h-3.5" />
+                                <p className="text-xs font-semibold text-accent-700 mb-2">
                                     {t("curatedByWaqf")}
-                                </div>
-                                <h2 className="text-xl md:text-2xl font-bold text-secondary-900 mb-1">
+                                </p>
+                                <h2 className="text-xl md:text-2xl font-bold tracking-tight text-secondary-900 mb-1">
                                     {t("externalProjectNotice")}
                                 </h2>
                                 <p className="text-sm text-secondary-600">
@@ -163,7 +133,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                                     href={project.externalUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-colors shadow-md shadow-primary-600/20"
+                                    className="inline-flex items-center justify-center gap-2 px-6 h-12 bg-primary-600 text-white font-semibold rounded-md hover:bg-primary-700 transition-colors"
                                 >
                                     {t("visitProject")}
                                     <SquareArrowOutUpRight className="w-4 h-4" />
@@ -171,7 +141,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                                 {project.externalOwnerContact && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(project.externalOwnerContact) && (
                                     <a
                                         href={`mailto:${project.externalOwnerContact}`}
-                                        className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-white border border-secondary-200 text-secondary-700 font-medium rounded-xl hover:bg-secondary-50 transition-colors"
+                                        className="inline-flex items-center justify-center gap-2 px-5 h-12 bg-white border border-waqf-border text-secondary-700 font-semibold rounded-md hover:bg-secondary-50 transition-colors"
                                     >
                                         {t("contactOwner")}
                                     </a>
@@ -181,105 +151,96 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                     </div>
                 </div>
             )}
-
-            {/* Hero Card */}
-            <div className="max-w-[1280px] mx-auto px-6 py-6">
-                <div className="bg-white rounded-2xl border border-waqf-border p-8 shadow-sm">
-                    <div className="flex flex-col md:flex-row md:items-start gap-6">
-                        <div className={`w-14 h-14 ${icon.bgClass} rounded-2xl flex items-center justify-center text-2xl shrink-0`}>
-                            {icon.emoji}
+            
+            {/* Editorial header */}
+            <header className="max-w-[1280px] mx-auto px-6 pt-8 pb-8 border-b border-waqf-border">
+                <div className="flex flex-wrap items-center gap-3 mb-4">
+                    <StatusBadge status={project.status} locale={locale} />
+                    <span className={cn("rounded px-1.5 py-0.5 text-xs font-semibold", tint.bg, tint.text)}>
+                        {getCategoryLabel(project.category, locale)}
+                    </span>
+                    {project.status === "OPEN" && !isExternal && (
+                        <span className="text-xs font-semibold text-primary-600 flex items-center gap-1.5">
+                            <Heart className="w-3.5 h-3.5" fill="currentColor" />
+                            {t("helpWanted")}
+                        </span>
+                    )}
+                </div>
+                <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
+                    <div className="max-w-2xl">
+                        <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-secondary-900 mb-3">
+                            {project.title}
+                        </h1>
+                        <p className="text-secondary-500 leading-relaxed">
+                            {project.description?.slice(0, 220)}
+                        </p>
+                    </div>
+                    <div className="flex flex-wrap gap-3 shrink-0 items-start">
+                        {isExternal && project.externalUrl ? (
+                            <a
+                                href={project.externalUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center justify-center gap-2 px-6 h-12 bg-primary-600 text-white font-semibold rounded-md hover:bg-primary-700 transition-colors"
+                            >
+                                {t("visitProject")}
+                                <SquareArrowOutUpRight className="w-4 h-4" />
+                            </a>
+                        ) : isOwner ? (
+                            <Link
+                                href={`/${locale}/projects/${project.slug}/edit`}
+                                className="flex items-center justify-center gap-2 px-6 h-12 bg-primary-600 text-white font-semibold rounded-md hover:bg-primary-700 transition-colors"
+                            >
+                                {t("editProject")}
+                            </Link>
+                        ) : !session ? (
+                            <Link
+                                href={`/${locale}/login`}
+                                className="flex items-center justify-center gap-2 px-6 h-12 bg-primary-600 text-white font-semibold rounded-md hover:bg-primary-700 transition-colors"
+                            >
+                                {t("contributeNow")}
+                            </Link>
+                        ) : project.status === "OPEN" ? (
+                            <ApplyButton
+                                project={{
+                                    id: project.id,
+                                    title: project.title,
+                                    slug: project.slug,
+                                }}
+                                existingApplicationId={myApplication?.id}
+                            />
+                        ) : null}
+                        <div className="flex gap-2">
+                            <button aria-label={t("star")} className="flex items-center gap-2 px-4 h-10 border border-waqf-border rounded-md bg-white hover:bg-secondary-50 transition-colors text-sm font-medium text-secondary-700">
+                                <Star className="w-4 h-4" />
+                                {t("star")}
+                            </button>
+                            <button aria-label={t("share")} className="flex items-center gap-2 px-4 h-10 border border-waqf-border rounded-md bg-white hover:bg-secondary-50 transition-colors text-sm font-medium text-secondary-700">
+                                <Share2 className="w-4 h-4" />
+                                {t("share")}
+                            </button>
                         </div>
-                        <div className="flex-1">
-                            <div className="flex flex-wrap gap-2 mb-3">
-                                <span className={`px-3 py-1 text-xs font-semibold rounded-full ${stLabel?.color || "bg-secondary-100 text-secondary-600"}`}>
-                                    {stLabel ? stLabel[locale as "ar" | "en"] : project.status}
-                                </span>
-                                {isExternal && (
-                                    <span className="px-3 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-700 inline-flex items-center gap-1">
-                                        <SquareArrowOutUpRight className="w-3 h-3" />
-                                        {t("externalBadge")}
-                                    </span>
-                                )}
-                                {project.status === "OPEN" && !isExternal && (
-                                    <span className="px-3 py-1 text-xs font-semibold rounded-full bg-accent-500/10 text-accent-600">
-                                        {t("helpWanted")}
-                                    </span>
-                                )}
-                            </div>
-                            <h1 className="text-2xl md:text-3xl font-bold text-secondary-900 mb-3 tracking-tight">
-                                {project.title}
-                            </h1>
-                            <p className="text-secondary-500 max-w-2xl leading-relaxed">
-                                {project.description?.slice(0, 180)}
-                            </p>
-                        </div>
-                        <div className="flex flex-wrap gap-3 shrink-0 md:flex-col">
-                            {isExternal && project.externalUrl ? (
-                                <a
-                                    href={project.externalUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-colors shadow-md shadow-primary-600/20"
-                                >
-                                    {t("visitProject")}
-                                    <SquareArrowOutUpRight className="w-4 h-4" />
-                                </a>
-                            ) : isOwner ? (
-                                <Link
-                                    href={`/${locale}/projects/${project.slug}/edit`}
-                                    className="flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-colors shadow-md shadow-primary-600/20"
-                                >
-                                    {t("editProject")}
-                                </Link>
-                            ) : !session ? (
-                                <Link
-                                    href={`/${locale}/login`}
-                                    className="flex items-center justify-center gap-2 px-6 py-3 bg-primary-600 text-white font-bold rounded-xl hover:bg-primary-700 transition-colors shadow-md shadow-primary-600/20"
-                                >
-                                    {t("contributeNow")}
-                                </Link>
-                            ) : project.status === "OPEN" ? (
-                                <ApplyButton
-                                    project={{
-                                        id: project.id,
-                                        title: project.title,
-                                        slug: project.slug,
-                                    }}
-                                    existingApplicationId={myApplication?.id}
-                                />
-                            ) : null}
-                            <div className="flex gap-2">
-                                <button aria-label={t("star")} className="flex items-center gap-2 px-4 py-2.5 border border-secondary-200 rounded-xl bg-white hover:bg-secondary-50 transition-colors text-sm font-medium text-secondary-700">
-                                    <Star className="w-4 h-4" />
-                                    {t("star")}
-                                </button>
-                                <button aria-label={t("share")} className="flex items-center gap-2 px-4 py-2.5 border border-secondary-200 rounded-xl bg-white hover:bg-secondary-50 transition-colors text-sm font-medium text-secondary-700">
-                                    <Share2 className="w-4 h-4" />
-                                    {t("share")}
-                                </button>
-                            </div>
-                            {!isOwner && (
-                                <ReportButton targetType="PROJECT" targetId={project.id} />
-                            )}
-                        </div>
+                        {!isOwner && (
+                            <ReportButton targetType="PROJECT" targetId={project.id} />
+                        )}
                     </div>
                 </div>
-            </div>
+            </header>
 
             {/* Admin Feedback Banner (for project owner) */}
             {isOwner && project.adminFeedback && project.status === "DRAFT" && (
-                <div className="max-w-[1280px] mx-auto px-6 pb-4">
-                    <div className="p-5 rounded-2xl bg-amber-50 border border-amber-200">
+                <div className="max-w-[1280px] mx-auto px-6 pt-6">
+                    <div className="p-5 rounded-lg bg-accent-50 border border-accent-200">
                         <div className="flex items-start gap-3">
-                            <CircleAlert className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                            <CircleAlert className="w-5 h-5 text-accent-700 shrink-0 mt-0.5" />
                             <div>
-                                <h3 className="font-bold text-amber-800 mb-1">
+                                <h3 className="font-bold text-accent-800 mb-1">
                                     {t("adminFeedbackTitle")}
                                 </h3>
-                                <p className="text-sm text-amber-700">
+                                <p className="text-sm text-accent-800/80">
                                     {t("adminFeedbackDesc")}
                                 </p>
-                                <p className="mt-2 text-amber-900 bg-amber-100 rounded-xl p-3 text-sm">{project.adminFeedback}</p>
+                                <p className="mt-2 text-secondary-800 bg-white rounded-md p-3 text-sm border border-accent-100">{project.adminFeedback}</p>
                             </div>
                         </div>
                     </div>
@@ -287,142 +248,82 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             )}
 
             {/* 8+4 Grid Layout */}
-            <div className="max-w-[1280px] mx-auto px-6 pb-12">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div className="max-w-[1280px] mx-auto px-6 py-10">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
                     {/* Main Content (8 cols) */}
-                    <div className="lg:col-span-8 space-y-6">
+                    <div className="lg:col-span-8 space-y-10">
                         {/* Project Impact */}
                         {project.impact && (
-                            <div className="rounded-2xl p-6 bg-gradient-to-br from-primary-600 to-primary-800 text-white relative overflow-hidden">
-                                <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -mr-10 -mt-10"></div>
-                                <div className="relative z-10">
-                                    <div className="flex items-center gap-2 mb-3">
+                            <section className="relative overflow-hidden rounded-lg p-6 md:p-8 bg-primary-950 text-white">
+                                <div
+                                    aria-hidden
+                                    className="absolute inset-0 opacity-[0.06]"
+                                    style={{
+                                        backgroundImage:
+                                            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.55' stroke-width='1'%3E%3Crect x='18' y='18' width='36' height='36'/%3E%3Crect x='18' y='18' width='36' height='36' transform='rotate(45 36 36)'/%3E%3C/g%3E%3C/svg%3E\")",
+                                    }}
+                                />
+                                <div className="relative">
+                                    <span aria-hidden className="block w-6 h-0.5 bg-accent-500 mb-4" />
+                                    <h2 className="text-lg font-bold tracking-tight mb-2 flex items-center gap-2">
                                         <Heart className="w-5 h-5 text-accent-400" fill="currentColor" />
-                                        <h2 className="text-lg font-bold">
-                                            {t("projectImpact")}
-                                        </h2>
-                                    </div>
-                                    <p className="text-white/90 leading-relaxed">{project.impact}</p>
+                                        {t("projectImpact")}
+                                    </h2>
+                                    <p className="text-primary-100 leading-relaxed">{project.impact}</p>
                                 </div>
-                            </div>
+                            </section>
                         )}
 
                         {/* About / README */}
-                        <div className="bg-white rounded-2xl border border-waqf-border p-6">
-                            <h2 className="text-lg font-bold text-secondary-900 mb-4 flex items-center gap-2">
-                                <BookOpen className="w-5 h-5 text-secondary-400" />
+                        <section>
+                            <h2 className="text-lg font-bold tracking-tight text-secondary-900 mb-4 pb-3 border-b border-waqf-border">
                                 {t("aboutThisProject")}
                             </h2>
-                            <div className="prose prose-secondary max-w-none">
-                                <p className="text-secondary-700 whitespace-pre-wrap leading-relaxed">{project.description}</p>
-                            </div>
-                        </div>
+                            <p className="text-secondary-700 whitespace-pre-wrap leading-relaxed">{project.description}</p>
+                        </section>
 
-                        {/* Required Skills */}
-                        <div className="bg-white rounded-2xl border border-waqf-border p-6">
-                            <h2 className="text-lg font-bold text-secondary-900 mb-4">
-                                {t("requiredSkills")}
-                            </h2>
-
-                            {requiredSkills.length > 0 && (
-                                <div className="mb-5">
-                                    <p className="text-sm font-medium text-secondary-500 mb-3">
-                                        {t("required")}
-                                    </p>
-                                    <div className="flex flex-wrap gap-2">
-                                        {requiredSkills.map((ps) => (
-                                            <span
-                                                key={ps.skillId}
-                                                className="px-3 py-1.5 bg-primary-50 text-primary-700 border border-primary-200 rounded-lg text-sm font-medium"
-                                            >
-                                                {locale === "ar" ? ps.skill.nameAr : ps.skill.name}
-                                            </span>
-                                        ))}
+                        {/* Skills */}
+                        {(requiredSkills.length > 0 || optionalSkills.length > 0) && (
+                            <section>
+                                <h2 className="text-lg font-bold tracking-tight text-secondary-900 mb-4 pb-3 border-b border-waqf-border">
+                                    {t("requiredSkills")}
+                                </h2>
+                                {requiredSkills.length > 0 && (
+                                    <div className="mb-5">
+                                        <p className="text-xs font-semibold text-secondary-500 mb-3">
+                                            {t("required")}
+                                        </p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {requiredSkills.map((ps) => (
+                                                <span
+                                                    key={ps.skillId}
+                                                    className="px-2.5 py-1 bg-primary-50 text-primary-700 border border-primary-200 rounded text-sm font-medium"
+                                                >
+                                                    {locale === "ar" ? ps.skill.nameAr : ps.skill.name}
+                                                </span>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
-                            )}
-
-                            {optionalSkills.length > 0 && (
-                                <div>
-                                    <p className="text-sm font-medium text-secondary-500 mb-3">
-                                        {t("niceToHave")}
-                                    </p>
-                                    <div className="flex flex-wrap gap-2">
-                                        {optionalSkills.map((ps) => (
-                                            <span
-                                                key={ps.skillId}
-                                                className="px-3 py-1.5 bg-secondary-50 text-secondary-600 rounded-lg text-sm"
-                                            >
-                                                {locale === "ar" ? ps.skill.nameAr : ps.skill.name}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Roadmap */}
-                        <div className="bg-white rounded-2xl border border-waqf-border p-6">
-                            <h2 className="text-lg font-bold text-secondary-900 mb-4">
-                                {t("roadmap")}
-                            </h2>
-                            <div className="space-y-4">
-                                {[
-                                    { key: "infra", done: true },
-                                    { key: "design", done: true },
-                                    { key: "core", done: false },
-                                    { key: "deploy", done: false },
-                                ].map((item, i) => (
-                                    <div key={i} className="flex items-center gap-3">
-                                        {item.done ? (
-                                            <CircleCheck className="w-5 h-5 text-primary-600 shrink-0" />
-                                        ) : (
-                                            <Circle className="w-5 h-5 text-secondary-300 shrink-0" />
-                                        )}
-                                        <span className={`text-sm ${item.done ? "text-secondary-900 font-medium" : "text-secondary-500"}`}>
-                                            {t(`roadmapSteps.${item.key}`)}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Recent Activity */}
-                        <div className="bg-white rounded-2xl border border-waqf-border p-6">
-                            <h2 className="text-lg font-bold text-secondary-900 mb-4">
-                                {t("recentActivity")}
-                            </h2>
-                            <div className="space-y-4">
-                                <div className="flex items-start gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center shrink-0 mt-0.5">
-                                        <GitPullRequest className="w-4 h-4" />
-                                    </div>
+                                )}
+                                {optionalSkills.length > 0 && (
                                     <div>
-                                        <p className="text-sm text-secondary-900">
-                                            <span className="font-medium">{t("activity.prMerged")}</span>{" "}
-                                            {t("activity.prMergedTitle")}
+                                        <p className="text-xs font-semibold text-secondary-500 mb-3">
+                                            {t("niceToHave")}
                                         </p>
-                                        <p className="text-xs text-secondary-400 mt-1">
-                                            {t("activity.prMergedTime")}
-                                        </p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {optionalSkills.map((ps) => (
+                                                <span
+                                                    key={ps.skillId}
+                                                    className="px-2.5 py-1 bg-secondary-50 text-secondary-600 border border-waqf-border rounded text-sm"
+                                                >
+                                                    {locale === "ar" ? ps.skill.nameAr : ps.skill.name}
+                                                </span>
+                                            ))}
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="flex items-start gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0 mt-0.5">
-                                        <CircleAlert className="w-4 h-4" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm text-secondary-900">
-                                            <span className="font-medium">{t("activity.issue")}</span>{" "}
-                                            {t("activity.issueTitle")}
-                                        </p>
-                                        <p className="text-xs text-secondary-400 mt-1">
-                                            {t("activity.issueTime")}
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                                )}
+                            </section>
+                        )}
                     </div>
 
                     {/* Sidebar (4 cols) */}
@@ -438,7 +339,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                         )}
 
                         {/* Project Details */}
-                        <div className="bg-white rounded-2xl border border-waqf-border p-6 sticky top-[80px]">
+                        <div className="bg-white rounded-lg border border-waqf-border p-6 sticky top-[80px]">
                             <h3 className="text-sm font-semibold text-secondary-900 mb-4">
                                 {t("details")}
                             </h3>
@@ -448,7 +349,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                                         <Calendar className="w-4 h-4" />
                                         {t("created")}
                                     </dt>
-                                    <dd className="font-medium text-secondary-900">
+                                    <dd className="font-medium text-secondary-900 tabular-nums">
                                         {new Date(project.createdAt).toLocaleDateString(locale === "ar" ? "ar-SA" : "en-US", {
                                             year: "numeric",
                                             month: "short",
@@ -462,18 +363,25 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                                                 <Users className="w-4 h-4" />
                                                 {t("applicants")}
                                             </dt>
-                                            <dd className="font-medium text-secondary-900">{project._count.applications}</dd>
+                                            <dd className="font-medium text-secondary-900 tabular-nums">{project._count.applications}</dd>
                                         </div>
                                         <div className="flex justify-between">
                                             <dt className="text-secondary-500 flex items-center gap-1.5">
                                                 <Eye className="w-4 h-4" />
                                                 {t("views")}
                                             </dt>
-                                            <dd className="font-medium text-secondary-900">{project.viewCount}</dd>
+                                            <dd className="font-medium text-secondary-900 tabular-nums">{project.viewCount}</dd>
+                                        </div>
+                                        <div className="flex justify-between">
+                                            <dt className="text-secondary-500 flex items-center gap-1.5">
+                                                <Clock className="w-4 h-4" />
+                                                {t("commitment")}
+                                            </dt>
+                                            <dd className="font-medium text-secondary-900">{project.timeCommitment}</dd>
                                         </div>
                                     </>
                                 )}
-                                {project.timeCommitment && (
+                                {isExternal && project.timeCommitment && (
                                     <div className="flex justify-between">
                                         <dt className="text-secondary-500 flex items-center gap-1.5">
                                             <Clock className="w-4 h-4" />
@@ -487,7 +395,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
                         {/* Tech Stack */}
                         {project.skills.length > 0 && (
-                            <div className="bg-white rounded-2xl border border-waqf-border p-6">
+                            <div className="bg-white rounded-lg border border-waqf-border p-6">
                                 <h3 className="text-sm font-semibold text-secondary-900 mb-3">
                                     {t("techStack")}
                                 </h3>
@@ -495,7 +403,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                                     {project.skills.slice(0, 6).map((ps) => (
                                         <span
                                             key={ps.skillId}
-                                            className="px-3 py-1.5 bg-secondary-50 text-secondary-700 rounded-lg text-xs font-medium"
+                                            className="px-2.5 py-1 bg-secondary-50 text-secondary-700 border border-waqf-border rounded text-xs font-medium"
                                         >
                                             {locale === "ar" ? ps.skill.nameAr : ps.skill.name}
                                         </span>
@@ -505,60 +413,60 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                         )}
 
                         {/* Repository / External Link */}
-                        <div className="bg-white rounded-2xl border border-waqf-border p-6">
-                            <h3 className="text-sm font-semibold text-secondary-900 mb-3">
-                                {t("links")}
-                            </h3>
-                            <div className="space-y-2">
-                                {isExternal && project.externalUrl && (
-                                    <a
-                                        href={project.externalUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center gap-3 p-3 rounded-xl border border-secondary-200 hover:border-primary-600/40 hover:bg-primary-50/50 transition-all group"
-                                    >
-                                        <SquareArrowOutUpRight className="w-5 h-5 text-secondary-500 group-hover:text-primary-600" />
-                                        <span className="text-sm font-medium text-secondary-700 group-hover:text-primary-600">
-                                            {t("visitProject")}
-                                        </span>
-                                        <SquareArrowOutUpRight className="w-3.5 h-3.5 text-secondary-400 ms-auto" />
-                                    </a>
-                                )}
-                                {!isExternal && project.githubUrl && (
-                                    <a
-                                        href={project.githubUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center gap-3 p-3 rounded-xl border border-secondary-200 hover:border-primary-600/40 hover:bg-primary-50/50 transition-all group"
-                                    >
-                                        <SiGithub className="w-5 h-5 text-secondary-500 group-hover:text-primary-600" />
-                                        <span className="text-sm font-medium text-secondary-700 group-hover:text-primary-600">
-                                            {t("viewRepository")}
-                                        </span>
-                                        <SquareArrowOutUpRight className="w-3.5 h-3.5 text-secondary-400 ms-auto" />
-                                    </a>
-                                )}
+                        {(project.githubUrl || (isExternal && project.externalUrl)) && (
+                            <div className="bg-white rounded-lg border border-waqf-border p-6">
+                                <h3 className="text-sm font-semibold text-secondary-900 mb-3">
+                                    {t("links")}
+                                </h3>
+                                <div className="space-y-2">
+                                    {isExternal && project.externalUrl && (
+                                        <a
+                                            href={project.externalUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-3 p-3 rounded-md border border-waqf-border hover:border-primary-300 transition-colors group"
+                                        >
+                                            <SquareArrowOutUpRight className="w-5 h-5 text-secondary-500 group-hover:text-primary-600" />
+                                            <span className="text-sm font-medium text-secondary-700 group-hover:text-primary-600">
+                                                {t("visitProject")}
+                                            </span>
+                                        </a>
+                                    )}
+                                    {!isExternal && project.githubUrl && (
+                                        <a
+                                            href={project.githubUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-3 p-3 rounded-md border border-waqf-border hover:border-primary-300 transition-colors group"
+                                        >
+                                            <SiGithub className="w-5 h-5 text-secondary-500 group-hover:text-primary-600" />
+                                            <span className="text-sm font-medium text-secondary-700 group-hover:text-primary-600">
+                                                {t("viewRepository")}
+                                            </span>
+                                        </a>
+                                    )}
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         {/* Creator Profile (internal projects only) */}
                         {!isExternal && project.owner && (
-                            <div className="bg-white rounded-2xl border border-waqf-border p-6">
+                            <div className="bg-white rounded-lg border border-waqf-border p-6">
                                 <h3 className="text-sm font-semibold text-secondary-900 mb-4">
                                     {t("projectCreator")}
                                 </h3>
                                 <Link
                                     href={`/${locale}/profile/${project.owner.username ?? project.owner.id}`}
-                                    className="flex items-center gap-3 group mb-4"
+                                    className="flex items-center gap-3 group"
                                 >
-                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white text-lg font-bold shadow-md">
+                                    <div className="w-12 h-12 rounded-full bg-primary-50 text-primary-700 flex items-center justify-center text-lg font-bold">
                                         {project.owner.name.charAt(0)}
                                     </div>
                                     <div>
                                         <p className="font-semibold text-secondary-900 group-hover:text-primary-600 transition-colors">
                                             {project.owner.name}
                                         </p>
-                                        <p className="text-xs text-secondary-500">
+                                        <p className="text-xs text-secondary-500 underline-offset-4 group-hover:underline">
                                             {t("viewProfile")}
                                         </p>
                                     </div>
@@ -566,7 +474,7 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                                 {myApplication && (
                                     <Link
                                         href={`/${locale}/dashboard/applications/${myApplication.id}`}
-                                        className="w-full px-4 py-2.5 border border-secondary-200 rounded-xl text-sm font-medium text-secondary-700 hover:bg-secondary-50 transition-colors text-center block"
+                                        className="mt-4 w-full px-4 py-2.5 border border-waqf-border rounded-md text-sm font-medium text-secondary-700 hover:bg-secondary-50 transition-colors text-center block"
                                     >
                                         {t("contactCreator")}
                                     </Link>
@@ -576,12 +484,12 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
 
                         {/* External Project Info (replaces Creator Profile) */}
                         {isExternal && project.externalOwnerName && (
-                            <div className="bg-white rounded-2xl border border-purple-200 p-6">
+                            <div className="bg-white rounded-lg border border-waqf-border p-6">
                                 <h3 className="text-sm font-semibold text-secondary-900 mb-4">
                                     {t("curatedByWaqf")}
                                 </h3>
                                 <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white text-lg font-bold shadow-md">
+                                    <div className="w-12 h-12 rounded-full bg-accent-50 text-accent-700 flex items-center justify-center text-lg font-bold">
                                         {project.externalOwnerName.charAt(0)}
                                     </div>
                                     <div>

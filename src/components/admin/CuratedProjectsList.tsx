@@ -148,7 +148,7 @@ export function CuratedProjectsList({ locale }: CuratedProjectsListProps) {
                 </div>
                 <Link
                     href={`/${locale}/admin/projects/curated/new`}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-600 text-white font-semibold rounded-xl hover:bg-primary-700 transition-colors shadow-sm shadow-primary-600/20"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary-600 text-white font-semibold rounded-md hover:bg-primary-700 transition-colors shadow-sm shadow-primary-600/20"
                 >
                     <Plus className="w-4 h-4" />
                     {isAr ? "مشروع منتقى جديد" : "New Curated Project"}
@@ -156,7 +156,7 @@ export function CuratedProjectsList({ locale }: CuratedProjectsListProps) {
             </div>
 
             {/* Search */}
-            <div className="bg-white rounded-xl border border-secondary-200 p-4">
+            <div className="bg-white rounded-md border border-secondary-200 p-4">
                 <div className="relative">
                     <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary-400" />
                     <input
@@ -175,7 +175,7 @@ export function CuratedProjectsList({ locale }: CuratedProjectsListProps) {
                     <Loader2 className="w-8 h-8 text-primary-600 animate-spin" />
                 </div>
             ) : filtered.length === 0 ? (
-                <div className="text-center py-12 bg-white rounded-xl border border-secondary-200">
+                <div className="text-center py-12 bg-white rounded-md border border-secondary-200">
                     <CircleAlert className="w-12 h-12 text-secondary-300 mx-auto mb-4" />
                     <p className="text-secondary-600 mb-4">
                         {searchQuery
@@ -199,7 +199,7 @@ export function CuratedProjectsList({ locale }: CuratedProjectsListProps) {
                     {filtered.map((project) => (
                         <div
                             key={project.id}
-                            className="bg-white rounded-xl border border-secondary-200 p-6"
+                            className="bg-white rounded-md border border-secondary-200 p-6"
                         >
                             <div className="flex flex-col md:flex-row md:items-start gap-4">
                                 <div className="flex-1 min-w-0">
@@ -207,7 +207,7 @@ export function CuratedProjectsList({ locale }: CuratedProjectsListProps) {
                                         <h3 className="font-semibold text-secondary-900 truncate">
                                             {project.title}
                                         </h3>
-                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs font-medium">
+                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-accent-50 text-accent-700 rounded text-xs font-medium">
                                             <Globe2Mini />
                                             {isAr ? "خارجي" : "External"}
                                         </span>

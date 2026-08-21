@@ -15,10 +15,10 @@ interface SkillsMatrixProps {
 }
 
 const levelColors: Record<SkillLevel, string> = {
-    BEGINNER: "bg-blue-100 text-blue-700 border-blue-200",
-    INTERMEDIATE: "bg-amber-100 text-amber-700 border-amber-200",
-    ADVANCED: "bg-green-100 text-green-700 border-green-200",
-    EXPERT: "bg-purple-100 text-purple-700 border-purple-200",
+    BEGINNER: "bg-secondary-100 text-secondary-700 border-waqf-border",
+    INTERMEDIATE: "bg-primary-50 text-primary-700 border-primary-200",
+    ADVANCED: "bg-accent-50 text-accent-700 border-accent-200",
+    EXPERT: "bg-accent-100 text-accent-800 border-accent-300",
 };
 
 const levelLabels: Record<SkillLevel, { en: string; ar: string }> = {

@@ -46,9 +46,9 @@ export function OnboardingFlow({ locale, userName }: { locale: string, userName:
     };
 
     return (
-        <div className="bg-white rounded-2xl shadow-sm border border-secondary-100 overflow-hidden">
-            <div className="p-8 text-center border-b border-secondary-100 bg-gradient-to-br from-primary-50 to-white">
-                <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-2xl bg-gradient-to-br from-primary-500 to-primary-700 text-white font-bold text-3xl shadow-lg mb-6">
+        <div className="bg-white rounded-lg shadow-sm border border-waqf-border overflow-hidden">
+            <div className="p-8 text-center border-b border-waqf-border bg-white">
+                <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-lg bg-primary-600/10 text-primary-700 font-arabic font-bold text-3xl mb-6">
                     و
                 </div>
                 <h1 className="text-3xl font-bold text-secondary-900 mb-2">
@@ -61,7 +61,7 @@ export function OnboardingFlow({ locale, userName }: { locale: string, userName:
 
             <div className="p-8">
                 {error && (
-                    <div className="mb-6 p-4 rounded-xl bg-red-50 text-red-700 border border-red-200 text-sm">
+                    <div className="mb-6 p-4 rounded-md bg-red-50 text-red-700 border border-red-200 text-sm">
                         {error}
                     </div>
                 )}
@@ -70,12 +70,12 @@ export function OnboardingFlow({ locale, userName }: { locale: string, userName:
                     {/* Contributor Path */}
                     <button
                         onClick={() => setSelectedPath("CONTRIBUTOR")}
-                        className={`text-left p-6 rounded-2xl border-2 transition-all duration-200 ${selectedPath === "CONTRIBUTOR"
+                        className={`text-left p-6 rounded-lg border-2 transition-all duration-200 ${selectedPath === "CONTRIBUTOR"
                             ? "border-primary-500 bg-primary-50/50"
-                            : "border-secondary-100 hover:border-primary-200 hover:bg-secondary-50"
+                            : "border-waqf-border hover:border-primary-200 hover:bg-secondary-50"
                             }`}
                     >
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${selectedPath === "CONTRIBUTOR" ? "bg-primary-100 text-primary-600" : "bg-secondary-100 text-secondary-600"
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${selectedPath === "CONTRIBUTOR" ? "bg-primary-50 text-primary-600" : "bg-secondary-100 text-secondary-600"
                             }`}>
                             <Code size={24} />
                         </div>
@@ -104,12 +104,12 @@ export function OnboardingFlow({ locale, userName }: { locale: string, userName:
                     {/* Creator Path */}
                     <button
                         onClick={() => setSelectedPath("CREATOR")}
-                        className={`text-left p-6 rounded-2xl border-2 transition-all duration-200 ${selectedPath === "CREATOR"
+                        className={`text-left p-6 rounded-lg border-2 transition-all duration-200 ${selectedPath === "CREATOR"
                             ? "border-amber-500 bg-amber-50/50"
-                            : "border-secondary-100 hover:border-amber-200 hover:bg-secondary-50"
+                            : "border-waqf-border hover:border-amber-200 hover:bg-secondary-50"
                             }`}
                     >
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${selectedPath === "CREATOR" ? "bg-amber-100 text-amber-600" : "bg-secondary-100 text-secondary-600"
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${selectedPath === "CREATOR" ? "bg-accent-100 text-accent-700" : "bg-secondary-100 text-secondary-600"
                             }`}>
                             <Briefcase size={24} />
                         </div>
@@ -135,7 +135,7 @@ export function OnboardingFlow({ locale, userName }: { locale: string, userName:
                         </ul>
 
                         {selectedPath === "CREATOR" && (
-                            <div className="mt-6 p-4 rounded-xl bg-white border border-secondary-200" onClick={(e) => e.stopPropagation()}>
+                            <div className="mt-6 p-4 rounded-md bg-white border border-waqf-border" onClick={(e) => e.stopPropagation()}>
                                 <label htmlFor="orgName" className="block text-sm font-medium text-secondary-900 mb-2">
                                     {t("orgNameLabel")}
                                 </label>
@@ -145,7 +145,7 @@ export function OnboardingFlow({ locale, userName }: { locale: string, userName:
                                     value={orgName}
                                     onChange={(e) => setOrgName(e.target.value)}
                                     placeholder={t("orgNamePlaceholder")}
-                                    className="w-full px-4 py-2 rounded-lg border border-secondary-200 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+                                    className="w-full px-4 py-2 rounded-lg border border-waqf-border focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                                 />
                             </div>
                         )}
@@ -156,7 +156,7 @@ export function OnboardingFlow({ locale, userName }: { locale: string, userName:
                     <button
                         onClick={handleComplete}
                         disabled={!selectedPath || loading}
-                        className={`flex items-center gap-2 px-8 py-3 rounded-xl font-medium text-white transition-all ${!selectedPath
+                        className={`flex items-center gap-2 px-8 py-3 rounded-md font-semibold text-white transition-all ${!selectedPath
                             ? "bg-secondary-300 cursor-not-allowed"
                             : selectedPath === "CONTRIBUTOR"
                                 ? "bg-primary-600 hover:bg-primary-700"

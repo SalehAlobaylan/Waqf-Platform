@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Search, Star, Trash2, Calendar, Loader2 } from "lucide-react";
 import { apiFetch } from "@/lib/api/client";
 import { toast } from "@/lib/toast";
 import { translateApiError } from "@/lib/i18n/client-errors";
+import { getCategoryLabel, getCategoryTint } from "@/lib/categories";
 
 interface FeaturedProject {
     id: string;
@@ -28,6 +29,7 @@ interface SearchResult {
 }
 
 export function FeaturedCuration() {
+    const locale = useLocale();
     const t = useTranslations("featured");
     const tGlobal = useTranslations();
     const [featured, setFeatured] = useState<FeaturedProject[]>([]);
@@ -101,14 +103,6 @@ export function FeaturedCuration() {
         }
     };
 
-    const categoryEmojis: Record<string, string> = {
-        QURAN: "📖",
-        PRAYER: "🕌",
-        CHARITY: "🤲",
-        EDUCATION: "📚",
-        COMMUNITY: "👥",
-        TOOLS: "⚙️",
-    };
 
     return (
         <div className="space-y-6">
@@ -140,7 +134,7 @@ export function FeaturedCuration() {
                                 disabled={actionLoading === project.id}
                                 className="w-full flex items-center gap-3 p-3 text-left hover:bg-primary-50 transition-colors border-b border-secondary-50 last:border-b-0"
                             >
-                                <span className="text-lg">{categoryEmojis[project.category] || "📦"}</span>
+                                <span className={`text-xs font-semibold rounded px-1.5 py-0.5 ${getCategoryTint(project.category).bg} ${getCategoryTint(project.category).text}`}>{getCategoryLabel(project.category, locale)}</span>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-medium text-secondary-900 truncate">{project.title}</p>
                                     <p className="text-xs text-secondary-400">
@@ -170,7 +164,7 @@ export function FeaturedCuration() {
                     <div className="space-y-3">
                         {featured.map(project => (
                             <div key={project.id} className="bg-white rounded-xl border border-secondary-100 p-4 flex items-center gap-4">
-                                <span className="text-xl">{categoryEmojis[project.category] || "📦"}</span>
+                                <span className={`text-sm font-semibold rounded px-2 py-0.5 ${getCategoryTint(project.category).bg} ${getCategoryTint(project.category).text}`}>{getCategoryLabel(project.category, locale)}</span>
                                 <div className="flex-1 min-w-0">
                                     <p className="font-medium text-secondary-900 truncate">{project.title}</p>
                                     <div className="flex items-center gap-2 text-xs text-secondary-400 mt-0.5">

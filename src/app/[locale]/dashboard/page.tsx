@@ -3,11 +3,11 @@ import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { StatusBadge as SharedStatusBadge } from "@/components/ui/Badge";
 import Link from "next/link";
 import {
     Briefcase, FolderGit2, MessageSquare, Bell, Users,
-    ArrowRight, Clock, CircleCheck, GitPullRequest, Plus,
-    BookOpen, Star
+    ArrowRight, Clock, Plus, BookOpen, Star,
 } from "lucide-react";
 
 interface DashboardPageProps {
@@ -41,6 +41,9 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
         myProjects,
         unreadNotifications,
         recentNotifications,
+        totalApplications,
+        acceptedApps,
+        totalProjects,
     ] = await Promise.all([
         prisma.contributorProfile.findUnique({
             where: { userId },
@@ -70,27 +73,24 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
             orderBy: { createdAt: "desc" },
             take: 5,
         }),
+        prisma.application.count({ where: { contributorId: userId } }),
+        prisma.application.count({ where: { contributorId: userId, status: "ACCEPTED" } }),
+        prisma.project.count({ where: { ownerId: userId } }),
     ]);
 
-    const totalApplications = myApplications.length;
-    const pendingApps = myApplications.filter(a => a.status === "PENDING").length;
-    const acceptedApps = myApplications.filter(a => a.status === "ACCEPTED").length;
-    const totalProjects = myProjects.length;
-    const openProjects = myProjects.filter(p => p.status === "OPEN").length;
-    const totalIncomingApps = myProjects.reduce((sum, p) => sum + p._count.applications, 0);
     const isCreator = totalProjects > 0;
 
     const greeting = getGreeting(isRtl);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-secondary-50 via-white to-primary-50/30">
+        <div className="min-h-screen bg-waqf-bg">
             <div className="container max-w-6xl mx-auto px-4 py-8">
 
                 <div className="mb-8">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div>
-                            <h1 className="text-3xl font-bold text-secondary-900 mb-1">
-                                {greeting}, <span className="text-primary-600">{session.user.name?.split(" ")[0]}</span> 👋
+                            <h1 className="text-3xl font-bold tracking-tight text-secondary-900 mb-1">
+                                {greeting}, <span className="text-primary-700">{session.user.name?.split(" ")[0]}</span>
                             </h1>
                             <p className="text-secondary-500">
                                 {isRtl
@@ -101,14 +101,14 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                         <div className="flex gap-3">
                             <Link
                                 href={`/${locale}/explore`}
-                                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-secondary-200 rounded-xl text-sm font-medium text-secondary-700 hover:bg-secondary-50 transition-all shadow-sm"
+                                className="flex items-center gap-2 px-4 h-10 bg-white border border-waqf-border rounded-md text-sm font-medium text-secondary-700 hover:bg-secondary-50 transition-colors"
                             >
                                 <BookOpen className="w-4 h-4" />
                                 {tNav("explore")}
                             </Link>
                             <Link
                                 href={`/${locale}/projects/new`}
-                                className="flex items-center gap-2 px-4 py-2.5 bg-primary-600 rounded-xl text-sm font-bold text-white hover:bg-primary-700 transition-all shadow-md shadow-primary-600/20"
+                                className="flex items-center gap-2 px-4 h-10 bg-primary-600 rounded-md text-sm font-semibold text-white hover:bg-primary-700 transition-colors"
                             >
                                 <Plus className="w-4 h-4" />
                                 {tProjects("createProject")}
@@ -117,34 +117,33 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                    <StatCard
-                        icon={<Briefcase className="w-5 h-5 text-blue-600" />}
-                        bgClass="bg-blue-50"
-                        value={totalApplications}
-                        label={t("yourApplications")}
-                        href={`/${locale}/dashboard/applications`}
-                    />
-                    <StatCard
-                        icon={<CircleCheck className="w-5 h-5 text-green-600" />}
-                        bgClass="bg-green-50"
-                        value={acceptedApps}
-                        label={isRtl ? "مقبولة" : "Accepted"}
-                    />
-                    <StatCard
-                        icon={<FolderGit2 className="w-5 h-5 text-purple-600" />}
-                        bgClass="bg-purple-50"
-                        value={totalProjects}
-                        label={t("yourProjects")}
-                        href={`/${locale}/dashboard/projects`}
-                    />
-                    <StatCard
-                        icon={<Bell className="w-5 h-5 text-amber-600" />}
-                        bgClass="bg-amber-50"
-                        value={unreadNotifications}
-                        label={isRtl ? "إشعارات جديدة" : "Unread"}
-                        href={`/${locale}/dashboard/notifications`}
-                    />
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-8 mb-10">
+                    {[
+                        { value: totalApplications, label: t("yourApplications"), href: `/${locale}/dashboard/applications` },
+                        { value: acceptedApps, label: isRtl ? "مقبولة" : "Accepted" },
+                        { value: totalProjects, label: t("yourProjects"), href: `/${locale}/dashboard/projects` },
+                        { value: unreadNotifications, label: isRtl ? "إشعارات جديدة" : "Unread", href: `/${locale}/dashboard/notifications` },
+                    ].map((stat) => {
+                        const content = (
+                            <div>
+                                <span aria-hidden className="block w-6 h-0.5 bg-accent-500 mb-3" />
+                                <p className="text-3xl font-bold tracking-tight text-secondary-900 tabular-nums">
+                                    {stat.value}
+                                </p>
+                                <p className="mt-0.5 text-sm text-secondary-500">{stat.label}</p>
+                            </div>
+                        );
+                        return stat.href ? (
+                            <Link key={stat.label} href={stat.href} className="group">
+                                {content}
+                                <span className="mt-1 inline-block text-xs font-medium text-primary-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    {isRtl ? "عرض" : "View"} →
+                                </span>
+                            </Link>
+                        ) : (
+                            <div key={stat.label}>{content}</div>
+                        );
+                    })}
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -152,8 +151,8 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                     <div className="lg:col-span-2 space-y-6">
 
                         {isCreator && (
-                            <section className="bg-white rounded-2xl border border-secondary-100 shadow-sm overflow-hidden">
-                                <div className="flex items-center justify-between px-6 py-4 border-b border-secondary-100">
+                            <section className="bg-white rounded-lg border border-waqf-border overflow-hidden">
+                                <div className="flex items-center justify-between px-6 py-4 border-b border-waqf-border">
                                     <h2 className="font-bold text-secondary-900 flex items-center gap-2">
                                         <FolderGit2 className="w-5 h-5 text-primary-600" />
                                         {t("yourProjects")}
@@ -166,7 +165,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                                         <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" />
                                     </Link>
                                 </div>
-                                <div className="divide-y divide-secondary-50">
+                                <div className="divide-y divide-waqf-border">
                                     {myProjects.map(project => (
                                         <Link
                                             key={project.id}
@@ -178,7 +177,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                                                     {project.title}
                                                 </p>
                                                 <div className="flex items-center gap-3 mt-1 text-xs text-secondary-400">
-                                                    <StatusBadge status={project.status} isRtl={isRtl} />
+                                                    <SharedStatusBadge status={project.status} locale={locale} />
                                                     <span className="flex items-center gap-1">
                                                         <Users className="w-3 h-3" />
                                                         {project._count.applications} {isRtl ? "طلب" : "apps"}
@@ -200,10 +199,10 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                             </section>
                         )}
 
-                        <section className="bg-white rounded-2xl border border-secondary-100 shadow-sm overflow-hidden">
-                            <div className="flex items-center justify-between px-6 py-4 border-b border-secondary-100">
+                        <section className="bg-white rounded-lg border border-waqf-border overflow-hidden">
+                            <div className="flex items-center justify-between px-6 py-4 border-b border-waqf-border">
                                 <h2 className="font-bold text-secondary-900 flex items-center gap-2">
-                                    <Briefcase className="w-5 h-5 text-blue-600" />
+                                    <Briefcase className="w-5 h-5 text-primary-600" />
                                     {t("recentApplications")}
                                 </h2>
                                 <Link
@@ -214,7 +213,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                                     <ArrowRight className="w-3.5 h-3.5 rtl:rotate-180" />
                                 </Link>
                             </div>
-                            <div className="divide-y divide-secondary-50">
+                            <div className="divide-y divide-waqf-border">
                                 {myApplications.map(app => (
                                     <Link
                                         key={app.id}
@@ -226,7 +225,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                                                 {app.project.title}
                                             </p>
                                             <div className="flex items-center gap-3 mt-1 text-xs text-secondary-400">
-                                                <StatusBadge status={app.status} isRtl={isRtl} />
+                                                <SharedStatusBadge status={app.status} locale={locale} />
                                                 <span className="flex items-center gap-1">
                                                     <Clock className="w-3 h-3" />
                                                     {new Date(app.createdAt).toLocaleDateString(
@@ -287,13 +286,13 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                             </div>
                         </section>
 
-                        <section className="bg-white rounded-2xl border border-secondary-100 shadow-sm overflow-hidden">
-                            <div className="flex items-center justify-between px-5 py-4 border-b border-secondary-100">
+                        <section className="bg-white rounded-lg border border-waqf-border overflow-hidden">
+                            <div className="flex items-center justify-between px-5 py-4 border-b border-waqf-border">
                                 <h3 className="font-bold text-secondary-900 flex items-center gap-2 text-sm">
-                                    <Bell className="w-4 h-4 text-amber-500" />
+                                    <Bell className="w-4 h-4 text-accent-500" />
                                     {t("notifications.title")}
                                     {unreadNotifications > 0 && (
-                                        <span className="px-1.5 py-0.5 text-[10px] bg-red-100 text-red-600 rounded-full font-bold">
+                                        <span className="px-1.5 py-0.5 text-[10px] bg-accent-500 text-primary-950 rounded font-bold tabular-nums">
                                             {unreadNotifications}
                                         </span>
                                     )}
@@ -305,12 +304,12 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                                     {t("notifications.view")}
                                 </Link>
                             </div>
-                            <div className="divide-y divide-secondary-50">
+                            <div className="divide-y divide-waqf-border">
                                 {recentNotifications.length > 0 ? (
                                     recentNotifications.map(notif => (
                                         <div
                                             key={notif.id}
-                                            className={`px-5 py-3 ${!notif.read ? "bg-primary-50/20" : ""}`}
+                                            className={`px-5 py-3 ${!notif.read ? "bg-primary-50/40" : ""}`}
                                         >
                                             <p className={`text-xs ${!notif.read ? "font-semibold text-secondary-900" : "text-secondary-600"}`}>
                                                 {notif.title}
@@ -334,7 +333,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                         </section>
 
                         {!profile?.bio && (
-                            <section className="bg-gradient-to-br from-primary-50 to-primary-100/50 rounded-2xl border border-primary-200/50 p-5">
+                            <section className="rounded-lg border border-primary-200 bg-primary-50 p-5">
                                 <h3 className="font-bold text-primary-900 text-sm mb-2">
                                     {isRtl ? "أكمل ملفك الشخصي" : "Complete Your Profile"}
                                 </h3>
@@ -345,7 +344,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
                                 </p>
                                 <Link
                                     href={`/${locale}/settings/profile`}
-                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary-600 text-white text-xs font-medium rounded-lg hover:bg-primary-700 transition-colors"
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary-600 text-white text-xs font-semibold rounded-md hover:bg-primary-700 transition-colors"
                                 >
                                     {isRtl ? "إعداد الملف" : "Set Up Profile"}
                                     <ArrowRight className="w-3 h-3 rtl:rotate-180" />
@@ -359,27 +358,6 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
     );
 }
 
-function StatCard({ icon, bgClass, value, label, href }: {
-    icon: React.ReactNode;
-    bgClass: string;
-    value: number;
-    label: string;
-    href?: string;
-}) {
-    const content = (
-        <div className={`bg-white rounded-2xl border border-secondary-100 shadow-sm p-5 ${href ? "hover:border-primary-200 hover:shadow-md transition-all cursor-pointer group" : ""}`}>
-            <div className="flex items-center gap-3 mb-3">
-                <div className={`w-10 h-10 ${bgClass} rounded-xl flex items-center justify-center`}>
-                    {icon}
-                </div>
-            </div>
-            <div className="text-2xl font-bold text-secondary-900">{value}</div>
-            <div className="text-xs text-secondary-500 mt-0.5">{label}</div>
-        </div>
-    );
-
-    return href ? <Link href={href}>{content}</Link> : content;
-}
 
 function QuickAction({ icon, label, href }: { icon: React.ReactNode; label: string; href: string }) {
     return (
@@ -393,33 +371,6 @@ function QuickAction({ icon, label, href }: { icon: React.ReactNode; label: stri
     );
 }
 
-function StatusBadge({ status, isRtl }: { status: string; isRtl: boolean }) {
-    const styles: Record<string, string> = {
-        PENDING: "bg-amber-100 text-amber-700",
-        ACCEPTED: "bg-green-100 text-green-700",
-        REJECTED: "bg-red-100 text-red-600",
-        OPEN: "bg-emerald-100 text-emerald-700",
-        IN_PROGRESS: "bg-blue-100 text-blue-700",
-        DRAFT: "bg-secondary-100 text-secondary-600",
-        UNDER_REVIEW: "bg-purple-100 text-purple-700",
-        COMPLETED: "bg-teal-100 text-teal-700",
-    };
-    const labels: Record<string, { en: string; ar: string }> = {
-        PENDING: { en: "Pending", ar: "قيد الانتظار" },
-        ACCEPTED: { en: "Accepted", ar: "مقبول" },
-        REJECTED: { en: "Rejected", ar: "مرفوض" },
-        OPEN: { en: "Open", ar: "مفتوح" },
-        IN_PROGRESS: { en: "In Progress", ar: "قيد التنفيذ" },
-        DRAFT: { en: "Draft", ar: "مسودة" },
-        UNDER_REVIEW: { en: "Under Review", ar: "قيد المراجعة" },
-        COMPLETED: { en: "Completed", ar: "مكتمل" },
-    };
-    return (
-        <span className={`px-2 py-0.5 text-[10px] font-medium rounded-full ${styles[status] || "bg-secondary-100 text-secondary-600"}`}>
-            {labels[status] ? (isRtl ? labels[status].ar : labels[status].en) : status}
-        </span>
-    );
-}
 
 function getGreeting(isRtl: boolean): string {
     const hour = new Date().getHours();

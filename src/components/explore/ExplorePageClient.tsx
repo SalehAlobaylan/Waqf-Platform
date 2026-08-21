@@ -28,7 +28,6 @@ const PAGE_SIZE = 24;
 export function ExplorePageClient({ initialProjects, skills }: ExplorePageClientProps) {
     const locale = useLocale();
     const t = useTranslations("search");
-    const tApps = useTranslations("applications");
     const tLanding = useTranslations("landing");
 
     const [projects, setProjects] = useState(initialProjects);
@@ -114,61 +113,53 @@ export function ExplorePageClient({ initialProjects, skills }: ExplorePageClient
                 <div className="max-w-7xl mx-auto px-6 py-8">
                     {/* Header Section */}
                     <div className="mb-10">
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
                             <div>
-                                <h1 className="text-3xl font-bold text-secondary-900 mb-2">
+                                <h1 className="text-3xl font-bold tracking-tight text-secondary-900 mb-2">
                                     {locale === "ar" ? "استكشف الفرص" : "Explore Opportunities"}
                                 </h1>
                                 <p className="text-waqf-muted">
                                     {t("searchPlaceholder")}
                                 </p>
                             </div>
-                            <div className="hidden md:block">
-                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-600/10 text-primary-600">
-                                    <span className="w-2 h-2 rounded-full bg-primary-600 mr-2"></span>
-                                    {projects.length} {tLanding("activeProjects")}
-                                </span>
-                            </div>
+                            <p className="hidden md:block text-sm tabular-nums text-secondary-500">
+                                {projects.length} {tLanding("activeProjects")}
+                            </p>
                         </div>
 
                         {/* Search & Sort */}
-                        <div className="flex flex-col md:flex-row gap-4">
+                        <div className="flex flex-col md:flex-row gap-3">
                             {/* Search Bar */}
                             <div className="relative flex-1">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <div className={`absolute inset-y-0 ${locale === "ar" ? "right-0 pr-3" : "left-0 pl-3"} flex items-center pointer-events-none`}>
                                     <Search className="w-5 h-5 text-waqf-muted" />
                                 </div>
                                 <input
                                     type="text"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="block w-full pl-10 pr-3 py-3 border border-secondary-200 rounded-xl leading-5 bg-white placeholder-secondary-400 focus:outline-none focus:ring-1 focus:ring-primary-600 focus:border-primary-600 sm:text-sm shadow-sm"
+                                    className={`block w-full ${locale === "ar" ? "pr-10 pl-3" : "pl-10 pr-3"} py-2.5 border border-waqf-border rounded-md leading-5 bg-white placeholder-secondary-400 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 sm:text-sm transition-colors`}
                                     placeholder={t("searchPlaceholder")}
                                 />
                             </div>
 
                             {/* Sort Dropdown */}
-                            <div className="relative min-w-[180px]">
-                                <select
-                                    value={sortBy}
-                                    onChange={(e) => setSortBy(e.target.value)}
-                                    className="block w-full pl-3 pr-10 py-3 text-base border-secondary-200 focus:outline-none focus:ring-primary-600 focus:border-primary-600 sm:text-sm rounded-xl bg-white shadow-sm appearance-none cursor-pointer"
-                                >
-                                    <option value="recommended">{locale === "ar" ? "موصى به" : "Recommended"}</option>
-                                    <option value="newest">{locale === "ar" ? "الأحدث" : "Newest First"}</option>
-                                    <option value="oldest">{locale === "ar" ? "الأقدم" : "Oldest First"}</option>
-                                </select>
-                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-secondary-500">
-                                    <ChevronDown className="w-4 h-4" />
-                                </div>
-                            </div>
+                            <select
+                                value={sortBy}
+                                onChange={(e) => setSortBy(e.target.value)}
+                                className="block w-full md:w-[180px] py-2.5 px-3 text-sm border border-waqf-border rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 cursor-pointer transition-colors"
+                            >
+                                <option value="recommended">{locale === "ar" ? "موصى به" : "Recommended"}</option>
+                                <option value="newest">{locale === "ar" ? "الأحدث" : "Newest First"}</option>
+                                <option value="oldest">{locale === "ar" ? "الأقدم" : "Oldest First"}</option>
+                            </select>
 
                             {/* Mobile Filter Toggle */}
                             <button
                                 onClick={() => setShowMobileFilters(!showMobileFilters)}
-                                className="lg:hidden flex items-center justify-center px-4 py-3 border border-secondary-200 rounded-xl bg-white text-secondary-900 shadow-sm"
+                                className="lg:hidden flex items-center justify-center px-4 py-2.5 border border-waqf-border rounded-md bg-white text-secondary-900"
                             >
-                                <SlidersHorizontal className="w-4 h-4 mr-2" />
+                                <SlidersHorizontal className={`w-4 h-4 ${locale === "ar" ? "me-2" : "mr-2"}`} />
                                 {locale === "ar" ? "التصفية" : "Filters"}
                             </button>
                         </div>
@@ -180,8 +171,8 @@ export function ExplorePageClient({ initialProjects, skills }: ExplorePageClient
                             <div className="animate-spin w-8 h-8 border-4 border-primary-600 border-t-transparent rounded-full"></div>
                         </div>
                     ) : projects.length === 0 ? (
-                        <div className="text-center py-20 bg-white rounded-xl border border-waqf-border">
-                            <p className="text-secondary-600">
+                        <div className="text-center py-20 rounded-lg border border-waqf-border bg-white">
+                            <p className="text-secondary-500">
                                 {locale === "ar"
                                     ? "لم يتم العثور على مشاريع"
                                     : "No projects found"}
@@ -206,7 +197,7 @@ export function ExplorePageClient({ initialProjects, skills }: ExplorePageClient
                                 <button
                                     onClick={loadMore}
                                     disabled={loadingMore}
-                                    className="flex items-center gap-2 px-6 py-3 border border-secondary-200 rounded-xl bg-white text-secondary-900 font-medium hover:bg-secondary-50 transition-colors disabled:opacity-50"
+                                    className="flex items-center gap-2 px-6 py-2.5 border border-waqf-border rounded-md bg-white text-secondary-900 font-semibold hover:bg-secondary-50 transition-colors disabled:opacity-50"
                                 >
                                     {loadingMore ? (
                                         <Loader2 className="w-5 h-5 animate-spin" />

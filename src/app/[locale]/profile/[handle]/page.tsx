@@ -7,7 +7,6 @@ import { SkillsMatrix } from "@/components/profile/SkillsMatrix";
 import { ContributionHeatmap } from "@/components/profile/ContributionHeatmap";
 import { WaqfTimeline } from "@/components/profile/WaqfTimeline";
 import { PortfolioGrid } from "@/components/profile/PortfolioGrid";
-import { Heart, GitPullRequest, FolderOpen } from "lucide-react";
 
 interface ProfilePageProps {
     params: Promise<{ locale: string; handle: string }>;
@@ -67,6 +66,22 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
     const isOwnProfile = session?.user?.id === user.id;
 
+    // Real contribution data
+    const [ownedProjects, acceptedApplications] = await Promise.all([
+        prisma.project.count({ where: { ownerId: user.id, status: { not: "DRAFT" } } }),
+        prisma.application.findMany({
+            where: { contributorId: user.id, status: "ACCEPTED" },
+            select: { createdAt: true, project: { select: { title: true } } },
+            orderBy: { createdAt: "desc" },
+        }),
+    ]);
+
+    const heatmapDates = acceptedApplications.map((a) => a.createdAt.toISOString());
+    const timelineEntries = acceptedApplications.slice(0, 8).map((a) => ({
+        project: a.project.title,
+        date: a.createdAt.toISOString(),
+    }));
+
     const skills = user.contributorProfile?.skills.map((cs) => ({
         id: cs.skill.id,
         name: cs.skill.name,
@@ -101,7 +116,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
                             {/* Languages Card */}
                             {(user.contributorProfile?.spokenLanguages?.length ?? 0) > 0 && (
-                                <div className="mt-6 bg-white rounded-2xl border border-waqf-border p-6">
+                                <div className="mt-6 bg-white rounded-lg border border-waqf-border p-6">
                                     <h3 className="text-sm font-semibold text-secondary-900 mb-3">
                                         {locale === "ar" ? "اللغات" : "Languages"}
                                     </h3>
@@ -109,7 +124,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                                         {user.contributorProfile?.spokenLanguages.map((lang) => (
                                             <span
                                                 key={lang}
-                                                className="px-3 py-1 text-xs font-medium bg-secondary-100 text-secondary-700 rounded-lg"
+                                                className="px-2.5 py-1 text-xs font-medium bg-secondary-100 text-secondary-700 rounded"
                                             >
                                                 {lang === "ar" ? "العربية" : lang === "en" ? "English" : lang}
                                             </span>
@@ -122,45 +137,30 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
                     {/* Right Column - Main Content (8 cols) */}
                     <div className="lg:col-span-8 space-y-6">
-                        {/* Stats Overview */}
-                        <div className="grid grid-cols-3 gap-4">
-                            <div className="bg-white rounded-2xl border border-waqf-border p-5">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="w-10 h-10 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center">
-                                        <FolderOpen className="w-5 h-5" />
-                                    </div>
-                                </div>
-                                <p className="text-2xl font-bold text-secondary-900">12</p>
-                                <p className="text-xs text-secondary-500 mt-0.5">
+                        {/* Stats Overview — real counts only */}
+                        <div className="grid grid-cols-2 gap-6">
+                            <div>
+                                <span aria-hidden className="block w-6 h-0.5 bg-accent-500 mb-3" />
+                                <p className="text-3xl font-bold tracking-tight text-secondary-900 tabular-nums">
+                                    {ownedProjects}
+                                </p>
+                                <p className="mt-0.5 text-sm text-secondary-500">
                                     {locale === "ar" ? "مشاريع" : "Projects"}
                                 </p>
                             </div>
-                            <div className="bg-white rounded-2xl border border-waqf-border p-5">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="w-10 h-10 rounded-xl bg-accent-50 text-accent-600 flex items-center justify-center">
-                                        <GitPullRequest className="w-5 h-5" />
-                                    </div>
-                                </div>
-                                <p className="text-2xl font-bold text-secondary-900">48</p>
-                                <p className="text-xs text-secondary-500 mt-0.5">
-                                    {locale === "ar" ? "مساهمات" : "Contributions"}
+                            <div>
+                                <span aria-hidden className="block w-6 h-0.5 bg-accent-500 mb-3" />
+                                <p className="text-3xl font-bold tracking-tight text-secondary-900 tabular-nums">
+                                    {acceptedApplications.length}
                                 </p>
-                            </div>
-                            <div className="bg-white rounded-2xl border border-waqf-border p-5">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="w-10 h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center">
-                                        <Heart className="w-5 h-5" />
-                                    </div>
-                                </div>
-                                <p className="text-2xl font-bold text-secondary-900">156h</p>
-                                <p className="text-xs text-secondary-500 mt-0.5">
-                                    {locale === "ar" ? "ساعات الوقف" : "Hours of Waqf"}
+                                <p className="mt-0.5 text-sm text-secondary-500">
+                                    {locale === "ar" ? "مساهمات مقبولة" : "Accepted contributions"}
                                 </p>
                             </div>
                         </div>
 
-                        {/* Contribution Heatmap */}
-                        <ContributionHeatmap locale={locale} />
+                        {/* Contribution Heatmap (renders nothing without data) */}
+                        <ContributionHeatmap locale={locale} dates={heatmapDates} />
 
                         {/* Portfolio Grid */}
                         {user.contributorProfile?.portfolioItems && user.contributorProfile.portfolioItems.length > 0 && (
@@ -170,8 +170,8 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                         {/* Skills Matrix */}
                         <SkillsMatrix skills={skills} locale={locale} />
 
-                        {/* Waqf Timeline */}
-                        <WaqfTimeline locale={locale} />
+                        {/* Waqf Timeline (real accepted applications; renders nothing when empty) */}
+                        <WaqfTimeline locale={locale} entries={timelineEntries} />
                     </div>
                 </div>
             </div>

@@ -1,89 +1,80 @@
 import Link from "next/link";
-import {
-    Code,
-    Heart,
-    Search,
-    ArrowRight,
-    BookOpen,
-    HandHeart,
-    GraduationCap,
-    PiggyBank,
-    Users,
-    GitCommit,
-    Folder,
-    Star,
-    Shield,
-    Globe
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { prisma } from "@/lib/prisma";
+import { CountUp } from "./CountUp";
+import { StatusBadge } from "@/components/ui/Badge";
 
 interface LandingPageProps {
     locale: string;
 }
 
-// Category data
+// Eight-point star (khatam) lattice — brand-rooted texture, not decoration for its own sake
+const STAR_LATTICE_LIGHT =
+    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.55' stroke-width='1'%3E%3Crect x='18' y='18' width='36' height='36'/%3E%3Crect x='18' y='18' width='36' height='36' transform='rotate(45 36 36)'/%3E%3C/g%3E%3C/svg%3E\")";
+
 const categories = [
     {
         id: "QURAN",
-        icon: BookOpen,
-        color: "bg-[#1f705d]/10 text-[#1f705d]",
         title: { en: "Quran & Sunnah", ar: "القرآن والسنة" },
-        description: { en: "APIs, reading apps, and memorization tools.", ar: "واجهات برمجية، تطبيقات قراءة، وأدوات حفظ." },
+        description: {
+            en: "APIs, reading apps, and memorization tools.",
+            ar: "واجهات برمجية، تطبيقات قراءة، وأدوات حفظ.",
+        },
     },
     {
         id: "CHARITY",
-        icon: HandHeart,
-        color: "bg-[#d4a056]/10 text-[#d4a056]",
         title: { en: "Charity & Zakat", ar: "الزكاة والصدقات" },
-        description: { en: "Donation platforms, Zakat calculators, and aid tracking.", ar: "منصات تبرع، حاسبات زكاة، وتتبع المساعدات." },
+        description: {
+            en: "Donation platforms, Zakat calculators, and aid tracking.",
+            ar: "منصات تبرع، حاسبات زكاة، وتتبع المساعدات.",
+        },
     },
     {
         id: "EDUCATION",
-        icon: GraduationCap,
-        color: "bg-blue-500/10 text-blue-600",
         title: { en: "Education", ar: "التعليم" },
-        description: { en: "LMS platforms, language learning, and kids apps.", ar: "أنظمة تعليم، تعلم اللغات، وتطبيقات أطفال." },
+        description: {
+            en: "LMS platforms, language learning, and kids apps.",
+            ar: "أنظمة تعليم، تعلم اللغات، وتطبيقات أطفال.",
+        },
     },
     {
         id: "TOOLS",
-        icon: PiggyBank,
-        color: "bg-emerald-500/10 text-emerald-600",
         title: { en: "Finance", ar: "المالية" },
-        description: { en: "Ethical investment tools, budgeting, and calculators.", ar: "أدوات استثمار أخلاقية، ميزانيات، وحاسبات." },
+        description: {
+            en: "Ethical investment tools, budgeting, and calculators.",
+            ar: "أدوات استثمار أخلاقية، ميزانيات، وحاسبات.",
+        },
     },
 ];
 
-// How it works steps
 const steps = [
     {
-        icon: Search,
-        title: { en: "1. Discover", ar: "1. اكتشف" },
+        numeral: "01",
+        title: { en: "Discover", ar: "اكتشف" },
         description: {
             en: "Find projects that match your skills and interests.",
-            ar: "اعثر على مشاريع تناسب مهاراتك واهتماماتك."
+            ar: "اعثر على مشاريع تناسب مهاراتك واهتماماتك.",
         },
     },
     {
-        icon: Code,
-        title: { en: "2. Contribute", ar: "2. ساهم" },
+        numeral: "02",
+        title: { en: "Contribute", ar: "ساهم" },
         description: {
             en: "Submit pull requests, fix bugs, or add features to improve the codebase.",
-            ar: "أرسل طلبات سحب، أصلح الأخطاء، أو أضف ميزات لتحسين الكود."
+            ar: "أرسل طلبات سحب، أصلح الأخطاء، أو أضف ميزات لتحسين الكود.",
         },
     },
     {
-        icon: Heart,
-        title: { en: "3. Lasting Impact", ar: "3. أثر دائم" },
+        numeral: "03",
+        title: { en: "Lasting impact", ar: "أثر دائم" },
         description: {
             en: "Your code keeps serving people long after the merge.",
-            ar: "يبقى كودك يخدم الناس طويلاً بعد اكتمال عملك."
+            ar: "يبقى كودك يخدم الناس طويلاً بعد اكتمال عملك.",
         },
-        highlight: true,
     },
 ];
 
 export async function LandingPage({ locale }: LandingPageProps) {
-    // Fetch stats and featured projects
     const [stats, featuredProjects] = await Promise.all([
         getStats(),
         getFeaturedProjects(),
@@ -92,288 +83,234 @@ export async function LandingPage({ locale }: LandingPageProps) {
     const isAr = locale === "ar";
 
     return (
-        <div className="min-h-screen bg-[#f9fbfb]">
-            {/* Hero Section */}
-            <section className="w-full py-16 md:py-24 px-4 flex justify-center border-b border-[#e9f1ef] relative overflow-hidden"
-                style={{
-                    backgroundImage: 'url(https://www.transparenttextures.com/patterns/clean-gray-paper.png)',
-                    backgroundColor: '#f9fbfb'
-                }}
-            >
-                <div className="max-w-[1280px] w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                    <div className="flex flex-col gap-6 md:gap-8">
-                        <div className="flex flex-col gap-4 text-left">
-                            {/* Beta badge */}
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#d4a056]/10 border border-[#d4a056]/20 w-fit">
-                                <span className="w-2 h-2 rounded-full bg-[#d4a056]"></span>
-                                <span className="text-[#d4a056] text-xs font-bold uppercase tracking-wide">
-                                    {isAr ? "نسخة تجريبية" : "Beta Available"}
+        <div className="min-h-screen">
+            {/* Hero — one composition: brand mark, headline, sentence, CTAs */}
+            <section className="relative w-full overflow-hidden bg-primary-950 text-white">
+                <div
+                    aria-hidden
+                    className="absolute inset-0 opacity-[0.06]"
+                    style={{ backgroundImage: STAR_LATTICE_LIGHT }}
+                />
+                <div
+                    aria-hidden
+                    className="absolute inset-0"
+                    style={{
+                        background:
+                            "radial-gradient(ellipse 90% 70% at 50% 0%, transparent 40%, rgba(8,37,32,0.55) 100%)",
+                    }}
+                />
+                <div className="relative max-w-[1280px] mx-auto px-4 pt-20 pb-16 md:pt-28 md:pb-24">
+                    <div className="rise flex items-center gap-5 mb-8">
+                        <p
+                            className="text-accent-400 font-arabic text-6xl md:text-8xl leading-none"
+                            lang="ar"
+                        >
+                            وقف
+                        </p>
+                        <span aria-hidden className="h-px w-16 md:w-28 bg-accent-500/60" />
+                    </div>
+                    <h1 className="rise max-w-3xl text-4xl md:text-6xl font-bold leading-[1.08] tracking-tight text-balance">
+                        {isAr ? (
+                            <>
+                                أوقف خبرتك التقنية —{" "}
+                                <span className="relative inline-block text-accent-400">
+                                    عمل يبقى
+                                    <svg
+                                        aria-hidden
+                                        className="draw absolute -bottom-2 start-0 w-full h-2 text-accent-500"
+                                        viewBox="0 0 200 9"
+                                        preserveAspectRatio="none"
+                                    >
+                                        <path
+                                            d="M2 7 C 60 1, 140 1, 198 6"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2.5"
+                                            strokeLinecap="round"
+                                        />
+                                    </svg>
                                 </span>
-                            </div>
-
-                            {/* Main heading */}
-                            <h1 className="text-[#101917] text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1] tracking-[-0.033em]">
-                                {isAr ? (
-                                    <>
-                                        <span className="text-[#1f705d]">أوقف خبرتك التقنية</span>
-                                        <br />
-                                        <span className="mt-2 block">Tech for Good</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        Tech for Good <br />
-                                        <span className="text-[#1f705d] text-4xl md:text-5xl lg:text-6xl mt-2 block" style={{ fontFamily: 'Noto Sans Arabic, sans-serif' }}>
-                                            أوقف خبرتك التقنية
-                                        </span>
-                                    </>
-                                )}
-                            </h1>
-
-                            <p className="text-gray-600 text-lg md:text-xl font-normal leading-relaxed max-w-xl">
-                                {isAr
-                                    ? "وقف يربط المطورين بالمشاريع التي تحتاج مساعدتك — مفتوحة أو مغلقة أو خاصة. ساهم بمهاراتك في عمل يظل يفيد الناس طويلاً بعد اكتماله."
-                                    : "Waqf matches developers with projects that need help — open, closed, or private. Contribute your skills to work that keeps serving people long after the merge."
-                                }
-                            </p>
-                        </div>
-
-                        {/* CTA Buttons */}
-                        <div className="flex flex-wrap gap-4">
-                            <Link
-                                href={`/${locale}/explore`}
-                                className="flex items-center justify-center gap-2 rounded-xl h-12 px-6 bg-[#1f705d] hover:bg-[#165244] text-white text-base font-bold shadow-lg shadow-[#1f705d]/25 transition-all hover:translate-y-[-1px]"
-                            >
-                                <Code className="w-5 h-5" />
-                                <span>{isAr ? "ابدأ المساهمة" : "Start Contributing"}</span>
-                            </Link>
-                            <Link
-                                href={`/${locale}/projects/new`}
-                                className="flex items-center justify-center gap-2 rounded-xl h-12 px-6 bg-white border border-gray-200 text-[#101917] text-base font-bold hover:bg-gray-50 transition-colors"
-                            >
-                                <span className="text-xl">+</span>
-                                <span>{isAr ? "أضف مشروعاً" : "List a Project"}</span>
-                            </Link>
-                        </div>
-
-                        {/* Social proof */}
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
-                            <div className="flex -space-x-2">
-                                <div className="w-8 h-8 rounded-full border-2 border-white bg-primary-100 flex items-center justify-center text-xs font-bold text-primary-700">A</div>
-                                <div className="w-8 h-8 rounded-full border-2 border-white bg-amber-100 flex items-center justify-center text-xs font-bold text-amber-700">M</div>
-                                <div className="w-8 h-8 rounded-full border-2 border-white bg-blue-100 flex items-center justify-center text-xs font-bold text-blue-700">S</div>
-                                <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-100 flex items-center justify-center text-[10px] font-bold">+{stats.contributors}</div>
-                            </div>
-                            <p>
-                                {isAr
-                                    ? `انضم إلى ${stats.contributors}+ مساهم حول العالم`
-                                    : `Join ${stats.contributors}+ contributors worldwide`
-                                }
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Hero Visual - Code snippet card */}
-                    <div className="relative h-full min-h-[300px] lg:min-h-[500px] rounded-2xl overflow-hidden shadow-2xl bg-gradient-to-br from-[#1f705d]/5 to-[#d4a056]/10 border border-[#1f705d]/10">
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="relative z-10 p-8 w-full max-w-md">
-                                <div className="bg-white/80 backdrop-blur-md rounded-xl shadow-lg border border-white/20 p-6 transform rotate-[-2deg] hover:rotate-0 transition-transform duration-500">
-                                    <div className="flex items-center justify-between mb-4 border-b border-gray-100 pb-2">
-                                        <div className="flex gap-2">
-                                            <div className="w-3 h-3 rounded-full bg-red-400"></div>
-                                            <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
-                                            <div className="w-3 h-3 rounded-full bg-green-400"></div>
-                                        </div>
-                                        <span className="text-xs text-gray-400 font-mono">contribute.js</span>
-                                    </div>
-                                    <div className="space-y-2 font-mono text-sm">
-                                        <div className="flex gap-2">
-                                            <span className="text-purple-500">const</span>
-                                            <span className="text-blue-500">contribute</span>
-                                            <span className="text-gray-400">=</span>
-                                            <span className="text-yellow-600">async</span>
-                                            <span className="text-gray-400">()</span>
-                                            <span className="text-purple-500">=&gt;</span>
-                                            <span className="text-gray-400">{"{"}</span>
-                                        </div>
-                                        <div className="pl-4 flex gap-2">
-                                            <span className="text-purple-500">await</span>
-                                            <span className="text-blue-500">buildForGood</span>
-                                            <span className="text-gray-400">();</span>
-                                        </div>
-                                        <div className="pl-4 flex gap-2">
-                                            <span className="text-purple-500">return</span>
-                                            <span className="text-green-600">&quot;lastingImpact&quot;</span>
-                                            <span className="text-gray-400">;</span>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <span className="text-gray-400">{"}"}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Impact badge */}
-                                <div className="absolute -bottom-6 -right-6 bg-[#1f705d] text-white p-4 rounded-xl shadow-lg flex items-center gap-3 animate-pulse">
-                                    <Heart className="w-5 h-5" fill="currentColor" />
-                                    <div>
-                                        <p className="text-xs opacity-80">{isAr ? "التأثير" : "Impact"}</p>
-                                        <p className="font-bold">{isAr ? "ملايين المستخدمين" : "1.2M Users reached"}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Stats Section */}
-            <section className="bg-white border-b border-[#e9f1ef]">
-                <div className="max-w-[1280px] mx-auto px-4 py-8">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 text-center md:divide-x divide-gray-100">
-                        <div className="flex flex-col gap-1 p-2">
-                            <span className="text-3xl font-black text-[#101917] tracking-tight flex items-center justify-center gap-2">
-                                <Folder className="w-6 h-6 text-[#1f705d]" />
-                                {stats.projects}+
-                            </span>
-                            <span className="text-sm font-medium text-gray-500">
-                                {isAr ? "مشاريع نشطة" : "Active Projects"}
-                            </span>
-                        </div>
-                        <div className="flex flex-col gap-1 p-2">
-                            <span className="text-3xl font-black text-[#101917] tracking-tight flex items-center justify-center gap-2">
-                                <Users className="w-6 h-6 text-[#1f705d]" />
-                                {stats.contributors}+
-                            </span>
-                            <span className="text-sm font-medium text-gray-500">
-                                {isAr ? "مساهمين" : "Contributors"}
-                            </span>
-                        </div>
-                        <div className="flex flex-col gap-1 p-2">
-                            <span className="text-3xl font-black text-[#101917] tracking-tight flex items-center justify-center gap-2">
-                                <GitCommit className="w-6 h-6 text-[#1f705d]" />
-                                {stats.contributions}+
-                            </span>
-                            <span className="text-sm font-medium text-gray-500">
-                                {isAr ? "مساهمات" : "Contributions"}
-                            </span>
-                        </div>
-                        <div className="flex flex-col gap-1 p-2">
-                            <span className="text-3xl font-black text-[#101917] tracking-tight">
-                                {isAr ? "صفر" : "Zero"}
-                            </span>
-                            <span className="text-sm font-medium text-gray-500">
-                                {isAr ? "رسوم المنصة" : "Platform Fees"}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* Category Grid */}
-            <section className="py-16 md:py-24 px-4 bg-[#f9fbfb]">
-                <div className="max-w-[1280px] mx-auto">
-                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
-                        <div>
-                            <h2 className="text-3xl font-bold text-[#101917] tracking-tight mb-2">
-                                {isAr ? "استكشف المجالات" : "Explore Domains"}
-                            </h2>
-                            <p className="text-gray-500 max-w-lg">
-                                {isAr
-                                    ? "اكتشف المشاريع في مختلف القطاعات التي تحتاج خبرتك."
-                                    : "Discover projects across various sectors needing your expertise."
-                                }
-                            </p>
-                        </div>
+                            </>
+                        ) : (
+                            <>
+                                Tech for good —{" "}
+                                <span className="relative inline-block text-accent-400">
+                                    work that endures
+                                    <svg
+                                        aria-hidden
+                                        className="draw absolute -bottom-2 start-0 w-full h-2 text-accent-500"
+                                        viewBox="0 0 200 9"
+                                        preserveAspectRatio="none"
+                                    >
+                                        <path
+                                            d="M2 7 C 60 1, 140 1, 198 6"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2.5"
+                                            strokeLinecap="round"
+                                        />
+                                    </svg>
+                                </span>
+                            </>
+                        )}
+                    </h1>
+                    <p
+                        className="rise mt-6 max-w-xl text-lg md:text-xl leading-relaxed text-primary-100"
+                        style={{ animationDelay: "120ms" }}
+                    >
+                        {isAr
+                            ? "وقف يربط المطورين بالمشاريع التي تحتاج مساعدتك — مفتوحة أو مغلقة أو خاصة. ساهم بمهاراتك في عمل يظل يفيد الناس طويلاً بعد اكتماله."
+                            : "Waqf matches developers with projects that need help — open, closed, or private. Contribute your skills to work that keeps serving people long after the merge."}
+                    </p>
+                    <div
+                        className="rise mt-10 flex flex-wrap gap-3"
+                        style={{ animationDelay: "240ms" }}
+                    >
                         <Link
                             href={`/${locale}/explore`}
-                            className="text-[#1f705d] font-bold flex items-center gap-1 hover:underline"
+                            className="inline-flex items-center gap-2 rounded-md h-12 px-7 bg-accent-500 text-primary-950 text-base font-semibold hover:bg-accent-400 transition-colors"
                         >
-                            {isAr ? "عرض جميع الفئات" : "View All Categories"}
-                            <ArrowRight className="w-4 h-4" />
+                            {isAr ? "ابدأ المساهمة" : "Start contributing"}
+                            <ArrowRight className="w-4 h-4 rtl:-scale-x-100" />
+                        </Link>
+                        <Link
+                            href={`/${locale}/projects/new`}
+                            className="inline-flex items-center rounded-md h-12 px-7 border border-white/30 text-white text-base font-semibold hover:bg-white/10 transition-colors"
+                        >
+                            {isAr ? "أضف مشروعاً" : "List a project"}
+                        </Link>
+                    </div>
+                </div>
+            </section>
+
+            {/* Stats — quiet but crafted: gold tick, big numeral, count-up */}
+            <section className="border-b border-waqf-border bg-white">
+                <div className="max-w-[1280px] mx-auto px-4 py-10 md:py-12 grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-10 md:divide-x md:divide-waqf-border">
+                    {[
+                        {
+                            value: stats.projects,
+                            label: isAr ? "مشاريع نشطة" : "Active projects",
+                        },
+                        {
+                            value: stats.contributors,
+                            label: isAr ? "مساهمين" : "Contributors",
+                        },
+                        {
+                            value: stats.contributions,
+                            label: isAr ? "مساهمات" : "Contributions",
+                        },
+                    ].map((s, i) => (
+                        <div key={s.label} className={i > 0 ? "md:ps-8" : undefined}>
+                            <span aria-hidden className="block w-6 h-0.5 bg-accent-500 mb-4" />
+                            <p className="text-4xl md:text-5xl font-bold tracking-tight text-secondary-900">
+                                <CountUp value={s.value} />
+                            </p>
+                            <p className="mt-1 text-sm text-secondary-500">{s.label}</p>
+                        </div>
+                    ))}
+                    <div className="md:ps-8">
+                        <span aria-hidden className="block w-6 h-0.5 bg-accent-500 mb-4" />
+                        <p className="text-4xl md:text-5xl font-bold tracking-tight text-primary-700">
+                            {isAr ? "صفر" : "Zero"}
+                        </p>
+                        <p className="mt-1 text-sm text-secondary-500">
+                            {isAr ? "رسوم المنصة" : "Platform fees"}
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            {/* Domains — editorial index, not cards */}
+            <section className="py-16 md:py-24 px-4">
+                <div className="max-w-[1280px] mx-auto">
+                    <div className="flex items-end justify-between gap-6 mb-10">
+                        <h2 className="text-3xl font-bold tracking-tight text-secondary-900">
+                            {isAr ? "استكشف المجالات" : "Explore domains"}
+                        </h2>
+                        <Link
+                            href={`/${locale}/explore`}
+                            className="shrink-0 text-primary-600 font-semibold hover:underline underline-offset-4"
+                        >
+                            {isAr ? "عرض جميع الفئات" : "All categories"}
                         </Link>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {categories.map((cat) => {
-                            const Icon = cat.icon;
-                            return (
+                    <ul className="border-t border-waqf-border">
+                        {categories.map((cat, i) => (
+                            <li key={cat.id} className="border-b border-waqf-border">
                                 <Link
-                                    key={cat.id}
                                     href={`/${locale}/explore?category=${cat.id}`}
-                                    className="group bg-white p-6 rounded-2xl border border-[#e9f1ef] hover:border-[#1f705d]/50 hover:shadow-lg transition-all duration-300"
+                                    className="reveal group relative grid grid-cols-[auto_1fr_auto] items-baseline gap-x-6 md:gap-x-12 py-6 md:py-8 transition-colors hover:bg-primary-50/50"
                                 >
-                                    <div className={`w-12 h-12 rounded-xl ${cat.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
-                                        <Icon className="w-6 h-6" />
-                                    </div>
-                                    <h3 className="text-lg font-bold text-[#101917] mb-2">
-                                        {isAr ? cat.title.ar : cat.title.en}
-                                    </h3>
-                                    <p className="text-sm text-gray-500 leading-relaxed">
-                                        {isAr ? cat.description.ar : cat.description.en}
-                                    </p>
+                                    <span
+                                        aria-hidden
+                                        className="absolute inset-y-0 start-0 w-0.5 bg-primary-600 scale-y-0 group-hover:scale-y-100 origin-top transition-transform"
+                                    />
+                                    <span className="text-sm tabular-nums text-secondary-400 w-8 transition-colors group-hover:text-accent-600">
+                                        {String(i + 1).padStart(2, "0")}
+                                    </span>
+                                    <span>
+                                        <span className="block text-xl md:text-2xl font-bold tracking-tight text-secondary-900 transition-transform duration-300 group-hover:translate-x-1 rtl:group-hover:-translate-x-1">
+                                            {isAr ? cat.title.ar : cat.title.en}
+                                        </span>
+                                        <span className="mt-1 block text-secondary-500">
+                                            {isAr ? cat.description.ar : cat.description.en}
+                                        </span>
+                                    </span>
+                                    <ArrowRight className="w-5 h-5 text-secondary-300 transition-all group-hover:text-primary-600 group-hover:translate-x-1 rtl:-scale-x-100 rtl:group-hover:-translate-x-1" />
                                 </Link>
-                            );
-                        })}
-                    </div>
+                            </li>
+                        ))}
+                    </ul>
                 </div>
             </section>
 
-            {/* How It Works */}
-            <section id="how-it-works" className="py-16 md:py-24 px-4 bg-[#1f705d]/5 relative overflow-hidden">
-                <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-[#1f705d]/5 rounded-full blur-3xl"></div>
-                <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 bg-[#d4a056]/5 rounded-full blur-3xl"></div>
-
-                <div className="max-w-[1280px] mx-auto relative z-10">
-                    <div className="text-center mb-16">
-                        <h2 className="text-3xl md:text-4xl font-black text-[#101917] tracking-tight mb-4">
-                            {isAr ? "كيف يعمل" : "How It Works"}
-                        </h2>
-                        <p className="text-gray-600 max-w-xl mx-auto">
-                            {isAr
-                                ? "رحلتك من الفكرة إلى أثرٍ يبقى."
-                                : "Your journey from idea to lasting impact."
-                            }
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
-                        {/* Connecting line */}
-                        <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-0.5 bg-gray-200 -z-10"></div>
-
-                        {steps.map((step, index) => {
-                            const Icon = step.icon;
-                            return (
-                                <div key={index} className="flex flex-col items-center text-center">
-                                    <div className={`w-24 h-24 rounded-full bg-white border-4 ${step.highlight ? "border-[#d4a056]/40" : "border-[#1f705d]/20"
-                                        } flex items-center justify-center mb-6 shadow-sm relative`}>
-                                        <Icon className={`w-10 h-10 ${step.highlight ? "text-[#d4a056]" : "text-[#1f705d]"}`}
-                                            fill={step.highlight ? "currentColor" : "none"}
-                                        />
-                                        {step.highlight && (
-                                            <span className="absolute -top-2 -right-2 bg-[#d4a056] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                                                {isAr ? "أثر" : "Impact"}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <h3 className="text-xl font-bold text-[#101917] mb-2">
-                                        {isAr ? step.title.ar : step.title.en}
-                                    </h3>
-                                    <p className="text-sm text-gray-500 max-w-xs">
-                                        {isAr ? step.description.ar : step.description.en}
-                                    </p>
-                                </div>
-                            );
-                        })}
-                    </div>
-                </div>
-            </section>
-
-            {/* Featured Projects */}
-            <section className="py-16 md:py-24 px-4 bg-[#f9fbfb]">
+            {/* How it works — numbered columns with ghost numerals */}
+            <section id="how-it-works" className="py-16 md:py-24 px-4 bg-white border-y border-waqf-border">
                 <div className="max-w-[1280px] mx-auto">
-                    <div className="flex items-center justify-between mb-10">
-                        <h2 className="text-3xl font-bold text-[#101917] tracking-tight">
-                            {isAr ? "المشاريع المميزة" : "Featured Projects"}
+                    <h2 className="text-3xl font-bold tracking-tight text-secondary-900 mb-12">
+                        {isAr ? "كيف يعمل" : "How it works"}
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8">
+                        {steps.map((step) => (
+                            <div
+                                key={step.numeral}
+                                className="reveal relative border-t-2 border-primary-600 pt-6"
+                            >
+                                <span
+                                    aria-hidden
+                                    className="absolute end-0 -top-7 text-[88px] leading-none font-bold text-primary-50 select-none pointer-events-none"
+                                >
+                                    {step.numeral}
+                                </span>
+                                <span className="relative block text-sm font-semibold tabular-nums text-primary-600">
+                                    {step.numeral}
+                                </span>
+                                <h3 className="relative mt-2 text-xl font-bold tracking-tight text-secondary-900">
+                                    {isAr ? step.title.ar : step.title.en}
+                                </h3>
+                                <p className="relative mt-2 text-secondary-500 leading-relaxed max-w-xs">
+                                    {isAr ? step.description.ar : step.description.en}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* Featured projects */}
+            <section className="py-16 md:py-24 px-4">
+                <div className="max-w-[1280px] mx-auto">
+                    <div className="flex items-end justify-between gap-6 mb-10">
+                        <h2 className="text-3xl font-bold tracking-tight text-secondary-900">
+                            {isAr ? "المشاريع المميزة" : "Featured projects"}
                         </h2>
+                        <Link
+                            href={`/${locale}/explore`}
+                            className="shrink-0 text-primary-600 font-semibold hover:underline underline-offset-4"
+                        >
+                            {isAr ? "جميع المشاريع" : "All projects"}
+                        </Link>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -381,203 +318,93 @@ export async function LandingPage({ locale }: LandingPageProps) {
                             <Link
                                 key={project.id}
                                 href={`/${locale}/projects/${project.slug}`}
-                                className="flex flex-col rounded-xl overflow-hidden bg-white border border-[#e9f1ef] shadow-sm hover:shadow-md transition-shadow"
+                                className="reveal group relative flex flex-col rounded-lg border border-waqf-border bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary-300 hover:shadow-[0_12px_32px_-16px_rgba(8,37,32,0.25)]"
                             >
-                                <div className="relative h-48 bg-gradient-to-br from-[#1f705d]/10 to-[#d4a056]/10 flex items-center justify-center">
-                                    <div className="text-6xl font-black text-[#1f705d]/20">
-                                        {project.title.charAt(0)}
-                                    </div>
-                                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-2 py-1 rounded text-xs font-bold text-gray-800">
-                                        {project._count.applications} {isAr ? "متقدم" : "applicants"}
-                                    </div>
+                                <span
+                                    aria-hidden
+                                    className="absolute inset-x-6 top-0 h-0.5 bg-accent-500 scale-x-0 group-hover:scale-x-100 origin-left rtl:origin-right transition-transform duration-300"
+                                />
+                                <div className="flex items-center justify-between gap-4">
+                                    <StatusBadge status={project.status} locale={locale} />
+                                    <span className="text-xs tabular-nums text-secondary-500">
+                                        {project._count.applications}{" "}
+                                        {isAr ? "متقدم" : "applicants"}
+                                    </span>
                                 </div>
-                                <div className="p-6 flex flex-col flex-1">
-                                    <div className="flex gap-2 mb-3 flex-wrap">
-                                        {project.skills.slice(0, 2).map((ps, i) => (
-                                            <span
-                                                key={i}
-                                                className="bg-blue-100 text-blue-700 text-xs font-semibold px-2 py-1 rounded"
-                                            >
-                                                {ps.skill.name}
-                                            </span>
-                                        ))}
-                                    </div>
-                                    <h3 className="text-lg font-bold text-[#101917] mb-2">{project.title}</h3>
-                                    <p className="text-sm text-gray-500 mb-6 flex-1 line-clamp-2">
-                                        {project.description}
-                                    </p>
-                                    <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
-                                        <div className="flex items-center gap-2">
-                                            <span className={`w-2 h-2 rounded-full ${project.status === "OPEN" ? "bg-green-500" : "bg-yellow-500"
-                                                }`}></span>
-                                            <span className="text-xs text-gray-500">
-                                                {project.status === "OPEN"
-                                                    ? (isAr ? "مفتوح للمساهمة" : "Open for contributions")
-                                                    : project.status
-                                                }
-                                            </span>
-                                        </div>
-                                        <span className="text-[#1f705d] font-bold text-sm hover:underline">
-                                            {isAr ? "عرض المشروع" : "View Project"}
-                                        </span>
-                                    </div>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-                </div>
-            </section>
 
-            {/* Testimonials */}
-            <section className="py-16 md:py-24 px-4 bg-white border-b border-[#e9f1ef]">
-                <div className="max-w-[1280px] mx-auto">
-                    <div className="text-center mb-14">
-                        <h2 className="text-3xl md:text-4xl font-black text-[#101917] tracking-tight mb-4">
-                            {isAr ? "أصوات من المجتمع" : "Voices from the Community"}
-                        </h2>
-                        <p className="text-gray-500 max-w-xl mx-auto">
-                            {isAr
-                                ? "مطورون من حول العالم يشاركون تجربتهم مع وقف."
-                                : "Developers worldwide share their Waqf experience."
-                            }
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {[
-                            {
-                                name: isAr ? "أحمد خالد" : "Ahmed Khalid",
-                                role: isAr ? "مطور Full-Stack" : "Full-Stack Developer",
-                                text: isAr
-                                    ? "ساعدتني منصة وقف على إيجاد مشاريع ذات أثر حقيقي. الآن كل سطر كود أكتبه يساهم في عمل يدوم أثره."
-                                    : "Waqf helped me find projects with real impact. Now every line of code I write contributes to something that outlasts me.",
-                                initials: "AK",
-                                color: "bg-[#1f705d]/10 text-[#1f705d]",
-                            },
-                            {
-                                name: isAr ? "فاطمة نور" : "Fatima Nour",
-                                role: isAr ? "مصممة UX" : "UX Designer",
-                                text: isAr
-                                    ? "المجتمع هنا مذهل. وجدت فريقاً يشاركني رؤية بناء تقنية ذات أثر حقيقي."
-                                    : "The community here is amazing. I found a team that shares my vision of building tech with real impact.",
-                                initials: "FN",
-                                color: "bg-[#d4a056]/10 text-[#d4a056]",
-                            },
-                            {
-                                name: isAr ? "عمر حسن" : "Omar Hassan",
-                                role: isAr ? "مهندس Backend" : "Backend Engineer",
-                                text: isAr
-                                    ? "من أفضل المنصات للمساهمة الهادفة. المشاريع هنا تصل إلى من يحتاجها فعلاً."
-                                    : "One of the best platforms for meaningful contribution. Projects here reach people who genuinely need them.",
-                                initials: "OH",
-                                color: "bg-blue-500/10 text-blue-600",
-                            },
-                        ].map((t, i) => (
-                            <div key={i} className="bg-[#f9fbfb] border border-[#e9f1ef] rounded-2xl p-6 flex flex-col">
-                                <div className="flex gap-1 mb-4">
-                                    {[...Array(5)].map((_, s) => (
-                                        <Star key={s} className="w-4 h-4 text-[#d4a056]" fill="currentColor" />
-                                    ))}
-                                </div>
-                                <p className="text-gray-600 text-sm leading-relaxed mb-6 flex-1">
-                                    &ldquo;{t.text}&rdquo;
+                                <h3 className="mt-4 text-lg font-bold tracking-tight text-secondary-900 group-hover:text-primary-700 transition-colors">
+                                    {project.title}
+                                </h3>
+                                <p className="mt-2 text-sm text-secondary-500 leading-relaxed line-clamp-2 flex-1">
+                                    {project.description}
                                 </p>
-                                <div className="flex items-center gap-3 pt-4 border-t border-[#e9f1ef]">
-                                    <div className={`w-10 h-10 rounded-full ${t.color} flex items-center justify-center text-sm font-bold`}>
-                                        {t.initials}
-                                    </div>
-                                    <div>
-                                        <p className="font-semibold text-[#101917] text-sm">{t.name}</p>
-                                        <p className="text-xs text-gray-500">{t.role}</p>
-                                    </div>
+
+                                <div className="mt-6 pt-4 border-t border-waqf-border flex items-center justify-between gap-4">
+                                    <span className="text-sm text-secondary-500 truncate">
+                                        {project.skills.map((ps) => ps.skill.name).join(" · ")}
+                                    </span>
+                                    <span className="shrink-0 text-sm font-semibold text-primary-600 flex items-center gap-1">
+                                        {isAr ? "عرض" : "View"}
+                                        <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 rtl:-scale-x-100 rtl:group-hover:-translate-x-0.5" />
+                                    </span>
                                 </div>
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* About & Trust */}
-            <section id="about" className="py-16 md:py-20 px-4 bg-[#f9fbfb]">
-                <div className="max-w-[1280px] mx-auto">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-                        <div className="flex flex-col items-center gap-3 p-6">
-                            <div className="w-14 h-14 rounded-2xl bg-[#1f705d]/10 flex items-center justify-center">
-                                <Shield className="w-7 h-7 text-[#1f705d]" />
-                            </div>
-                            <h3 className="text-lg font-bold text-[#101917]">
-                                {isAr ? "شفافية وموثوقية" : "Trusted & Transparent"}
-                            </h3>
-                            <p className="text-sm text-gray-500 max-w-xs">
-                                {isAr
-                                    ? "ملكية واضحة للمشاريع، تقدم مرئي، وإشراف من المجتمع."
-                                    : "Clear project ownership, visible progress, and community oversight."
-                                }
-                            </p>
-                        </div>
-                        <div className="flex flex-col items-center gap-3 p-6">
-                            <div className="w-14 h-14 rounded-2xl bg-[#d4a056]/10 flex items-center justify-center">
-                                <Globe className="w-7 h-7 text-[#d4a056]" />
-                            </div>
-                            <h3 className="text-lg font-bold text-[#101917]">
-                                {isAr ? "مجتمع عالمي" : "Global Community"}
-                            </h3>
-                            <p className="text-sm text-gray-500 max-w-xs">
-                                {isAr
-                                    ? "مطورون من أكثر من 40 دولة يساهمون معاً."
-                                    : "Developers from 40+ countries contributing together."
-                                }
-                            </p>
-                        </div>
-                        <div className="flex flex-col items-center gap-3 p-6">
-                            <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center">
-                                <Heart className="w-7 h-7 text-blue-600" />
-                            </div>
-                            <h3 className="text-lg font-bold text-[#101917]">
-                                {isAr ? "أثر دائم" : "Lasting Impact"}
-                            </h3>
-                            <p className="text-sm text-gray-500 max-w-xs">
-                                {isAr
-                                    ? "أثرك يتضاعف — كود يظل يخدم الناس طويلاً بعد اكتماله."
-                                    : "Your contribution compounds — code that keeps serving people long after the merge."
-                                }
-                            </p>
-                        </div>
+            {/* Principles — plain statement, no icon tiles */}
+            <section id="about" className="py-16 md:py-20 px-4 bg-white border-t border-waqf-border">
+                <div className="max-w-[1280px] mx-auto grid grid-cols-1 md:grid-cols-[1fr_1.4fr] gap-8 md:gap-16">
+                    <h2 className="reveal text-3xl font-bold tracking-tight text-secondary-900 border-s-2 border-primary-600 ps-6 md:-ms-6">
+                        {isAr ? "مبني على أصول الوقف" : "Built on waqf principles"}
+                    </h2>
+                    <div className="reveal space-y-6 text-secondary-600 leading-relaxed">
+                        <p>
+                            {isAr
+                                ? "الوقف في الإسلام أصلٌ يبقى نافعاً لمن يعتمد عليه. نطبق المبدأ نفسه على البرمجيات: مشاريع مملوكة بوضوح، تقدم مرئي، وإشراف من المجتمع."
+                                : "A waqf is an endowment held in trust — assets that keep benefiting people indefinitely. We apply the same principle to software: clear project ownership, visible progress, and community oversight."}
+                        </p>
+                        <p>
+                            {isAr
+                                ? "لا رسوم على المنصة، ولا إعلانات. المشاريع هنا تصل إلى من يحتاجها فعلاً، ومساهمتك تبقى تعمل بعد أن تنتقل."
+                                : "No platform fees, no ads. Projects here reach the people who actually need them, and your contribution keeps running long after you move on."}
+                        </p>
                     </div>
                 </div>
             </section>
 
-            {/* CTA Section */}
-            <section className="px-4 pb-20 pt-10">
-                <div className="max-w-[1280px] mx-auto bg-[#1f705d] rounded-3xl p-8 md:p-16 text-center text-white relative overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-full opacity-10" style={{
-                        backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)',
-                        backgroundSize: '20px 20px'
-                    }}></div>
-                    <div className="relative z-10 max-w-2xl mx-auto flex flex-col items-center gap-6">
-                        <h2 className="text-3xl md:text-5xl font-black tracking-tight">
-                            {isAr ? "هل أنت مستعد للبرمجة من أجل قضية؟" : "Ready to code for a cause?"}
-                        </h2>
-                        <p className="text-lg text-white/80">
-                            {isAr
-                                ? "انضم إلى آلاف المطورين الذين يحولون مهاراتهم إلى عمل يفيد الناس فعلاً."
-                                : "Join thousands of developers putting their skills to work on projects that matter."
-                            }
-                        </p>
-                        <div className="flex flex-col sm:flex-row gap-4 w-full justify-center mt-4">
-                            <Link
-                                href={`/${locale}/signup`}
-                                className="bg-white text-[#1f705d] hover:bg-gray-100 px-8 py-3 rounded-xl font-bold text-lg transition-colors"
-                            >
-                                {isAr ? "سجل الآن" : "Sign Up Now"}
-                            </Link>
-                            <Link
-                                href={`/${locale}/explore`}
-                                className="bg-[#165244]/50 hover:bg-[#165244] border border-white/20 text-white px-8 py-3 rounded-xl font-bold text-lg transition-colors"
-                            >
-                                {isAr ? "استكشف المشاريع" : "Explore Projects"}
-                            </Link>
-                        </div>
+            {/* Closing CTA — flat band with lattice */}
+            <section className="relative bg-primary-900 text-white overflow-hidden">
+                <div
+                    aria-hidden
+                    className="absolute inset-0 opacity-[0.05]"
+                    style={{ backgroundImage: STAR_LATTICE_LIGHT }}
+                />
+                <div className="relative max-w-[1280px] mx-auto px-4 py-20 md:py-28 flex flex-col items-center text-center gap-6">
+                    <span aria-hidden className="w-10 h-0.5 bg-accent-500" />
+                    <h2 className="text-3xl md:text-5xl font-bold tracking-tight max-w-2xl text-balance">
+                        {isAr ? "ابدأ ببناء ما يدوم" : "Start building what lasts"}
+                    </h2>
+                    <p className="text-lg text-primary-100 max-w-xl">
+                        {isAr
+                            ? "اعثر على مشروع يحتاج مهاراتك، أو أضف مشروعاً يبحث عن مساهمين."
+                            : "Find a project that needs your skills, or list one that needs contributors."}
+                    </p>
+                    <div className="mt-4 flex flex-col sm:flex-row gap-3">
+                        <Link
+                            href={`/${locale}/signup`}
+                            className="rounded-md px-8 h-12 inline-flex items-center bg-white text-primary-900 font-semibold hover:bg-primary-50 transition-colors"
+                        >
+                            {isAr ? "سجل الآن" : "Sign up"}
+                        </Link>
+                        <Link
+                            href={`/${locale}/explore`}
+                            className="rounded-md px-8 h-12 inline-flex items-center border border-white/30 font-semibold hover:bg-white/10 transition-colors"
+                        >
+                            {isAr ? "استكشف المشاريع" : "Explore projects"}
+                        </Link>
                     </div>
                 </div>
             </section>

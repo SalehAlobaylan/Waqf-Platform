@@ -4,24 +4,40 @@ import { useMemo } from "react";
 
 interface ContributionHeatmapProps {
     locale?: string;
+    /** ISO date strings of real contribution events (accepted applications, joins). */
+    dates: string[];
 }
 
-export function ContributionHeatmap({ locale = "en" }: ContributionHeatmapProps) {
-    const heatmapData = useMemo(() => {
-        const weeks = 52;
+const WEEKS = 52;
+
+export function ContributionHeatmap({ locale = "en", dates }: ContributionHeatmapProps) {
+    const { heatmapData, total } = useMemo(() => {
+        const counts = new Map<string, number>();
+        for (const d of dates) {
+            const key = new Date(d).toISOString().slice(0, 10);
+            counts.set(key, (counts.get(key) ?? 0) + 1);
+        }
+
+        // Build a 52x7 grid ending this week, aligned so the last column ends today.
+        const today = new Date();
+        const end = new Date(today);
+        end.setDate(end.getDate() + (6 - ((end.getDay() + 6) % 7))); // upcoming Sunday
         const data: number[][] = [];
-        for (let w = 0; w < weeks; w++) {
+        for (let w = WEEKS - 1; w >= 0; w--) {
             const week: number[] = [];
             for (let d = 0; d < 7; d++) {
-                const seed = (w + 1) * 37 + (d + 3) * 17;
-                const level = (seed * 13) % 5;
-                week.push(level);
+                const day = new Date(end);
+                day.setDate(day.getDate() - (w * 7 + d));
+                const key = day.toISOString().slice(0, 10);
+                const c = counts.get(key) ?? 0;
+                week.push(c === 0 ? 0 : c <= 2 ? 1 : c <= 4 ? 2 : c <= 8 ? 3 : 4);
             }
             data.push(week);
         }
-        return data;
-    }, []);
-    const totalContributions = heatmapData.flat().reduce((sum, v) => sum + v, 0);
+        return { heatmapData: data, total: dates.length };
+    }, [dates]);
+
+    if (total === 0) return null;
 
     const getColor = (level: number): string => {
         switch (level) {
@@ -39,13 +55,13 @@ export function ContributionHeatmap({ locale = "en" }: ContributionHeatmapProps)
         : ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
     return (
-        <div className="bg-white rounded-2xl border border-waqf-border p-6">
+        <div className="bg-white rounded-lg border border-waqf-border p-6">
             <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-bold text-secondary-900">
                     {locale === "ar" ? "نشاط المساهمة" : "Contribution Activity"}
                 </h3>
-                <span className="text-xs text-secondary-500">
-                    {totalContributions} {locale === "ar" ? "مساهمة في السنة الماضية" : "contributions in the last year"}
+                <span className="text-xs tabular-nums text-secondary-500">
+                    {total} {locale === "ar" ? "مساهمة في السنة الماضية" : "contributions in the last year"}
                 </span>
             </div>
 
@@ -76,7 +92,6 @@ export function ContributionHeatmap({ locale = "en" }: ContributionHeatmapProps)
                             <div
                                 key={`${wi}-${di}`}
                                 className={`w-[10px] h-[10px] rounded-[2px] ${getColor(level)}`}
-                                title={`${level} contributions`}
                             />
                         ))}
                     </div>

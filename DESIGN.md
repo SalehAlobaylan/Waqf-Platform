@@ -8,9 +8,14 @@ Design system for the **Waqf Platform**, a contribution platform that matches de
 
 This system reflects the canonical Waqf source repository:
 
-- **`src/app/globals.css`** — Tailwind v4 `@theme` block, all design tokens
-- **`src/components/landing/LandingPage.tsx`** — hero, stats, categories, dual path, voices, CTA
-- **`src/components/layout/Navbar.tsx`** — header / logo / nav
+- **`src/app/globals.css`** — Tailwind v4 `@theme` block, all design tokens + motion keyframes (`rise`, `reveal`, `menu-in`, `draw`)
+- **`src/components/ui/`** — the primitive kit: `Button`, `Input`/`Textarea`/`Select`, `Badge`/`StatusBadge`, `Card`/`SectionHeading`/`Skeleton`
+- **`src/lib/categories.ts`** — single source of truth for category labels + tints
+- **`src/components/landing/LandingPage.tsx`** — hero, stats, domains index, how-it-works, featured projects, principles, CTA
+- **`src/components/landing/CountUp.tsx`** — animated stat numerals
+- **`src/app/[locale]/(auth)/layout.tsx`** — split auth shell (green brand panel + form column)
+- **`src/components/layout/Navbar.tsx`** — header (scroll-aware, active-link gold underline)
+- **`src/components/layout/Footer.tsx`** — deep-green bookend plane with lattice
 - **`Plans/Waqf Platform Figma/`** — exported Figma-to-code reference (shadcn UI primitives)
 - **`messages/en.json` + `messages/ar.json`** — full bilingual copy in `next-intl` format
 - **`Plans/Implementation_Roadmap.md`** — product scope + PRD anchors
@@ -34,11 +39,12 @@ Waqf is a contribution platform for developers. Developers and project owners me
 
 | | |
 |---|---|
-| **Primary** | `#1f705d` — Waqf Green. Calm, deep teal-green. Used on logo, primary CTAs, links, all "trust" surfaces. |
-| **Accent**  | `#d4a056` — Accent Gold. Reserved for **reward**, **featured**, **beta**, and ratings — never structural. |
+| **Primary** | `#1f705d` — Waqf Green. Calm, deep teal-green. Links, accents, trust surfaces. The deepest step `primary-950 #082520` is the **hero plane** — edge-to-edge, not a card. |
+| **Accent**  | `#d4a056` — Accent Gold. Reward-coded: the brand mark, the enduring-work phrase, featured/reward badges, ratings. On the dark hero plane only, it is also the single solid CTA — one accent surface per viewport. |
 | **Surface** | `#f9fbfb` app background on `#e9f1ef` mint-tinted borders. Subtle, paper-like. |
-| **Type**    | Inter (LTR) + Noto Sans Arabic (RTL). Headlines run *very* heavy — `font-weight: 900` with tight tracking `-0.033em`. |
-| **Shape**   | Generous radii — buttons `rounded-xl` (16px), cards `rounded-2xl` (24px), CTA section `rounded-3xl` (32px). |
+| **Type**    | Inter (LTR) + Noto Sans Arabic (RTL). Headlines run `font-bold` with tight `tracking-tight`. Expressiveness comes from scale contrast (giant wordmark vs. body) and ghost numerals, not heavier weights. |
+| **Shape**   | Restrained radii — controls and cards are `rounded-md` / `rounded-lg`. The brand reads precise, not bubbly. |
+| **Texture** | Eight-point star (**khatam**) lattice — inline SVG data-URI, white strokes at 5–6% opacity on deep-green planes. The brand's only repeating texture. |
 | **Logo**    | Material shield silhouette (protection / guardianship metaphor) in a 10% green tile. The wordmark is `Waqf` / `وقف` only — no eyebrow. |
 
 ---
@@ -48,14 +54,16 @@ Waqf is a contribution platform for developers. Developers and project owners me
 All design tokens live in `src/app/globals.css` as Tailwind v4 `@theme` CSS variables.
 
 ### Primary (Waqf Green)
-`primary-50` `#e6f5f1` → `primary-950` `#082520` · brand step is `primary-600` `#1f705d` · hover is `primary-700` `#195c4c`
+`primary-50` `#e6f5f1` → `primary-950` `#082520` · brand step is `primary-600` `#1f705d` · the hero and final CTA use the deep end of the scale (`primary-900`/`primary-950`) as **full-bleed planes**, never as inset rounded boxes.
 
 ### Accent (Gold)
 `accent-50` `#fdf8ef` → `accent-950` `#3d2a13` · brand step is `accent-500` `#d4a056` · used **only** for:
-- Featured badges (`Beta Available`, `Reward`)
-- Star ratings
-- The 3rd "Build Lasting Impact" step in How-It-Works
-- Hover ambient glow on accent CTAs
+- The `وقف` wordmark and the accent phrase inside the hero headline (+ its drawn underline)
+- The hero's primary CTA (solid gold button — the one accent surface on the dark plane)
+- Featured badges (`Reward`) and star ratings
+- Small tick marks above stat numerals and the CTA-band divider
+
+On light backgrounds gold is always a detail (tick, badge, text). It becomes a filled surface only once per page, on the dark hero plane.
 
 ### Secondary (Slate)
 Tailwind's slate scale, 50 → 950. Used for body text, borders, neutrals.
@@ -72,77 +80,85 @@ Quran & Sunnah uses primary; Charity & Zakat uses accent; Education Tech uses bl
 
 ## Typography
 
-- **Hero**: `text-4xl md:text-5xl lg:text-6xl`, `font-black` (900), `tracking-[-0.033em]`, `leading-[1.1]`. The English line is followed by an Arabic line in `Noto Sans Arabic`.
-- **Section heads**: `text-3xl`/`text-4xl`, `font-bold` or `font-black`, `tracking-tight`.
-- **Card titles**: `text-lg`, `font-bold`.
-- **Body**: `text-base` or `text-lg`, normal weight, `text-gray-600`, `leading-relaxed`.
-- **Eyebrows**: `text-xs`, `font-bold`, `uppercase`, `tracking-widest`. Always coloured primary or accent — never grey.
-- **Stat numbers**: `text-3xl`, `font-black`, `tracking-tight`, *near-black ink*. Often paired with a tiny Lucide icon inline.
+- **Brand mark (hero)**: the Arabic word `وقف`, `text-6xl md:text-8xl`, gold, `Noto Sans Arabic`, paired with a thin gold hairline. This is the dominant visual anchor of the first viewport.
+- **Hero headline**: `text-4xl md:text-6xl`, `font-bold`, `tracking-tight`, `leading-[1.08]`, `text-balance`. One accent phrase in gold with an SVG underline that draws itself in.
+- **Section heads**: `text-3xl`/`text-4xl`, `font-bold`, `tracking-tight`.
+- **Stat numbers**: `text-4xl md:text-5xl`, `font-bold`, `tracking-tight`, `tabular-nums`, near-black ink. Animated with `CountUp`; each column carries a small gold tick above.
+- **Ghost numerals**: oversized step numbers (`text-[88px]`, `primary-50`) sitting behind How-It-Works content — depth through scale, not boxes.
+- **Body**: `text-base` or `text-lg`, normal weight, `text-secondary-500/600`, `leading-relaxed`.
+- **No eyebrows**: no uppercase pre-headings, no decorative labels above headlines.
 
-Fonts are loaded from Google Fonts CDN at runtime (Inter + Noto Sans Arabic + JetBrains Mono).
+Fonts are loaded from Google Fonts CDN at runtime (Inter + Noto Sans Arabic).
 
 ---
 
 ## Spacing & layout
 
 - Container is **`max-w-[1280px]`** everywhere. Don't grow wider.
-- Page horizontal padding: `px-4` mobile → `px-10` desktop.
-- Section vertical rhythm: `py-16 md:py-24` for marketing sections, `py-8` for utility strips (stats).
-- Grids: marketing uses 1/2/3/4-column responsive grids with `gap-6` to `gap-12`.
+- Page horizontal padding: `px-4`.
+- Section vertical rhythm: `py-16 md:py-24` for marketing sections; the stats strip sits tighter (`py-10 md:py-12`).
+- Hero and final CTA are **edge-to-edge planes** — their content still lives in the container, the colour bleeds past it.
+- Grids: marketing uses responsive grids with `gap-6` to `gap-10`.
 
 ---
 
 ## Backgrounds & textures
 
-- **App background**: flat `#f9fbfb` — *not* white.
-- **Hero**: same flat colour + a CSS texture overlay — `transparenttextures.com/patterns/clean-gray-paper.png` (very subtle paper grain).
-- **"How it works" section**: `bg-[#1f705d]/5` with two **giant blurred orbs** in corners — `w-96 h-96 bg-[#1f705d]/5 rounded-full blur-3xl`. This is the signature ambient-light treatment.
-- **Final CTA block**: solid `#1f705d` with a `radial-gradient(#fff 1px, transparent 1px)` dot pattern at 10% opacity on a 20px grid. The dot pattern is the brand's only repeating texture.
-- **Featured project cards**: gradient placeholder `from-[#1f705d]/10 to-[#d4a056]/10` with a giant initial letter at `text-6xl font-black text-[#1f705d]/20` when no image.
+- **App background**: flat `#f9fbfb` — *not* white. Alternating sections use pure `bg-white` with `border-y border-waqf-border`.
+- **Hero**: full-bleed `primary-950` plane with two layers:
+  1. **Khatam lattice** — inline SVG data-URI (two overlapping squares forming an eight-point star, white stroke at 55%), tiled at 72px, layer opacity ~6%.
+  2. **Radial vignette** — `radial-gradient(ellipse 90% 70% at 50% 0%, transparent 40%, rgba(8,37,32,0.55) 100%)`.
+- **Final CTA**: full-bleed `primary-900` band with the same lattice at ~5%. A short gold rule sits above the heading. No rounded container, no dot grid.
+- **How it works**: plain `bg-white` strip between hairlines. Depth comes from ghost numerals, not ambient orbs. No blurred gradient blobs anywhere.
 
 ---
 
 ## Animation
 
-Restrained. Three motion families:
+Purposeful, three families plus data:
 
-1. **Hover lift** — buttons: `hover:translate-y-[-1px]`, cards: `hover:shadow-md` from `shadow-sm`.
-2. **Icon micro-interactions** — `group-hover:scale-110` on category-tile icons; `transition-transform`.
-3. **Decorative pulse / float** — none. No `animate-pulse` or floating elements. Motion only on hover / press.
+1. **Load-in (`rise`)** — hero elements fade up 16px with a 120ms stagger (`cubic-bezier(0.22,1,.36,1)`). Defined once in `globals.css`.
+2. **Scroll reveal (`reveal`)** — CSS-only via `animation-timeline: view()` (guarded by `@supports`; browsers without it simply render static). Applied to section content and grids.
+3. **Hover feedback** — links slide/arrows translate 4px, domain rows tint `primary-50/50` with a scaling edge bar, project cards lift `-translate-y-1` with a soft directional shadow and a gold top bar that scales in from the start edge. No bouncy springs, no rotates, no pulse gimmicks.
+4. **Data motion** — stat numerals count up once on first intersection (`CountUp.tsx`, eased cubic-out, IntersectionObserver); the hero accent underline draws itself once (SVG `stroke-dashoffset`).
 
-Default transition is `transition-all duration-300` or `transition-colors` — no bouncy springs, no rotates.
+Every animation has a `prefers-reduced-motion` off-switch.
 
 ---
 
 ## Hover & press states
 
-- **Primary button** (`bg-[#1f705d]`) → `hover:bg-[#195c4c]` (darker green) + 1px lift.
-- **Secondary button** (`bg-white border border-gray-200`) → `hover:bg-gray-50`.
-- **Ghost button / link** → `hover:text-[#1f705d]` from `text-[#101917]`.
-- **Card** → `hover:shadow-lg` and `hover:border-[#1f705d]/50` (border tint becomes more primary).
-- **Icon button** → `hover:bg-gray-100 rounded-lg` (subtle slate fill).
+- **Primary button (light bg)** — `bg-primary-600` → `hover:bg-primary-700`, `transition-colors`.
+- **Primary button (dark plane)** — solid `bg-accent-500 text-primary-950` → `hover:bg-accent-400`.
+- **Secondary button** — transparent with `border-white/30` on dark planes, or bordered slate on light; fills `white/10` or tints on hover.
+- **List rows (domains)** — background tint + left edge bar scales in + title translates toward the arrow.
+- **Card** — `hover:border-primary-300` + lift + soft shadow (`0 12px 32px -16px rgba(8,37,32,0.25)` — green-tinted, never black).
+- **Links** — `underline-offset-4` underlines; arrow icons shift on `group-hover`.
+
+RTL: all directional hovers mirror with `rtl:` variants; arrows flip with `-scale-x-100`.
 
 ---
 
 ## Borders, shadows, radii
 
-- **Default border**: `1px solid #e9f1ef` (use `border-waqf-border` Tailwind token). Universal card outline.
-- **Strong border** (rarely): `border-gray-200` (≈ slate-200).
-- **Radii**: never sharp. Smallest is `rounded-md` (10px) on inputs; cards are `rounded-xl` (16px) or `rounded-2xl` (24px); the final CTA block is `rounded-3xl` (32px).
-- **Shadows**: soft 3-tier system (`sm` / `md` / `lg` / `xl`) using slate-tinted alpha. Primary CTAs additionally carry a coloured glow — `shadow-lg shadow-[#1f705d]/25`. This is the **signature shadow** — green-tinted, never black.
+- **Default border**: `1px solid #e9f1ef` (`border-waqf-border`). Universal outline; also used as full-width section hairlines.
+- **Accent rules**: `border-t-2 border-primary-600` opens each How-It-Works column; small gold ticks (`w-6 h-0.5 bg-accent-500`) open stat cells.
+- **Radii**: `rounded-md` on buttons/inputs, `rounded-lg` on cards. Full-bleed planes have none. Never sharp, never balloon-round.
+- **Shadows**: rare. Cards sit flat until hovered; the hover shadow is directional and green-tinted.
 
 ---
 
 ## Cards
 
-The canonical card:
+Cards exist only where they are interaction containers. The canonical card:
 ```tsx
-className="bg-white p-6 rounded-2xl border border-waqf-border
-           hover:border-[#1f705d]/50 hover:shadow-lg
-           transition-all duration-300"
+className="group relative flex flex-col rounded-lg border border-waqf-border bg-white p-6
+           transition-all duration-300 hover:-translate-y-1 hover:border-primary-300
+           hover:shadow-[0_12px_32px_-16px_rgba(8,37,32,0.25)]"
 ```
+With an optional top accent bar: `absolute inset-x-6 top-0 h-0.5 bg-accent-500 scale-x-0 group-hover:scale-x-100 origin-left rtl:origin-right`.
 
-Image-topped cards use `rounded-xl overflow-hidden` with image area `h-48` and body `p-6`.
+Everything else on the landing page is typographic: hairline-ruled lists and open columns — not repeated rounded rectangles.
 
 ---
 
@@ -151,29 +167,22 @@ Image-topped cards use `rounded-xl overflow-hidden` with image area `h-48` and b
 **Lucide React** is the canonical icon family across the entire production codebase.
 
 - Default stroke width: Lucide's default (~2px).
-- Default size: `w-4 h-4` for inline text, `w-5 h-5` for buttons, `w-6 h-6` for category tiles, `w-10 h-10` for big How-It-Works circles.
-- Filled variants used on **stars** (`fill="currentColor"` in gold) and the **Heart** in step-3 of How-It-Works.
+- Default size: `w-4 h-4` for inline text, `w-5 h-5` for buttons and affordances.
+- Icons are functional (arrows, status) — **not decorative tiles**. No icon-in-rounded-square patterns.
 
 ### Key icons in use
 | Icon | Where |
 |---|---|
-| `Shield` | Logo mark, Built by Developers trust strip |
-| `Code` | "Start Contributing" CTA, code-snippet card |
-| `Heart` | Lasting Impact, "Made with care for the developer community" |
-| `Search` | Search bars, "Discover" step |
-| `BookOpen` | Quran & Sunnah category |
-| `HandHeart` | Charity & Zakat category |
-| `GraduationCap` | Education Tech category |
-| `PiggyBank` | Finance & Tools category |
-| `Globe` | Language switcher, Global Community |
-| `Folder`, `Users`, `GitCommit` | Stat row |
-| `ArrowRight`, `ChevronLeft`, `ChevronRight` | Navigation affordances |
+| `Shield` | Logo mark |
+| `ArrowRight` | List-row and card affordances (flipped in RTL) |
+| `Search` | Search bars |
+| `BookOpen`, `HandHeart`, `GraduationCap`, `PiggyBank` | Explore-page category markers |
+| `Globe` | Language switcher |
 | `CheckCircle` | Verified organisation badge |
-| `Star` (filled) | Testimonial ratings |
+| `Star` (filled) | Ratings |
 | `Bookmark` | Save-project action on cards |
-| `Sparkles` | Ticker accent |
 
-**Emoji rule:** A single ❤️ in the footer signoff (now "Made with care for the developer community"). **No other emoji as iconography.**
+**Emoji rule:** A single ❤️ in the footer signoff. **No other emoji as iconography.**
 
 ---
 
@@ -181,16 +190,26 @@ Image-topped cards use `rounded-xl overflow-hidden` with image area `h-48` and b
 
 The landing page in `src/components/landing/LandingPage.tsx` is composed of these sections, in order:
 
-1. **Hero** — bilingual headline (EN + AR), beta badge, two CTAs (Start Contributing / List a Project), social proof avatars, code-snippet visual.
-2. **Ticker** — scrolling marquee of stats: commits this month, active projects, contributors, countries, languages, 0% platform fees.
-3. **Stats** — 4-cell grid: Active Projects · Contributors · Contributions · Zero Platform Fees.
-4. **Categories (Explore Domains)** — 4 tiles with per-category accent tints.
-5. **How It Works** — 3 steps (Discover → Contribute → Build Lasting Impact), the last step rewarded in gold with floating orbs.
-6. **Featured Projects** — 3 project cards with gradient placeholders and "applicants" badge.
-7. **Dual Path** — Contributor vs Creator two-card comparison (smart matching, mentors, contribution ledger vs verified listing, quality applicants, infra credits).
-8. **Voices** — 3 testimonials with star ratings and per-card accent colors.
-9. **Trust strip** — Built by Developers · Global Community · Lasting Impact.
-10. **CTA block** — `rounded-3xl` solid green with dot pattern, two final CTAs.
+1. **Hero** — full-bleed `primary-950` plane (lattice + vignette): giant gold `وقف` mark with hairline, one bilingual headline with a self-drawing gold underline, one supporting sentence, two CTAs (gold solid / ghost). Staggered `rise` load-in. Nothing else in the first viewport.
+2. **Stats** — quiet white strip: four columns (Active Projects · Contributors · Contributions · Zero Platform Fees). Big tabular numerals with `CountUp`, gold ticks above, hairline dividers. No icons.
+3. **Domains (Explore Domains)** — editorial index: hairline-ruled full-width rows (numbered 01–04), title + description + arrow. Hover tint, edge bar, sliding title. Not cards.
+4. **How It Works** — three open columns opened by a green top rule, ghost numerals behind, small green step number. Discover → Contribute → Lasting impact.
+5. **Featured Projects** — up to 3 interaction cards: status/applicant meta row, title, clamped description, skills joined by `·`, View link. Lift + gold bar on hover.
+6. **Principles** — two-column statement ("Built on waqf principles"): heading left, two paragraphs right. Explains the endowment metaphor in plain words. No icon tiles.
+7. **CTA band** — full-bleed `primary-900` with lattice: gold rule, centered heading, sentence, two CTAs.
+
+## App-wide patterns
+
+The same language applies to every surface:
+
+- **Auth**: split layout — deep-green brand panel (lattice, gold mark, hero line) beside a form column on `waqf-bg`. No gradient washes.
+- **Explore**: filter sidebar + card grid; controls use primitives; counts are plain text; category tints come from `src/lib/categories.ts`.
+- **Project & campaign detail**: editorial header (status row → title → meta) separated by hairlines; impact statement on the lattice plane; no fake roadmap or activity modules.
+- **Dashboard & profile**: stat treatment = gold tick + big tabular numeral + muted label; every number is a real Prisma count. Heatmap/timeline render only from real data and hide when empty.
+- **Admin**: token-based surfaces; chart palettes mirror CSS variables; one shared status badge.
+- **Footer**: deep-green bookend plane with lattice on all public pages.
+
+**Never re-implement these by hand** — use the primitives (`Button`, `Input`, `StatusBadge`, `Card`, `Skeleton`) and `src/lib/categories.ts`. Hand-styled copies are how the old rainbow drifted in.
 
 ---
 
@@ -198,23 +217,20 @@ The landing page in `src/components/landing/LandingPage.tsx` is composed of thes
 
 Formal, neutral, and direct. The product is bilingual at its core — every string ships in English and Arabic. The platform is not a community of believers; it is a place where developers ship software. The copy says what the product does, who it serves, and what to do next. Nothing more.
 
-- **Sentence case** for body copy and most UI strings.
-- **Title Case** for navigation, buttons, section headers (`Start Contributing`, `Explore Domains`, `Featured Projects`).
-- **UPPERCASE** sparingly — only on eyebrow labels (`BETA AVAILABLE`, `REWARD`) with very wide tracking.
+- **Sentence case** everywhere — body copy, buttons, section headers (`Start contributing`, `Explore domains`, `Featured projects`).
+- **UPPERCASE** almost never — there are no eyebrow labels in the system.
 - **You/your** when addressing the contributor.
 - **No exclamation marks** except in success toasts.
 
 ### Hero line
-- English: "Tech for Good"
-- Arabic: "أوقف خبرتك التقنية" *(a peer translation, not a transliteration)*
-
-### Trust-strip labels
-- Built by Developers · Global Community · Lasting Impact
+- English: "Tech for good — work that endures"
+- Arabic: "أوقف خبرتك التقنية — عمل يبقى" *(peer translation, not transliteration)*
 
 ### Arabic copy
 - The platform name `وقف` is kept untranslated in Arabic copy.
 - Arabic strings are **peer translations** of the English meaning, not transliterations of the English words. If a phrase only works in English, write the Arabic peer that fits the new positioning.
 - Domain vocabulary (Quran, Prayer, Charity, Education, etc.) is allowed in **user-supplied project content** (project titles, descriptions, skills). It is **not** allowed in platform marketing copy.
+- Never mix Latin headlines with Arabic body text in the same run — stack them as distinct elements, each in their native font.
 
 For the full positioning rules, see `PRODUCT.md`.
 
@@ -223,22 +239,24 @@ For the full positioning rules, see `PRODUCT.md`.
 ## Don'ts
 
 - ❌ **Don't introduce new emoji** as iconography. Stick to Lucide. The only emoji in the brand is ❤️ in the footer signoff.
-- ❌ **Don't use gold (`#d4a056`) as structure.** It's reward-coded — featured badges, ratings, the "Lasting Impact" step. Never a primary CTA.
+- ❌ **Don't use gold (`#d4a056`) as everyday structure.** It's reward-coded and reserved for the brand mark, the enduring-work phrase, ticks/badges/ratings — and exactly one filled surface per page (the hero CTA on the dark plane).
 - ❌ **Don't draw new logo marks.** Use the inline shield path in `Navbar.tsx`.
-- ❌ **Don't shorten radii.** Buttons are 12px, cards 16–24px, the final CTA block 32px. The brand reads soft.
-- ❌ **Don't transliterate English slogans into Arabic.** Translate the meaning, or write an Arabic peer that fits the new positioning. Slang-to-slang translations are not acceptable.
-- ❌ **Don't add faith-coded language to platform copy.** No "the Ummah", "sadaqah", "hasanat", "Islamic" — these belong in user content, not in the platform's voice.
+- ❌ **Don't balloon the radii.** Buttons are `rounded-md`, cards `rounded-lg`. Full-bleed planes carry no radius. The brand reads precise.
+- ❌ **Don't transliterate English slogans into Arabic.** Translate the meaning, or write an Arabic peer that fits the new positioning.
+- ❌ **Don't add faith-coded language to platform copy.** No "the Ummah", "sadaqah", "hasanat", "Islamic" — these belong in user content, not in the platform's voice. Explaining what a waqf *is* (the Principles section) is fine; preaching is not.
 - ❌ **Don't position Waqf as an open-source-only platform.** The platform welcomes open, closed, and private projects; copy must not exclude any openness model.
-- ❌ **Don't mix Latin headlines with Arabic body text in the same run** — stack them as two distinct elements, each in their native font.
-- ❌ **Don't add fake "live" status indicators** — no pulsing dots with "Updated just now", no fabricated "X min ago" timestamps on hardcoded content, no `animate-pulse` used as a stand-in for real-time data. If the page is not actually live, do not pretend it is. Static labels only.
+- ❌ **Don't put cards where typography works.** Lists, indexes, and step columns are hairline-ruled text, not repeated rounded rectangles. A card must be an interaction container.
+- ❌ **Don't fake data.** No fabricated metrics, no fake testimonials or avatars, no pulsing "live" indicators, no `animate-pulse` as a stand-in for real-time data. If the page doesn't know it, it doesn't show it.
+- ❌ **Don't decorate the hero.** No floating badges, glass panels, code-window props, or sticker chips on the hero media/plane. Brand mark, headline, sentence, CTAs — done.
 
 ---
 
 ## See also
 
 - `PRODUCT.md` — formal positioning rules, in/out vocabulary, Arabic conventions
-- `src/app/globals.css` — Tailwind v4 design tokens
+- `src/app/globals.css` — Tailwind v4 design tokens + motion keyframes
 - `src/components/landing/LandingPage.tsx` — production landing page
+- `src/components/landing/CountUp.tsx` — stat numeral animation
 - `src/components/layout/Navbar.tsx` — header
 - `Plans/Waqf Platform Figma/` — Figma-exported UI primitives
 - `Plans/Implementation_Roadmap.md` — product roadmap

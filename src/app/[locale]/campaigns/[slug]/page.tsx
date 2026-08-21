@@ -5,7 +5,7 @@ import { getTranslations } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { CampaignStatus, CampaignRoleStatus } from "@prisma/client";
-import { ChevronRight, CircleCheck, MapPin, Mail, Calendar, Users, Megaphone } from "lucide-react";
+import { ChevronRight, CircleCheck, MapPin, Mail, Calendar, Users } from "lucide-react";
 import { CampaignStatusBadge } from "@/components/campaigns/CampaignStatusBadge";
 import { CampaignOverallProgress, ProgressBar } from "@/components/campaigns/ProgressBar";
 import { JoinModal } from "@/components/campaigns/JoinModal";
@@ -26,14 +26,6 @@ const CATEGORY_LABELS: Record<string, { en: string; ar: string }> = {
     TOOLS: { en: "Tools", ar: "الأدوات" },
 };
 
-const CATEGORY_BG: Record<string, string> = {
-    QURAN: "from-indigo-500/10 to-indigo-500/5",
-    PRAYER: "from-emerald-500/10 to-emerald-500/5",
-    CHARITY: "from-amber-500/10 to-amber-500/5",
-    EDUCATION: "from-blue-500/10 to-blue-500/5",
-    COMMUNITY: "from-purple-500/10 to-purple-500/5",
-    TOOLS: "from-slate-500/10 to-slate-500/5",
-};
 
 const SENIORITY_LABELS: Record<string, { en: string; ar: string }> = {
     JUNIOR: { en: "Junior", ar: "مبتدئ" },
@@ -101,7 +93,6 @@ export default async function CampaignDetailPage({ params }: Props) {
         : [];
     const myJoinedRoleIds = myJoins.map((j) => j.campaignRoleId);
 
-    const grad = CATEGORY_BG[campaign.category] ?? "from-primary-500/10 to-primary-500/5";
     const catLabel = CATEGORY_LABELS[campaign.category];
 
     return (
@@ -117,68 +108,63 @@ export default async function CampaignDetailPage({ params }: Props) {
             </div>
 
             <article className="max-w-[1280px] mx-auto px-4 md:px-10 py-8 space-y-6">
-                <header className="rounded-3xl overflow-hidden border border-waqf-border bg-white">
-                    <div className={`h-40 md:h-56 bg-gradient-to-br ${grad} flex items-center justify-center relative`}>
-                        <Megaphone className="w-20 h-20 text-primary-600/20" strokeWidth={1} />
-                        <div className="absolute top-4 left-4 flex flex-wrap gap-2">
-                            <CampaignStatusBadge status={campaign.status} />
-                            {catLabel && (
-                                <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold bg-white/90 text-secondary-700">
-                                    {isAr ? catLabel.ar : catLabel.en}
-                                </span>
-                            )}
-                        </div>
+                <header className="border-b border-waqf-border pb-8">
+                    <div className="flex flex-wrap items-center gap-3 mb-4">
+                        <CampaignStatusBadge status={campaign.status} />
+                        {catLabel && (
+                            <span className="rounded px-1.5 py-0.5 text-xs font-semibold bg-primary-50 text-primary-700">
+                                {isAr ? catLabel.ar : catLabel.en}
+                            </span>
+                        )}
                         {campaign.organization?.name && (
-                            <div className="absolute top-4 right-4 max-w-[60%] truncate rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-secondary-700">
-                                {campaign.organization.name}
+                            <span className="text-xs text-secondary-500">{campaign.organization.name}</span>
+                        )}
+                    </div>
+                    <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-secondary-900 mb-3">
+                        {campaign.title}
+                    </h1>
+                    <p className="text-lg text-secondary-600 leading-relaxed max-w-2xl">
+                        {campaign.pitch}
+                    </p>
+
+                    <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm text-secondary-600">
+                        <div className="flex items-center gap-1.5">
+                            <span>{isAr ? "بواسطة" : "by"}</span>
+                            <span className="font-semibold text-secondary-800">{campaign.owner.name}</span>
+                            <CircleCheck className="w-3.5 h-3.5 text-primary-600" />
+                        </div>
+                        {campaign.country && (
+                            <div className="flex items-center gap-1.5">
+                                <MapPin className="w-4 h-4" />
+                                {campaign.country}
+                            </div>
+                        )}
+                        {campaign.contactEmail && (
+                            <div className="flex items-center gap-1.5">
+                                <Mail className="w-4 h-4" />
+                                <a
+                                    href={`mailto:${campaign.contactEmail}`}
+                                    className="hover:text-primary-600 underline underline-offset-4"
+                                >
+                                    {campaign.contactEmail}
+                                </a>
+                            </div>
+                        )}
+                        {campaign.recruitmentDeadline && (
+                            <div className="flex items-center gap-1.5">
+                                <Calendar className="w-4 h-4" />
+                                <span className="tabular-nums">
+                                    {new Date(campaign.recruitmentDeadline).toLocaleDateString(isAr ? "ar" : "en")}
+                                </span>
                             </div>
                         )}
                     </div>
 
-                    <div className="p-6 md:p-8">
-                        <h1 className="text-2xl md:text-3xl font-black tracking-tight text-secondary-900 mb-3">
-                            {campaign.title}
-                        </h1>
-                        <p className="text-lg text-secondary-700 mb-6 leading-relaxed">
-                            {campaign.pitch}
-                        </p>
+                    <div className="mt-6 mb-5">
+                        <CampaignOverallProgress percent={progress.overallPercent} />
+                    </div>
 
-                        <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-secondary-600 mb-6">
-                            <div className="flex items-center gap-1.5">
-                                <span className="font-medium">{isAr ? "بواسطة" : "by"}</span>
-                                <span className="font-semibold text-secondary-800">{campaign.owner.name}</span>
-                                <CircleCheck className="w-3.5 h-3.5 text-primary-600" />
-                            </div>
-                            {campaign.country && (
-                                <div className="flex items-center gap-1.5">
-                                    <MapPin className="w-4 h-4" />
-                                    {campaign.country}
-                                </div>
-                            )}
-                            {campaign.contactEmail && (
-                                <div className="flex items-center gap-1.5">
-                                    <Mail className="w-4 h-4" />
-                                    <a
-                                        href={`mailto:${campaign.contactEmail}`}
-                                        className="hover:text-primary-600 underline"
-                                    >
-                                        {campaign.contactEmail}
-                                    </a>
-                                </div>
-                            )}
-                            {campaign.recruitmentDeadline && (
-                                <div className="flex items-center gap-1.5">
-                                    <Calendar className="w-4 h-4" />
-                                    {new Date(campaign.recruitmentDeadline).toLocaleDateString(isAr ? "ar" : "en")}
-                                </div>
-                            )}
-                        </div>
-
-                        <div className="mb-4">
-                            <CampaignOverallProgress percent={progress.overallPercent} />
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-3">
                             {!isOwner && campaign.status === CampaignStatus.RECRUITING && (
                                 <JoinModal
                                     campaignId={campaign.id}
@@ -200,15 +186,13 @@ export default async function CampaignDetailPage({ params }: Props) {
                             {isOwner && (
                                 <Link
                                     href={`/${locale}/campaigns/${campaign.slug}/edit`}
-                                    className="rounded-xl h-11 px-5 border border-waqf-border bg-white hover:bg-secondary-50 text-secondary-700 text-sm font-bold"
+                                    className="rounded-md h-10 px-5 border border-waqf-border bg-white hover:bg-secondary-50 text-secondary-700 text-sm font-semibold"
                                 >
                                     {t("detail.edit")}
                                 </Link>
                             )}
                         </div>
-                    </div>
                 </header>
-
                 <PromoteBanner
                     campaignId={campaign.id}
                     projectSlug={campaign.promotedProject?.slug ?? null}
@@ -219,7 +203,7 @@ export default async function CampaignDetailPage({ params }: Props) {
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 space-y-6">
-                        <section className="rounded-2xl border border-waqf-border bg-white p-6">
+                        <section className="rounded-lg border border-waqf-border bg-white p-6">
                             <h2 className="text-lg font-bold text-secondary-900 mb-3">
                                 {t("detail.problem")}
                             </h2>
@@ -238,7 +222,7 @@ export default async function CampaignDetailPage({ params }: Props) {
                             )}
                         </section>
 
-                        <section className="rounded-2xl border border-waqf-border bg-white p-6">
+                        <section className="rounded-lg border border-waqf-border bg-white p-6">
                             <h2 className="text-lg font-bold text-secondary-900 mb-4 flex items-center gap-2">
                                 <Users className="w-5 h-5 text-primary-600" />
                                 {t("detail.rolesHeading")}
@@ -252,7 +236,7 @@ export default async function CampaignDetailPage({ params }: Props) {
                                         return (
                                             <div
                                                 key={r.id}
-                                                className="rounded-xl border border-waqf-border bg-waqf-bg/40 p-4"
+                                                className="rounded-md border border-waqf-border bg-waqf-bg/40 p-4"
                                             >
                                                 <div className="flex items-start justify-between gap-3 mb-2">
                                                     <div>
@@ -266,11 +250,11 @@ export default async function CampaignDetailPage({ params }: Props) {
                                                         </p>
                                                     </div>
                                                     <span
-                                                        className={`shrink-0 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                                                        className={`shrink-0 inline-flex items-center rounded px-2 py-0.5 text-[10px] font-semibold ${
                                                             r.status === "FILLED" || full
-                                                                ? "bg-emerald-100 text-emerald-700"
+                                                                ? "bg-primary-50 text-primary-700"
                                                                 : r.status === "CLOSED"
-                                                                    ? "bg-secondary-200 text-secondary-600"
+                                                                    ? "bg-secondary-100 text-secondary-600"
                                                                     : "bg-primary-100 text-primary-700"
                                                         }`}
                                                     >
@@ -309,7 +293,7 @@ export default async function CampaignDetailPage({ params }: Props) {
                             )}
                         </section>
 
-                        <section className="rounded-2xl border border-waqf-border bg-white p-6">
+                        <section className="rounded-lg border border-waqf-border bg-white p-6">
                             <MilestoneList
                                 campaignId={campaign.id}
                                 initialMilestones={campaign.milestones.map((m) => ({
@@ -323,7 +307,7 @@ export default async function CampaignDetailPage({ params }: Props) {
                         </section>
 
                         {acceptedJoins.length > 0 && (
-                            <section className="rounded-2xl border border-waqf-border bg-white p-6">
+                            <section className="rounded-lg border border-waqf-border bg-white p-6">
                                 <h2 className="text-lg font-bold text-secondary-900 mb-4">
                                     {isAr ? "الفريق" : "Team"}
                                 </h2>
@@ -352,8 +336,8 @@ export default async function CampaignDetailPage({ params }: Props) {
                     </div>
 
                     <aside className="space-y-6">
-                        <section className="rounded-2xl border border-waqf-border bg-white p-6">
-                            <h3 className="text-sm font-bold uppercase tracking-widest text-primary-700 mb-3">
+                        <section className="rounded-lg border border-waqf-border bg-white p-6">
+                            <h3 className="text-sm font-semibold text-primary-700 mb-3">
                                 {t("detail.ownerHeading")}
                             </h3>
                             <div className="flex items-center gap-3">
@@ -374,8 +358,8 @@ export default async function CampaignDetailPage({ params }: Props) {
                         </section>
 
                         {campaign.organization && (
-                            <section className="rounded-2xl border border-waqf-border bg-white p-6">
-                                <h3 className="text-sm font-bold uppercase tracking-widest text-primary-700 mb-3">
+                            <section className="rounded-lg border border-waqf-border bg-white p-6">
+                                <h3 className="text-sm font-semibold text-primary-700 mb-3">
                                     {t("detail.organizationHeading")}
                                 </h3>
                                 <div className="flex items-center gap-3">
@@ -406,8 +390,8 @@ export default async function CampaignDetailPage({ params }: Props) {
                             </section>
                         )}
 
-                        <section className="rounded-2xl border border-waqf-border bg-white p-6">
-                            <h3 className="text-sm font-bold uppercase tracking-widest text-primary-700 mb-3">
+                        <section className="rounded-lg border border-waqf-border bg-white p-6">
+                            <h3 className="text-sm font-semibold text-primary-700 mb-3">
                                 {isAr ? "ملخص التقدم" : "Progress snapshot"}
                             </h3>
                             <dl className="space-y-2 text-sm">
