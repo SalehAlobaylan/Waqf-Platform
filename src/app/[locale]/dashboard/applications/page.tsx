@@ -58,6 +58,8 @@ export default async function ApplicationsPage({ params }: ApplicationsPageProps
         orderBy: {
             createdAt: "desc",
         },
+        // Bounded page: dashboards render summaries, not full archives
+        take: 200,
     });
 
     const pendingCount = applications.filter(a => a.status === "PENDING").length;

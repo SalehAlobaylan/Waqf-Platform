@@ -4,6 +4,7 @@ export {
   scoreProjects,
   getRecommendedProjects,
   getLevelMultiplier,
+  MAX_RECOMMENDED_CANDIDATES,
 } from "./engine";
 
 export {

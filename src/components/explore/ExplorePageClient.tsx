@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Search, SlidersHorizontal, ChevronDown, Loader2 } from "lucide-react";
 import { ProjectCard } from "@/components/projects/ProjectCard";
@@ -93,7 +93,15 @@ export function ExplorePageClient({ initialProjects, skills }: ExplorePageClient
         }
     };
 
+    // Skip the initial mount fetch: the server already rendered the same
+    // default query (no filters, sortBy=recommended, offset 0) as
+    // initialProjects. Refetch only when filters/search/sort actually change.
+    const isFirstRender = useRef(true);
     useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
         const timer = setTimeout(fetchProjects, 300);
         return () => clearTimeout(timer);
     }, [fetchProjects]);

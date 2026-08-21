@@ -10,9 +10,17 @@ import { assertSkillsExist } from "@/lib/validation/skills";
 import { getSessionUser, isAdminUserId } from "@/lib/auth-helpers";
 import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
 import { calculateMatchScore } from "@/lib/matching/engine";
+import { resolveProjectSlug } from "@/lib/campaigns/slug";
 import type { ContributorMatchData, ProjectMatchData } from "@/lib/matching/types";
 
 const PUBLIC_STATUSES: ProjectStatus[] = [ProjectStatus.OPEN];
+
+/**
+ * Bound on rows fetched when a filter must be applied in memory
+ * (free-text timeCommitment parsing, recommended scoring). Pagination
+ * totals within these paths reflect the window, not the whole table.
+ */
+const CANDIDATE_WINDOW = 500;
 
 /** Projects are OPEN-status only for anonymous/basic listing */
 function getCommitmentRange(timeCommitment?: string): { min?: number; max?: number } | null {
@@ -138,13 +146,29 @@ export async function GET(request: NextRequest) {
       },
     };
 
-    // Fetch ALL matching projects: timeCommitment needs in-memory filtering
-    // and "recommended" needs in-memory scoring. Public listings are small.
-    const projects = await prisma.project.findMany({
-      where,
-      include: projectInclude,
-      orderBy,
-    });
+    // Fetch strategy:
+    // - Plain listing (no timeCommitment, no recommended scoring): paginate
+    //   fully in the database (skip/take + count).
+    // - timeCommitment filter: free-text parsing must stay in JS, so a bounded
+    //   newest-first window is fetched and filtered in memory.
+    // - recommended: scoring runs on a bounded candidate window (recency
+    //   decays to 0 at 30 days, so older projects add no ranking signal).
+    const needsInMemory = Boolean(timeCommitment) || (sortBy === "recommended" && user);
+
+    const projects = needsInMemory
+      ? await prisma.project.findMany({
+          where,
+          include: projectInclude,
+          orderBy,
+          take: CANDIDATE_WINDOW,
+        })
+      : await prisma.project.findMany({
+          where,
+          include: projectInclude,
+          orderBy,
+          skip: offset,
+          take: limit,
+        });
 
     // "recommended" sorts by the contributor's match score when the user has
     // a contributor profile, otherwise falls back to newest-first.
@@ -211,13 +235,28 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const final = timeCommitment
-      ? projects.filter((p) => matchesCommitment(p.timeCommitment, getCommitmentRange(timeCommitment)))
-      : projects;
-    const total = final.length;
+    if (needsInMemory) {
+      const final = timeCommitment
+        ? projects.filter((p) => matchesCommitment(p.timeCommitment, getCommitmentRange(timeCommitment)))
+        : projects;
+      const total = final.length;
+
+      return NextResponse.json({
+        projects: final.slice(offset, offset + limit),
+        pagination: {
+          total,
+          limit,
+          offset,
+          hasMore: offset + limit < total,
+        },
+      });
+    }
+
+    // Fully DB-paginated path: exact total via count
+    const total = await prisma.project.count({ where });
 
     return NextResponse.json({
-      projects: final.slice(offset, offset + limit),
+      projects,
       pagination: {
         total,
         limit,
@@ -272,23 +311,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Generate or use custom slug
-    const baseSlug = customSlug
-      ? customSlug.toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-|-$/g, "")
-      : title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-
-    // Ensure uniqueness
-    let slug = baseSlug;
-    let counter = 0;
-    while (await prisma.project.findUnique({ where: { slug } })) {
-      counter++;
-      slug = `${baseSlug}-${counter}`;
-      if (counter > 50) {
-        return NextResponse.json(
-          makeValidationError("Unable to generate unique slug", "customSlug"),
-          { status: 400 }
-        );
-      }
+    // Generate or use custom slug (shared helper; throws after 50 attempts)
+    let slug: string;
+    try {
+      slug = await resolveProjectSlug(title, customSlug ?? undefined);
+    } catch {
+      return NextResponse.json(
+        makeValidationError("Unable to generate unique slug", "customSlug"),
+        { status: 400 }
+      );
     }
 
     // Organization must belong to the creator (mirrors campaign routes)

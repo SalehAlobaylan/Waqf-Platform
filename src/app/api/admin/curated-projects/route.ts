@@ -7,6 +7,7 @@ import { projectCurateSchema, pagePaginationSchema } from "@/lib/validation/sche
 import { parseBody, parseQuery } from "@/lib/validation/parse";
 import { makeValidationError } from "@/lib/validation/errors";
 import { assertSkillsExist } from "@/lib/validation/skills";
+import { resolveProjectSlug } from "@/lib/campaigns/slug";
 
 /**
  * GET /api/admin/curated-projects
@@ -94,21 +95,14 @@ export async function POST(request: NextRequest) {
             }
         }
 
-        const baseSlug = customSlug
-            ? customSlug.toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-|-$/g, "")
-            : title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-
-        let slug = baseSlug;
-        let counter = 0;
-        while (await prisma.project.findUnique({ where: { slug } })) {
-            counter++;
-            slug = `${baseSlug}-${counter}`;
-            if (counter > 50) {
-                return NextResponse.json(
-                    makeValidationError("Unable to generate unique slug", "customSlug"),
-                    { status: 400 }
-                );
-            }
+        let slug: string;
+        try {
+            slug = await resolveProjectSlug(title, customSlug ?? undefined);
+        } catch {
+            return NextResponse.json(
+                makeValidationError("Unable to generate unique slug", "customSlug"),
+                { status: 400 }
+            );
         }
 
         const project = await prisma.project.create({

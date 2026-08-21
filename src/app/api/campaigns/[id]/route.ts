@@ -6,7 +6,7 @@ import { CampaignStatus } from "@prisma/client";
 import { campaignUpdateSchema, routeIdParamSchema } from "@/lib/validation/schemas";
 import { parseBody, parseParams } from "@/lib/validation/parse";
 import { makeNotFoundError, makeValidationError } from "@/lib/validation/errors";
-import { getSessionUser, isAdminUserId } from "@/lib/auth-helpers";
+import { getSessionUser, isAdminUserId, isOwnerOrAdmin } from "@/lib/auth-helpers";
 import { checkRateLimit, rateLimitedResponse } from "@/lib/rate-limit";
 
 interface RouteParams {
@@ -85,13 +85,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
             return NextResponse.json(makeNotFoundError("Campaign not found", "id"), { status: 404 });
         }
 
-        // Reuse the existing fetch: admin override, then owner check
-        const adminUser = await prisma.user.findUnique({
-            where: { id: user.id },
-            select: { role: true },
-        });
-        const isAdmin = adminUser?.role === "ADMIN";
-        if (!isAdmin && existing.ownerId !== user.id) {
+        // Owner or admin (admin role re-fetched from the DB)
+        if (!(await isOwnerOrAdmin(user.id, existing.ownerId))) {
             return NextResponse.json({ error: "Forbidden", code: "FORBIDDEN" }, { status: 403 });
         }
 

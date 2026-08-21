@@ -23,6 +23,7 @@ import { useCampaignDraft } from "@/components/campaigns/wizard/useCampaignDraft
 import { RoleBuilder } from "@/components/campaigns/wizard/RoleBuilder";
 import { apiFetch } from "@/lib/api/client";
 import { translateApiError } from "@/lib/i18n/client-errors";
+import { getCategoryLabel } from "@/lib/categories";
 
 const STEPS = 5;
 
@@ -67,15 +68,6 @@ const CATEGORIES = [
     { value: "COMMUNITY", icon: Users, color: "bg-purple-50 text-purple-700 border-purple-200", activeColor: "bg-purple-600 border-purple-600 text-white" },
     { value: "TOOLS", icon: Megaphone, color: "bg-slate-50 text-slate-700 border-slate-200", activeColor: "bg-slate-600 border-slate-600 text-white" },
 ] as const;
-
-const CATEGORY_I18N: Record<string, { en: string; ar: string }> = {
-    QURAN: { en: "Quran", ar: "القرآن الكريم" },
-    PRAYER: { en: "Prayer", ar: "الصلاة" },
-    CHARITY: { en: "Charity", ar: "الزكاة والصدقات" },
-    EDUCATION: { en: "Education", ar: "التعليم" },
-    COMMUNITY: { en: "Community", ar: "المجتمع" },
-    TOOLS: { en: "Tools", ar: "الأدوات" },
-};
 
 const LANGUAGES = [
     { value: "ARABIC", en: "Arabic", ar: "العربية" },
@@ -458,7 +450,7 @@ function Step1() {
                     {CATEGORIES.map((c) => {
                         const Icon = c.icon;
                         const active = draft.category === c.value;
-                        const label = isAr ? CATEGORY_I18N[c.value].ar : CATEGORY_I18N[c.value].en;
+                        const label = getCategoryLabel(c.value, isAr ? "ar" : "en");
                         return (
                             <button
                                 type="button"
@@ -676,7 +668,7 @@ function Step5() {
                 <ReviewCard
                     title={isAr ? "الفئة" : "Category"}
                     items={[
-                        { label: isAr ? "الفئة" : "Category", value: draft.category ? (isAr ? CATEGORY_I18N[draft.category]?.ar : CATEGORY_I18N[draft.category]?.en) ?? draft.category : (isAr ? "بدون فئة" : "No category") },
+                        { label: isAr ? "الفئة" : "Category", value: draft.category ? getCategoryLabel(draft.category, locale) : (isAr ? "بدون فئة" : "No category") },
                         { label: isAr ? "اللغة" : "Language", value: draft.language },
                         ...(draft.country ? [{ label: isAr ? "البلد" : "Country", value: draft.country }] : []),
                         ...(draft.contactEmail ? [{ label: isAr ? "البريد" : "Email", value: draft.contactEmail }] : []),

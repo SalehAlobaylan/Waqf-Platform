@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Search, Filter, Loader2, ArrowUpDown } from "lucide-react";
 import { SearchBar } from "@/components/search/SearchBar";
 import { ProjectCard } from "@/components/projects/ProjectCard";
+import { categories, getCategoryLabel } from "@/lib/categories";
 
 interface SearchResult {
     id: string;
@@ -30,15 +31,7 @@ interface SearchResult {
     };
 }
 
-const categories = [
-    { value: "", label: "All Categories", labelAr: "جميع الفئات" },
-    { value: "QURAN", label: "Quran", labelAr: "القرآن" },
-    { value: "PRAYER", label: "Prayer", labelAr: "الصلاة" },
-    { value: "CHARITY", label: "Charity", labelAr: "الصدقة" },
-    { value: "EDUCATION", label: "Education", labelAr: "التعليم" },
-    { value: "COMMUNITY", label: "Community", labelAr: "المجتمع" },
-    { value: "TOOLS", label: "Tools", labelAr: "أدوات" },
-];
+const categoryValues = ["", ...Object.keys(categories)];
 
 const sortOptions = [
     { value: "relevance", label: "Relevance", labelAr: "الصلة" },
@@ -100,7 +93,8 @@ export function SearchResults() {
         }
     }, [category, sortBy]);
 
-    // Fetch on mount and when search params change
+    // Fetch whenever the URL search params (or category/sort closures) change.
+    // The URL is the single source of truth — handlers below only push params.
     useEffect(() => {
         const q = searchParams.get("q");
         if (q) {
@@ -109,17 +103,29 @@ export function SearchResults() {
         }
     }, [searchParams, fetchResults]);
 
+    // Re-sort already-fetched results locally when the sort option changes.
+    // "relevance" keeps server ranking order, so it is skipped here.
+    useEffect(() => {
+        if (sortBy === "relevance") return;
+        setResults((prev) => {
+            if (prev.length < 2) return prev;
+            return [...prev].sort((a: SearchResult, b: SearchResult) =>
+                sortBy === "oldest"
+                    ? new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+                    : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+            );
+        });
+    }, [sortBy]);
+
     const handleSearch = (newQuery: string) => {
         setQuery(newQuery);
         router.push(`/${locale}/search?q=${encodeURIComponent(newQuery)}${category ? `&category=${category}` : ""}`);
-        fetchResults(newQuery);
     };
 
     const handleCategoryChange = (newCategory: string) => {
         setCategory(newCategory);
         if (query) {
             router.push(`/${locale}/search?q=${encodeURIComponent(query)}${newCategory ? `&category=${newCategory}` : ""}`);
-            fetchResults(query);
         }
     };
 
@@ -144,9 +150,11 @@ export function SearchResults() {
                                 className="px-3 py-1.5 text-sm bg-secondary-100 border-0 rounded-lg 
                                            text-secondary-700 focus:ring-2 focus:ring-primary-200"
                             >
-                                {categories.map((cat) => (
-                                    <option key={cat.value} value={cat.value}>
-                                        {locale === "ar" ? cat.labelAr : cat.label}
+                                {categoryValues.map((value) => (
+                                    <option key={value || "all"} value={value}>
+                                        {value === ""
+                                            ? locale === "ar" ? "جميع الفئات" : "All Categories"
+                                            : getCategoryLabel(value, locale)}
                                     </option>
                                 ))}
                             </select>

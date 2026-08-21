@@ -285,6 +285,7 @@ model Project {
   @@index([status, category])
   @@index([featured, featuredUntil])
   @@index([source, status])
+  @@index([ownerId])
 }
 
 model ProjectSkill {
@@ -314,6 +315,7 @@ model Application {
 
   @@unique([projectId, contributorId])
   @@index([status])
+  @@index([contributorId])
 }
 
 model Message {
@@ -441,6 +443,7 @@ model CampaignJoin {
 
   @@unique([campaignRoleId, contributorId])
   @@index([campaignId, status])
+  @@index([contributorId])
 }
 
 model CampaignMilestone {

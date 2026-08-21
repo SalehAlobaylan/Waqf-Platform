@@ -4,7 +4,10 @@ import { execSync } from "node:child_process";
 // effect is pinned internally by uploadthing (no patched release of the
 // 7.x line exists); the advisory (GHSA-38f7-945m-qr2g) concerns library
 // internals (AsyncLocalStorage under RPC load), not our usage surface.
-const ALLOWLIST = new Set(["GHSA-38f7-945m-qr2g"]);
+// GHSA-ggr8-5vv4-36mx: deepmerge-ts stack exhaustion, reached only through
+// @prisma/config (the Prisma CLI — a dev tool, never bundled into runtime).
+// No patched release on the 7.x line exists yet.
+const ALLOWLIST = new Set(["GHSA-38f7-945m-qr2g", "GHSA-ggr8-5vv4-36mx"]);
 
 function evaluate(raw: string): boolean {
   const report = JSON.parse(raw);

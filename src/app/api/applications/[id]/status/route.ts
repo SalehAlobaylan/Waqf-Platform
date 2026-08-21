@@ -88,12 +88,25 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
             );
         }
 
-        // Update application status (authoritative write)
-        const updatedApplication = await prisma.application.update({
-            where: { id },
+        // Update application status (authoritative write). The conditional
+        // where makes the PENDING check atomic with the write, so two
+        // concurrent PATCHes cannot both process the same application.
+        const updated = await prisma.application.updateMany({
+            where: { id, status: "PENDING" },
             data: {
                 status: status as ApplicationStatus,
             },
+        });
+
+        if (updated.count === 0) {
+            return NextResponse.json(
+                makeValidationError("Application has already been processed", "status"),
+                { status: 400 }
+            );
+        }
+
+        const updatedApplication = await prisma.application.findUnique({
+            where: { id },
         });
 
         // Best-effort side effects: the status is already committed. A

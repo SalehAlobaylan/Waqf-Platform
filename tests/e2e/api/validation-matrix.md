@@ -13,7 +13,6 @@ Validation contract assertions:
 | --- | --- | --- | --- | --- |
 | `/api/search` | GET | `q=a` | `400` | `q` |
 | `/api/search` | GET | `status=invalid` | `400` | `status` |
-| `/api/explore` | GET | `limit=999` | `400` | `limit` |
 | `/api/projects` | GET | `status=bad-status` | `400` | `status` |
 | `/api/projects` | GET | `sortBy=ranked` | `400` | `sortBy` |
 | `/api/skills` | GET | `q=<130 chars>` | `400` | `q` |

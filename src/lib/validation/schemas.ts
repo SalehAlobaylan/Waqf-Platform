@@ -592,9 +592,13 @@ export const skillsQuerySchema = z
     })
     .strip();
 
-export const messagesQuerySchema = z.object({
-    applicationId: idSchema,
-});
+export const messagesQuerySchema = z
+    .object({
+        applicationId: idSchema,
+        // Bounded history window; the most recent N messages are returned.
+        limit: z.coerce.number().int().min(1).max(100).default(50),
+    })
+    .strip();
 
 export const notificationsQuerySchema = z
     .object({
@@ -636,6 +640,8 @@ export const applicationsQuerySchema = z
         type: z.enum(["mine", "incoming"]).default("mine"),
         status: applicationStatusSchema.optional(),
         projectId: idSchema.optional(),
+        limit: z.coerce.number().int().min(1).max(100).default(100),
+        offset: z.coerce.number().int().min(0).default(0),
     })
     .strip();
 

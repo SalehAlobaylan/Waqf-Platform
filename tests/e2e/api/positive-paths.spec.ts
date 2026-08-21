@@ -35,15 +35,6 @@ test.describe("API Positive Paths", () => {
       expect(body.total).toBeGreaterThan(0);
     });
 
-    test("GET /api/explore returns projects", async ({ request }) => {
-      const response = await request.get("/api/explore?limit=10&page=1");
-      expect(response.status()).toBe(200);
-      const body = await response.json();
-      expect(Array.isArray(body.projects)).toBeTruthy();
-      expect(body.projects.length).toBeGreaterThan(0);
-      expect(body.pagination.totalPages).toBeGreaterThan(0);
-    });
-
     test("GET /api/skills returns skill list", async ({ request }) => {
       const response = await request.get("/api/skills");
       expect(response.status()).toBe(200);

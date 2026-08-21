@@ -6,15 +6,18 @@ interface CategoryMeta {
     ar: string;
 }
 
-// Single source of truth for project categories.
+// Single source of truth for project category labels and tints.
 // Tints follow DESIGN.md: Quran=primary, Charity=accent, Education=blue, Finance=emerald.
+// Labels must match the ProjectCategory enum in prisma/schema.prisma
+// (QURAN, PRAYER, CHARITY, EDUCATION, COMMUNITY, TOOLS) — never re-label an
+// enum value here away from its name without a product decision.
 export const categories: Record<string, CategoryMeta> = {
     QURAN: { tone: "primary", en: "Quran & Sunnah", ar: "القرآن والسنة" },
     PRAYER: { tone: "primary", en: "Prayer", ar: "الصلاة" },
     CHARITY: { tone: "accent", en: "Charity & Zakat", ar: "الزكاة والصدقات" },
     EDUCATION: { tone: "blue", en: "Education", ar: "التعليم" },
     COMMUNITY: { tone: "primary", en: "Community", ar: "المجتمع" },
-    TOOLS: { tone: "emerald", en: "Finance", ar: "المالية" },
+    TOOLS: { tone: "emerald", en: "Tools", ar: "الأدوات" },
 };
 
 const tintClasses: Record<

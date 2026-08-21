@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import Link from "next/link";
 import { Search, Loader2, Megaphone } from "lucide-react";
 import { CampaignCard, type CampaignCardData } from "@/components/campaigns/CampaignCard";
+import { categories, getCategoryLabel } from "@/lib/categories";
 
 interface Props {
     initialCampaigns: CampaignCardData[];
@@ -12,19 +13,11 @@ interface Props {
     pageSize: number;
 }
 
-const CATEGORIES = [
-    { value: "QURAN", labelEn: "Quran", labelAr: "القرآن" },
-    { value: "PRAYER", labelEn: "Prayer", labelAr: "الصلاة" },
-    { value: "CHARITY", labelEn: "Charity", labelAr: "الصداق" },
-    { value: "EDUCATION", labelEn: "Education", labelAr: "التعليم" },
-    { value: "COMMUNITY", labelEn: "Community", labelAr: "المجتمع" },
-    { value: "TOOLS", labelEn: "Tools", labelAr: "الأدوات" },
-];
+const CATEGORIES = Object.keys(categories);
 
 export function CampaignsListClient({ initialCampaigns, total, pageSize }: Props) {
     const locale = useLocale();
     const t = useTranslations("campaigns");
-    const isAr = locale === "ar";
 
     const [campaigns, setCampaigns] = useState(initialCampaigns);
     const [loading, setLoading] = useState(false);
@@ -141,10 +134,10 @@ export function CampaignsListClient({ initialCampaigns, total, pageSize }: Props
                 />
                 {CATEGORIES.map((c) => (
                     <FilterChip
-                        key={c.value}
-                        active={category === c.value}
-                        onClick={() => setCategory(c.value)}
-                        label={isAr ? c.labelAr : c.labelEn}
+                        key={c}
+                        active={category === c}
+                        onClick={() => setCategory(c)}
+                        label={getCategoryLabel(c, locale)}
                     />
                 ))}
             </div>

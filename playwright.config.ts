@@ -28,7 +28,9 @@ export default defineConfig({
   webServer: {
     command: "npm run dev",
     url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
-    reuseExistingServer: false,
+    // CI always boots its own server; local runs reuse an already-running
+    // dev server (hot-reloaded with the current working tree).
+    reuseExistingServer: !process.env.CI,
     timeout: 180000,
     stdout: "pipe",
     stderr: "pipe",

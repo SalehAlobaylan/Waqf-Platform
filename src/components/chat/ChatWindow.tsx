@@ -8,6 +8,7 @@ import { MessageBubble } from "./MessageBubble";
 import { apiFetch } from "@/lib/api/client";
 import { toast } from "@/lib/toast";
 import { translateApiError } from "@/lib/i18n/client-errors";
+import { getPusherClient, getApplicationChannel, PUSHER_EVENTS } from "@/lib/pusher";
 
 interface Message {
     id: string;
@@ -36,6 +37,11 @@ export function ChatWindow({ applicationId, initialMessages = [], recipientName 
     const [isLoading, setIsLoading] = useState(false);
     const [isSending, setIsSending] = useState(false);
     const [showScrollButton, setShowScrollButton] = useState(false);
+    // Mirror of isSending for use inside the polling interval closure
+    const isSendingRef = useRef(false);
+    useEffect(() => {
+        isSendingRef.current = isSending;
+    }, [isSending]);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -50,10 +56,11 @@ export function ChatWindow({ applicationId, initialMessages = [], recipientName 
         scrollToBottom();
     }, [messages, scrollToBottom]);
 
-    // Fetch messages
-    const fetchMessages = useCallback(async () => {
+    // Fetch messages. `showSpinner` only on the initial load so periodic
+    // refreshes don't flicker the whole window.
+    const fetchMessages = useCallback(async (showSpinner = true) => {
         try {
-            setIsLoading(true);
+            if (showSpinner) setIsLoading(true);
             const response = await fetch(`/api/messages?applicationId=${applicationId}`);
             const data = await response.json();
 
@@ -63,7 +70,7 @@ export function ChatWindow({ applicationId, initialMessages = [], recipientName 
         } catch (error) {
             console.error("Failed to fetch messages:", error);
         } finally {
-            setIsLoading(false);
+            if (showSpinner) setIsLoading(false);
         }
     }, [applicationId]);
 
@@ -74,11 +81,46 @@ export function ChatWindow({ applicationId, initialMessages = [], recipientName 
         }
     }, [initialMessages.length, fetchMessages]);
 
-    // Poll for new messages (simple alternative to Pusher)
+    // Real-time updates via Pusher when configured; polling as a fallback
+    // for deployments without Pusher credentials or when the subscription
+    // fails (auth rejected, socket unavailable).
     useEffect(() => {
-        const interval = setInterval(fetchMessages, 5000);
-        return () => clearInterval(interval);
-    }, [fetchMessages]);
+        let interval: ReturnType<typeof setInterval> | null = null;
+        const startPollingFallback = () => {
+            if (interval) return;
+            interval = setInterval(() => {
+                if (!isSendingRef.current) fetchMessages(false);
+            }, 5000);
+        };
+
+        const client = getPusherClient();
+        if (!client) {
+            startPollingFallback();
+            return () => {
+                if (interval) clearInterval(interval);
+            };
+        }
+
+        const channelName = getApplicationChannel(applicationId);
+        const channel = client.subscribe(channelName);
+        const onNewMessage = (message: Message & { applicationId?: string }) => {
+            setMessages((prev) => {
+                if (prev.some((m) => m.id === message.id)) return prev;
+                // Insert in createdAt order to keep the list sorted
+                const next = [...prev, message];
+                next.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+                return next;
+            });
+        };
+        channel.bind(PUSHER_EVENTS.NEW_MESSAGE, onNewMessage);
+        channel.bind("pusher:subscription_error", startPollingFallback);
+        return () => {
+            channel.unbind(PUSHER_EVENTS.NEW_MESSAGE, onNewMessage);
+            channel.unbind("pusher:subscription_error", startPollingFallback);
+            client.unsubscribe(channelName);
+            if (interval) clearInterval(interval);
+        };
+    }, [applicationId, fetchMessages]);
 
     // Track scroll position for "scroll to bottom" button
     const handleScroll = () => {

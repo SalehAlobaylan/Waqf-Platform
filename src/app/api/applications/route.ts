@@ -28,93 +28,109 @@ export async function GET(request: NextRequest) {
             return NextResponse.json(parsedQuery.error, { status: 400 });
         }
 
-        const { type, status, projectId } = parsedQuery.data;
+        const { type, status, projectId, limit, offset } = parsedQuery.data;
 
         let applications;
+        let total: number;
 
         if (type === "incoming") {
-            // Get applications for projects the user owns
-            applications = await prisma.application.findMany({
-                where: {
-                    project: {
-                        ownerId: user.id,
-                    },
-                    ...(status && { status: status as ApplicationStatus }),
-                    ...(projectId && { projectId }),
+            const where = {
+                project: {
+                    ownerId: user.id,
                 },
-                include: {
-                    project: {
-                        select: {
-                            id: true,
-                            title: true,
-                            slug: true,
+                ...(status && { status: status as ApplicationStatus }),
+                ...(projectId && { projectId }),
+            };
+            // Get applications for projects the user owns
+            [applications, total] = await Promise.all([
+                prisma.application.findMany({
+                    where,
+                    include: {
+                        project: {
+                            select: {
+                                id: true,
+                                title: true,
+                                slug: true,
+                            },
                         },
-                    },
-                    contributor: {
-                        select: {
-                            id: true,
-                            name: true,
-                            email: true,
-                            image: true,
-                            contributorProfile: {
-                                select: {
-                                    bio: true,
-                                    skills: {
-                                        include: {
-                                            skill: true,
+                        contributor: {
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true,
+                                image: true,
+                                contributorProfile: {
+                                    select: {
+                                        bio: true,
+                                        skills: {
+                                            include: {
+                                                skill: true,
+                                            },
                                         },
                                     },
                                 },
                             },
                         },
-                    },
-                    _count: {
-                        select: {
-                            messages: true,
-                        },
-                    },
-                },
-                orderBy: {
-                    createdAt: "desc",
-                },
-            });
-        } else {
-            // Get user's own applications
-            applications = await prisma.application.findMany({
-                where: {
-                    contributorId: user.id,
-                    ...(status && { status: status as ApplicationStatus }),
-                },
-                include: {
-                    project: {
-                        select: {
-                            id: true,
-                            title: true,
-                            slug: true,
-                            category: true,
-                            status: true,
-                            owner: {
-                                select: {
-                                    id: true,
-                                    name: true,
-                                    image: true,
-                                },
+                        _count: {
+                            select: {
+                                messages: true,
                             },
                         },
                     },
-                    _count: {
-                        select: {
-                            messages: true,
+                    orderBy: {
+                        createdAt: "desc",
+                    },
+                    take: limit,
+                    skip: offset,
+                }),
+                prisma.application.count({ where }),
+            ]);
+        } else {
+            const where = {
+                contributorId: user.id,
+                ...(status && { status: status as ApplicationStatus }),
+            };
+            // Get user's own applications
+            [applications, total] = await Promise.all([
+                prisma.application.findMany({
+                    where,
+                    include: {
+                        project: {
+                            select: {
+                                id: true,
+                                title: true,
+                                slug: true,
+                                category: true,
+                                status: true,
+                                owner: {
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                        image: true,
+                                    },
+                                },
+                            },
+                        },
+                        _count: {
+                            select: {
+                                messages: true,
+                            },
                         },
                     },
-                },
-                orderBy: {
-                    createdAt: "desc",
-                },
-            });
+                    orderBy: {
+                        createdAt: "desc",
+                    },
+                    take: limit,
+                    skip: offset,
+                }),
+                prisma.application.count({ where }),
+            ]);
         }
 
-        return NextResponse.json({ applications });
+        return NextResponse.json({
+            applications,
+            pagination: { total, limit, offset, hasMore: offset + applications.length < total },
+        });
     }, ctx);
 }
 

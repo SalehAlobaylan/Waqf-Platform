@@ -60,3 +60,15 @@ export async function requireAdminOrThrow(): Promise<SessionUser> {
     if (!(await isAdminUserId(user.id))) throw forbidden();
     return user;
 }
+
+/**
+ * Guard for resource mutations: true when the session user owns the resource
+ * or is an admin (role re-fetched from the DB — see isAdminUserId).
+ */
+export async function isOwnerOrAdmin(
+    userId: string,
+    resourceOwnerId: string | null | undefined
+): Promise<boolean> {
+    if (resourceOwnerId && userId === resourceOwnerId) return true;
+    return isAdminUserId(userId);
+}

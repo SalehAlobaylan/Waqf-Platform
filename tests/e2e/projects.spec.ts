@@ -90,19 +90,8 @@ test.describe("Projects Flow", () => {
       }
     });
 
-    test("should display project roadmap", async ({ page }) => {
-      await page.goto("/en/explore");
-      await page.waitForTimeout(2000);
-      
-      const projectLink = page.locator('a[href*="/projects/"]').first();
-      if (await projectLink.isVisible()) {
-        await projectLink.click();
-        await page.waitForLoadState("networkidle");
-        
-        // Check for roadmap section
-        await expect(page.getByText("Project Roadmap").first()).toBeVisible();
-      }
-    });
+    // Note: the "Project Roadmap" section was removed from the project
+    // detail page in 47aefea; no replacement test needed.
   });
 
   test.describe("Project Application Flow", () => {

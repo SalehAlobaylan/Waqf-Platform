@@ -46,7 +46,12 @@ export const getPusherClient = (): PusherClient | null => {
         return null;
     }
 
-    pusherClientInstance = new PusherClient(key, { cluster });
+    pusherClientInstance = new PusherClient(key, {
+        cluster,
+        // Our authorization route verifies channel membership server-side
+        // (participant of the application, or the channel's own user).
+        authEndpoint: "/api/pusher/auth",
+    });
     return pusherClientInstance;
 };
 

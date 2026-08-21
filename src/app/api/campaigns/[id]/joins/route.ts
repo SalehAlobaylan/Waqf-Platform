@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAuthOrThrow } from "@/lib/auth-helpers";
+import { requireAuthOrThrow, isOwnerOrAdmin } from "@/lib/auth-helpers";
 import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import { campaignJoinCreateSchema, routeIdParamSchema } from "@/lib/validation/schemas";
 import { parseBody, parseParams } from "@/lib/validation/parse";
@@ -34,14 +34,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         if (!campaign) {
             return NextResponse.json(makeNotFoundError("Campaign not found", "id"), { status: 404 });
         }
-        if (campaign.ownerId !== user.id) {
-            const adminUser = await prisma.user.findUnique({
-                where: { id: user.id },
-                select: { role: true },
-            });
-            if (adminUser?.role !== "ADMIN") {
-                return NextResponse.json({ error: "Forbidden", code: "FORBIDDEN" }, { status: 403 });
-            }
+        if (!(await isOwnerOrAdmin(user.id, campaign.ownerId))) {
+            return NextResponse.json({ error: "Forbidden", code: "FORBIDDEN" }, { status: 403 });
         }
 
         const joins = await prisma.campaignJoin.findMany({
@@ -51,6 +45,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
                 contributor: { select: { id: true, name: true, username: true, image: true } },
             },
             orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+            // Bounded page: owner review lists render summaries, not archives
+            take: 200,
         });
         return NextResponse.json({ joins });
     }, ctx);

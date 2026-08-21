@@ -1,7 +1,7 @@
 "use client";
 
-import { ProjectCategory } from "@prisma/client";
 import { X, Package, Code, Globe, Calendar } from "lucide-react";
+import { categories, getCategoryLabel } from "@/lib/categories";
 
 interface FilterSidebarProps {
     filters: {
@@ -15,14 +15,7 @@ interface FilterSidebarProps {
     locale?: string;
 }
 
-const categories: { value: ProjectCategory; label: { en: string; ar: string } }[] = [
-    { value: "QURAN", label: { en: "Quran Apps", ar: "تطبيقات القرآن" } },
-    { value: "PRAYER", label: { en: "Prayer & Salah", ar: "الصلاة" } },
-    { value: "CHARITY", label: { en: "Charity & Zakat", ar: "الصدقات والزكاة" } },
-    { value: "EDUCATION", label: { en: "Education", ar: "التعليم" } },
-    { value: "COMMUNITY", label: { en: "Community", ar: "المجتمع" } },
-    { value: "TOOLS", label: { en: "Tools & Utilities", ar: "الأدوات" } },
-];
+const categoryValues = Object.keys(categories);
 
 const timeCommitments = [
     { value: "1-5", label: { en: "Up to 5 hrs/week", ar: "حتى ٥ ساعات/أسبوع" } },
@@ -78,18 +71,18 @@ export function FilterSidebar({ filters, onFilterChange, skills, locale = "en" }
                         {locale === "ar" ? "الفئة" : "Category"}
                     </h3>
                     <div className="space-y-2">
-                        {categories.map((cat) => (
-                            <label key={cat.value} className="flex items-center gap-3 cursor-pointer group">
+                        {categoryValues.map((value) => (
+                            <label key={value} className="flex items-center gap-3 cursor-pointer group">
                                 <input
                                     type="checkbox"
                                     className="w-4 h-4 rounded border-secondary-300 text-primary-600 focus:ring-primary-600"
-                                    checked={filters.category === cat.value}
+                                    checked={filters.category === value}
                                     onChange={() =>
-                                        updateFilter("category", filters.category === cat.value ? undefined : cat.value)
+                                        updateFilter("category", filters.category === value ? undefined : value)
                                     }
                                 />
                                 <span className="text-sm text-secondary-600 group-hover:text-primary-600 transition-colors">
-                                    {cat.label[locale === "ar" ? "ar" : "en"]}
+                                    {getCategoryLabel(value, locale)}
                                 </span>
                             </label>
                         ))}
@@ -175,7 +168,7 @@ export function FilterSidebar({ filters, onFilterChange, skills, locale = "en" }
                 <div className="px-6 pb-6 flex flex-wrap gap-2">
                     {filters.category && (
                         <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-primary-50 text-primary-700 rounded text-xs font-medium">
-                            {categories.find((c) => c.value === filters.category)?.label[locale === "ar" ? "ar" : "en"]}
+                            {getCategoryLabel(filters.category, locale)}
                             <button onClick={() => updateFilter("category", undefined)}>
                                 <X className="w-3 h-3" />
                             </button>

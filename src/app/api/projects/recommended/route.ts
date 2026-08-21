@@ -4,6 +4,7 @@ import { requireAuthOrThrow } from "@/lib/auth-helpers";
 import { withApiHandler, ApiHandlerContext } from "@/lib/api/handler";
 import {
   getRecommendedProjects,
+  MAX_RECOMMENDED_CANDIDATES,
   ContributorMatchData,
   ProjectMatchData,
   RecommendedProjectsResponse,
@@ -89,6 +90,9 @@ export async function GET(request: NextRequest) {
       orderBy: {
         createdAt: "desc",
       },
+      // Bounded candidate window — recency decay zeroes projects older than
+      // 30 days, so scoring beyond this window adds no ranking signal.
+      take: MAX_RECOMMENDED_CANDIDATES,
     });
 
     // Convert to ProjectMatchData

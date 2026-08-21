@@ -51,8 +51,9 @@ export async function GET(request: NextRequest) {
             return NextResponse.json({ error: "Forbidden", code: "FORBIDDEN" }, { status: 403 });
         }
 
-        // Fetch messages
-        const messages = await prisma.message.findMany({
+        // Fetch only the most recent `limit` messages (bounded history),
+        // returned oldest-first for rendering.
+        const recent = await prisma.message.findMany({
             where: { applicationId },
             include: {
                 sender: {
@@ -63,10 +64,10 @@ export async function GET(request: NextRequest) {
                     },
                 },
             },
-            orderBy: {
-                createdAt: "asc",
-            },
+            orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+            take: parsedQuery.data.limit,
         });
+        const messages = recent.reverse();
 
         // Mark unread messages as read
         await prisma.message.updateMany({

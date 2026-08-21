@@ -4,7 +4,6 @@ import {
   ProjectMatchData,
   MatchResult,
   MatchedSkill,
-  ScoreBreakdown,
   ScoringWeights,
   DEFAULT_WEIGHTS,
   SKILL_LEVEL_MULTIPLIERS,
@@ -203,6 +202,14 @@ export function scoreProjects(
 }
 
 /**
+ * Upper bound on how many candidate projects are scored per request.
+ * Recency decays to zero at 30 days, so older projects contribute nothing
+ * meaningful to ranking; capping keeps scoring O(candidates) instead of
+ * O(all open projects).
+ */
+export const MAX_RECOMMENDED_CANDIDATES = 200;
+
+/**
  * Get recommended projects with full project data.
  * Merges match results with project data for API response.
  */
@@ -222,10 +229,11 @@ export function getRecommendedProjects(
   // Apply pagination
   const paginatedResults = matchResults.slice(offset, offset + limit);
 
-  // Merge with project data
+  // Merge with project data (Map lookup instead of O(n²) find)
+  const byId = new Map(projects.map((p) => [p.id, p]));
   const recommendedProjects: RecommendedProject[] = paginatedResults.map(
     (result) => {
-      const project = projects.find((p) => p.id === result.projectId)!;
+      const project = byId.get(result.projectId)!;
       return {
         ...project,
         matchScore: result.totalScore,

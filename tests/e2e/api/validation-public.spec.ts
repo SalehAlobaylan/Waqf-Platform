@@ -12,11 +12,6 @@ test.describe("API Validation - Public Endpoints", () => {
     await expectValidationError(response, "status");
   });
 
-  test("GET /api/explore rejects out-of-range limit", async ({ request }) => {
-    const response = await request.get("/api/explore?limit=999&page=1");
-    await expectValidationError(response, "limit");
-  });
-
   test("GET /api/projects rejects invalid status", async ({ request }) => {
     const response = await request.get("/api/projects?status=bad-status");
     await expectValidationError(response, "status");

@@ -39,6 +39,8 @@ export default async function MyProjectsPage({ params }: MyProjectsPageProps) {
             _count: { select: { applications: true } },
         },
         orderBy: { createdAt: "desc" },
+        // Bounded page: dashboards render summaries, not full archives
+        take: 200,
     });
 
     const statusIcons: Record<string, React.ReactNode> = {

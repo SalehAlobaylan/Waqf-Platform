@@ -37,6 +37,28 @@ export async function ensureUniqueProjectSlug(base: string): Promise<string> {
     }
 }
 
+/**
+ * Normalize a project slug source: lowercase, collapse runs of
+ * non-alphanumerics into single hyphens, trim leading/trailing hyphens.
+ * Custom slugs keep their author-supplied hyphens; title-derived slugs
+ * collapse those too.
+ */
+export function normalizeProjectSlug(text: string, preserveHyphens: boolean): string {
+    const pattern = preserveHyphens ? /[^a-z0-9-]+/g : /[^a-z0-9]+/g;
+    return text.toLowerCase().replace(pattern, "-").replace(/^-|-$/g, "");
+}
+
+/**
+ * Resolve a unique project slug from an optional custom slug or the title.
+ * Throws when uniqueness cannot be reached within 50 attempts.
+ */
+export async function resolveProjectSlug(title: string, customSlug?: string): Promise<string> {
+    const base = customSlug
+        ? normalizeProjectSlug(customSlug, true)
+        : normalizeProjectSlug(title, false);
+    return ensureUniqueProjectSlug(base);
+}
+
 export function buildCampaignSlug(title: string): string {
     return slugifyCampaign(title);
 }
