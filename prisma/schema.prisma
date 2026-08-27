@@ -189,21 +189,21 @@ model ContributorProfile {
 }
 
 model Organization {
-  id          String    @id @default(cuid())
+  id          String     @id @default(cuid())
   userId      String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   name        String
-  slug        String    @unique
+  slug        String     @unique
   description String?
   logo        String?
   website     String?
   discord     String?
   whatsapp    String?
-  verified    Boolean   @default(false)
+  verified    Boolean    @default(false)
   projects    Project[]
   campaigns   Campaign[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
 model Skill {
@@ -270,13 +270,21 @@ model Project {
   updatedAt      DateTime        @updatedAt
 
   // Project origin: INTERNAL = on-platform owner, EXTERNAL = admin-curated on behalf of a non-onboarded owner
-  source             ProjectSource @default(INTERNAL)
-  externalOwnerName  String?
+  source               ProjectSource @default(INTERNAL)
+  externalOwnerName    String?
   externalOwnerContact String?
-  externalUrl        String?
-  curatorNotes       String?
-  addedByAdminId     String?
-  addedByAdmin       User?         @relation("ProjectCuratedBy", fields: [addedByAdminId], references: [id], onDelete: SetNull)
+  externalUrl          String?
+  curatorNotes         String?
+  addedByAdminId       String?
+  addedByAdmin         User?         @relation("ProjectCuratedBy", fields: [addedByAdminId], references: [id], onDelete: SetNull)
+
+  // Generic showcase / open-source integration
+  // First consumer is Islamic Digital Toolkit; fields are intentionally generic for reuse.
+  websiteUrl   String? // Live deployment URL (independent app)
+  isOpenSource Boolean  @default(false)
+  screenshots  String[] @default([])
+  toolsPreview Json? // Array of { label, labelAr?, description?, icon? } for preview chips
+  cachedGithub Json? // Optional cache for GitHub metadata (not required, live fetch preferred)
 
   promotedFromCampaign Campaign? @relation("CampaignToProject")
 
@@ -286,6 +294,7 @@ model Project {
   @@index([featured, featuredUntil])
   @@index([source, status])
   @@index([ownerId])
+  @@index([isOpenSource, status])
 }
 
 model ProjectSkill {
@@ -373,73 +382,73 @@ model Report {
 // ============ CAMPAIGNS ============
 
 model Campaign {
-  id                  String           @id @default(cuid())
+  id                  String              @id @default(cuid())
   ownerId             String
-  owner               User             @relation(fields: [ownerId], references: [id])
+  owner               User                @relation(fields: [ownerId], references: [id])
   organizationId      String?
-  organization        Organization?    @relation(fields: [organizationId], references: [id])
+  organization        Organization?       @relation(fields: [organizationId], references: [id])
   title               String
-  slug                String           @unique
+  slug                String              @unique
   pitch               String
   problem             String
   outcome             String?
   category            ProjectCategory
-  language            ProjectLanguage  @default(BOTH)
+  language            ProjectLanguage     @default(BOTH)
   country             String?
-  status              CampaignStatus   @default(DRAFT)
+  status              CampaignStatus      @default(DRAFT)
   startsAt            DateTime?
   recruitmentDeadline DateTime?
   contactEmail        String?
   coverImage          String?
-  tags                String[]         @default([])
-  viewCount           Int              @default(0)
-  promotedProjectId   String?          @unique
-  promotedProject     Project?         @relation("CampaignToProject", fields: [promotedProjectId], references: [id])
+  tags                String[]            @default([])
+  viewCount           Int                 @default(0)
+  promotedProjectId   String?             @unique
+  promotedProject     Project?            @relation("CampaignToProject", fields: [promotedProjectId], references: [id])
   adminFeedback       String?
   roles               CampaignRole[]
   joins               CampaignJoin[]
   milestones          CampaignMilestone[]
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
 
   @@index([status, category])
   @@index([ownerId])
 }
 
 model CampaignRole {
-  id          String              @id @default(cuid())
+  id          String             @id @default(cuid())
   campaignId  String
-  campaign    Campaign            @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaign    Campaign           @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   skillId     Int
-  skill       Skill               @relation(fields: [skillId], references: [id])
+  skill       Skill              @relation(fields: [skillId], references: [id])
   title       String
   description String?
   count       Int
-  filledCount Int                 @default(0)
-  seniority   CampaignSeniority   @default(ANY)
-  isRequired  Boolean             @default(true)
-  status      CampaignRoleStatus  @default(OPEN)
+  filledCount Int                @default(0)
+  seniority   CampaignSeniority  @default(ANY)
+  isRequired  Boolean            @default(true)
+  status      CampaignRoleStatus @default(OPEN)
   joins       CampaignJoin[]
-  createdAt   DateTime            @default(now())
+  createdAt   DateTime           @default(now())
 
   @@index([campaignId])
 }
 
 model CampaignJoin {
-  id             String              @id @default(cuid())
+  id             String             @id @default(cuid())
   campaignId     String
-  campaign       Campaign            @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaign       Campaign           @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   campaignRoleId String
-  role           CampaignRole        @relation(fields: [campaignRoleId], references: [id], onDelete: Cascade)
+  role           CampaignRole       @relation(fields: [campaignRoleId], references: [id], onDelete: Cascade)
   contributorId  String
-  contributor    User                @relation(fields: [contributorId], references: [id])
+  contributor    User               @relation(fields: [contributorId], references: [id])
   message        String?
   portfolioUrl   String?
   hoursPerWeek   Int?
-  status         CampaignJoinStatus  @default(PENDING)
+  status         CampaignJoinStatus @default(PENDING)
   decidedAt      DateTime?
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
 
   @@unique([campaignRoleId, contributorId])
   @@index([campaignId, status])

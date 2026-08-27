@@ -552,7 +552,22 @@
         "externalOwnerLabel": "المالك الأصلي",
         "visitProject": "زيارة المشروع",
         "contactOwner": "تواصل مع المالك",
-        "originalOwner": "مالك المشروع الأصلي"
+        "originalOwner": "مالك المشروع الأصلي",
+        "showcase": {
+            "openSource": "مفتوح المصدر",
+            "preview": "معاينة",
+            "previewNote": "معاينة للمعلومات فقط — يتم تشغيل الأدوات في موقع المشروع المستقل.",
+            "explore": "استكشاف",
+            "contribute": "ساهم",
+            "liveWebsite": "الموقع المباشر",
+            "stack": "التقنيات",
+            "contributionOpportunities": "فرص المساهمة",
+            "openIssues": "مفتوحة",
+            "viewAllIssues": "عرض جميع القضايا",
+            "viewIssuesOnGithub": "عرض القضايا على GitHub",
+            "noOpenIssues": "لا توجد قضايا مفتوحة حالياً. تابع المستودع للمزيد.",
+            "goodFirstIssue": "مبتدئ"
+        }
     },
     "applicationDetail": {
         "back": "العودة للطلبات",

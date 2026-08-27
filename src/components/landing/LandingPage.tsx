@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { CountUp } from "./CountUp";
 import { StatusBadge } from "@/components/ui/Badge";
+import { FlagshipShowcase } from "./FlagshipShowcase";
 
 interface LandingPageProps {
     locale: string;
@@ -75,10 +76,17 @@ const steps = [
 ];
 
 export async function LandingPage({ locale }: LandingPageProps) {
-    const [stats, featuredProjects] = await Promise.all([
+    const [stats, featuredProjects, flagshipProject, openSourceProjects] = await Promise.all([
         getStats(),
         getFeaturedProjects(),
+        getFlagshipProject(),
+        getOpenSourceProjects(),
     ]);
+
+    // De-dupe: open-source grid should not repeat flagship
+    const filteredOpenSource = flagshipProject
+        ? openSourceProjects.filter((p) => p.id !== flagshipProject.id)
+        : openSourceProjects;
 
     const isAr = locale === "ar";
 
@@ -220,6 +228,22 @@ export async function LandingPage({ locale }: LandingPageProps) {
                 </div>
             </section>
 
+            {/* Flagship showcase — priority, independent, pure product preview (no repo) */}
+            {flagshipProject && (
+                <FlagshipShowcase
+                    project={{
+                        title: flagshipProject.title,
+                        slug: flagshipProject.slug,
+                        description: flagshipProject.description,
+                        websiteUrl: flagshipProject.websiteUrl,
+                        externalUrl: flagshipProject.externalUrl,
+                        githubUrl: flagshipProject.githubUrl,
+                        toolsPreview: flagshipProject.toolsPreview,
+                    }}
+                    locale={locale}
+                />
+            )}
+
             {/* Domains — editorial index, not cards */}
             <section className="py-16 md:py-24 px-4">
                 <div className="max-w-[1280px] mx-auto">
@@ -354,6 +378,89 @@ export async function LandingPage({ locale }: LandingPageProps) {
                 </div>
             </section>
 
+            {/* Open source showcase — generic (secondary after flagship) */}
+            {filteredOpenSource.length > 0 && (
+                <section className="py-16 md:py-24 px-4 bg-white border-y border-waqf-border">
+                    <div className="max-w-[1280px] mx-auto">
+                        <div className="flex items-end justify-between gap-6 mb-10">
+                            <div>
+                                <h2 className="text-3xl font-bold tracking-tight text-secondary-900">
+                                    {isAr ? "مشاريع مفتوحة المصدر" : "Open source projects"}
+                                </h2>
+                                <p className="mt-2 text-secondary-500 max-w-xl leading-relaxed">
+                                    {isAr
+                                        ? "أدوات يبنيها المجتمع — استكشفها وشارك في تطويرها."
+                                        : "Community-built tools you can use and contribute to."}
+                                </p>
+                            </div>
+                            <Link
+                                href={`/${locale}/explore`}
+                                className="shrink-0 text-primary-600 font-semibold hover:underline underline-offset-4"
+                            >
+                                {isAr ? "عرض الكل" : "View all"}
+                            </Link>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {filteredOpenSource.map((project) => {
+                                const previewLabels = Array.isArray(project.toolsPreview)
+                                    ? (project.toolsPreview as Array<{ label: string; labelAr?: string }>)
+                                          .slice(0, 4)
+                                          .map((t) => (isAr ? t.labelAr || t.label : t.label))
+                                    : project.skills.slice(0, 4).map((ps) => isAr ? ps.skill.nameAr || ps.skill.name : ps.skill.name);
+                                return (
+                                    <Link
+                                        key={project.id}
+                                        href={`/${locale}/projects/${project.slug}`}
+                                        className="reveal group relative flex flex-col rounded-lg border border-waqf-border bg-waqf-bg p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary-300 hover:shadow-[0_12px_32px_-16px_rgba(8,37,32,0.25)]"
+                                    >
+                                        <span
+                                            aria-hidden
+                                            className="absolute inset-x-6 top-0 h-0.5 bg-accent-500 scale-x-0 group-hover:scale-x-100 origin-left rtl:origin-right transition-transform duration-300"
+                                        />
+                                        <div className="flex items-center gap-2">
+                                            <span className="inline-flex items-center rounded-full border border-primary-200 bg-primary-50 px-2 py-0.5 text-[11px] font-semibold text-primary-700">
+                                                {isAr ? "مفتوح المصدر" : "Open Source"}
+                                            </span>
+                                            {project.websiteUrl && (
+                                                <span className="text-xs text-secondary-400">· {isAr ? "موقع مباشر" : "Live"}</span>
+                                            )}
+                                        </div>
+                                        <h3 className="mt-3 text-lg font-bold tracking-tight text-secondary-900 group-hover:text-primary-700 transition-colors">
+                                            {project.title}
+                                        </h3>
+                                        <p className="mt-2 text-sm text-secondary-500 leading-relaxed line-clamp-2 flex-1">
+                                            {project.description}
+                                        </p>
+                                        {previewLabels.length > 0 && (
+                                            <div className="mt-4 flex flex-wrap gap-1.5">
+                                                {previewLabels.map((label) => (
+                                                    <span
+                                                        key={label}
+                                                        className="rounded-full bg-white border border-waqf-border px-2.5 py-1 text-xs font-medium text-secondary-700"
+                                                    >
+                                                        {label}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
+                                        <div className="mt-6 pt-4 border-t border-waqf-border flex items-center justify-between gap-4">
+                                            <span className="text-xs text-secondary-500">
+                                                {project.githubUrl ? "GitHub" : isAr ? "مفتوح للمساهمة" : "Open for contributions"}
+                                            </span>
+                                            <span className="shrink-0 text-sm font-semibold text-primary-600 flex items-center gap-1">
+                                                {isAr ? "استكشاف" : "Explore"}
+                                                <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 rtl:-scale-x-100 rtl:group-hover:-translate-x-0.5" />
+                                            </span>
+                                        </div>
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </section>
+            )}
+
             {/* Principles — plain statement, no icon tiles */}
             <section id="about" className="py-16 md:py-20 px-4 bg-white border-t border-waqf-border">
                 <div className="max-w-[1280px] mx-auto grid grid-cols-1 md:grid-cols-[1fr_1.4fr] gap-8 md:gap-16">
@@ -478,6 +585,61 @@ async function getFeaturedProjects() {
         return projects;
     } catch (e) {
         console.error("[LandingPage] Failed to fetch featured projects:", e);
+        return [];
+    }
+}
+
+async function getFlagshipProject() {
+    try {
+        // Simple priority: isOpenSource + featured (no new column). Order by featuredUntil desc so later expiry wins, then recency.
+        // Toolkit is the only isOpenSource && featured, so it surfaces automatically.
+        const flagship = await prisma.project.findFirst({
+            where: {
+                status: "OPEN",
+                isOpenSource: true,
+                featured: true,
+            },
+            orderBy: [{ featuredUntil: "desc" }, { createdAt: "desc" }],
+            include: {
+                skills: { take: 4, include: { skill: true } },
+                _count: { select: { applications: true } },
+            },
+        });
+        if (flagship) return flagship;
+        // Fallback: newest open-source if none featured
+        return prisma.project.findFirst({
+            where: { status: "OPEN", isOpenSource: true },
+            orderBy: { createdAt: "desc" },
+            include: {
+                skills: { take: 4, include: { skill: true } },
+                _count: { select: { applications: true } },
+            },
+        });
+    } catch (e) {
+        console.error("[LandingPage] Failed to fetch flagship project:", e);
+        return null;
+    }
+}
+
+async function getOpenSourceProjects() {
+    try {
+        return prisma.project.findMany({
+            where: {
+                status: "OPEN",
+                isOpenSource: true,
+            },
+            take: 3,
+            include: {
+                skills: {
+                    take: 4,
+                    include: { skill: true },
+                },
+                _count: { select: { applications: true } },
+            },
+            orderBy: { createdAt: "desc" },
+        });
+    } catch (e) {
+        console.error("[LandingPage] Failed to fetch open-source projects:", e);
         return [];
     }
 }

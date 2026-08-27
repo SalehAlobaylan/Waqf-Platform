@@ -59,6 +59,20 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: "/toolkit",
+        destination: "/ar/toolkit",
+        permanent: false,
+      },
+      {
+        source: "/toolkit/:path*",
+        destination: "https://waqf-toolkit.vercel.app/:path*",
+        permanent: false,
+      },
+    ];
+  },
   async headers() {
     return [
       {

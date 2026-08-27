@@ -18,6 +18,9 @@ import { ApplyButton } from "@/components/applications/ApplyButton";
 import { StatusBadge } from "@/components/ui/Badge";
 import { getCategoryLabel, getCategoryTint } from "@/lib/categories";
 import { cn } from "@/lib/utils";
+import { OpenSourceBadge } from "@/components/projects/showcase/OpenSourceBadge";
+import { ProjectShowcaseSection } from "@/components/projects/showcase/ProjectShowcaseSection";
+import { parseGitHubRepoUrl, fetchGitHubRepoInfo, fetchGitHubIssues } from "@/lib/github/repo";
 
 interface ProjectPageProps {
     params: Promise<{ locale: string; slug: string }>;
@@ -79,6 +82,24 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     const requiredSkills = project.skills.filter((s) => s.isRequired);
     const optionalSkills = project.skills.filter((s) => !s.isRequired);
     const tint = getCategoryTint(project.category);
+
+    // Generic open-source showcase: fetch public GitHub metadata without coupling to Toolkit runtime
+    // Gracefully degrades to null if repo unavailable — Waqf remains fully functional.
+    const parsedRepo = parseGitHubRepoUrl(project.githubUrl);
+    let repoInfo: Awaited<ReturnType<typeof fetchGitHubRepoInfo>> = null;
+    let issues: Awaited<ReturnType<typeof fetchGitHubIssues>> = null;
+    if (parsedRepo) {
+        try {
+            const [info, issueList] = await Promise.all([
+                fetchGitHubRepoInfo(parsedRepo.owner, parsedRepo.repo).catch(() => null),
+                fetchGitHubIssues(parsedRepo.owner, parsedRepo.repo, { perPage: 7 }).catch(() => null),
+            ]);
+            repoInfo = info;
+            issues = issueList;
+        } catch {
+            // Graceful degradation — showcase renders without GitHub live data
+        }
+    }
 
     return (
         <div className="min-h-screen bg-waqf-bg">
@@ -159,6 +180,9 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                     <span className={cn("rounded px-1.5 py-0.5 text-xs font-semibold", tint.bg, tint.text)}>
                         {getCategoryLabel(project.category, locale)}
                     </span>
+                    {(project.isOpenSource || project.githubUrl) && (
+                        <OpenSourceBadge locale={locale} />
+                    )}
                     {project.status === "OPEN" && !isExternal && (
                         <span className="text-xs font-semibold text-primary-600 flex items-center gap-1.5">
                             <Heart className="w-3.5 h-3.5" fill="currentColor" />
@@ -272,6 +296,30 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
                                     <p className="text-primary-100 leading-relaxed">{project.impact}</p>
                                 </div>
                             </section>
+                        )}
+
+                        {/* Generic showcase — preview, stack, CTAs, contribution opportunities */}
+                        {/* First consumer is Islamic Digital Toolkit, but component is fully reusable */}
+                        {(project.isOpenSource || project.githubUrl || project.websiteUrl || project.screenshots.length > 0 || project.toolsPreview) && (
+                            <ProjectShowcaseSection
+                                project={{
+                                    title: project.title,
+                                    slug: project.slug,
+                                    description: project.description,
+                                    category: project.category,
+                                    githubUrl: project.githubUrl,
+                                    websiteUrl: project.websiteUrl,
+                                    externalUrl: project.externalUrl,
+                                    isOpenSource: project.isOpenSource,
+                                    screenshots: project.screenshots,
+                                    toolsPreview: project.toolsPreview,
+                                    featuredImage: project.featuredImage,
+                                    skills: project.skills,
+                                }}
+                                locale={locale}
+                                repoInfo={repoInfo}
+                                issues={issues}
+                            />
                         )}
 
                         {/* About / README */}

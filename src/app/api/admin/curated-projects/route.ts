@@ -86,6 +86,11 @@ export async function POST(request: NextRequest) {
             status,
             featured,
             skills,
+            websiteUrl,
+            githubUrl,
+            isOpenSource,
+            screenshots,
+            toolsPreview,
         } = parsedBody.data;
 
         if (skills?.length) {
@@ -120,6 +125,11 @@ export async function POST(request: NextRequest) {
                 externalOwnerName,
                 externalOwnerContact,
                 externalUrl,
+                websiteUrl: websiteUrl || externalUrl || null,
+                githubUrl: githubUrl || null,
+                isOpenSource: isOpenSource ?? false,
+                screenshots: screenshots ?? [],
+                toolsPreview: toolsPreview ?? undefined,
                 curatorNotes: curatorNotes || null,
                 addedByAdminId: admin.id,
                 ownerId: null,

@@ -162,6 +162,16 @@ export const projectSkillSchema = z.object({
     isRequired: z.boolean().optional(),
 });
 
+export const toolPreviewItemSchema = z.object({
+    label: z.string().trim().min(1).max(40),
+    labelAr: z.string().trim().min(1).max(40).optional().nullable(),
+    description: z.string().trim().max(120).optional().nullable(),
+    descriptionAr: z.string().trim().max(120).optional().nullable(),
+    icon: z.string().trim().max(40).optional().nullable(),
+});
+
+export const screenshotsSchema = z.array(nullableUrlSchema).max(8).optional();
+
 const externalContactSchema = z
     .string()
     .min(2, "Contact is required")
@@ -193,6 +203,12 @@ export const projectCurateSchema = z
         status: projectStatusSchema.optional(),
         featured: z.boolean().optional(),
         skills: z.array(projectSkillSchema).max(30).optional(),
+        // Generic showcase fields (reused for any open-source project)
+        websiteUrl: nullableUrlSchema,
+        githubUrl: nullableUrlSchema,
+        isOpenSource: z.boolean().optional(),
+        screenshots: z.array(z.string().url().trim()).max(8).optional(),
+        toolsPreview: z.array(toolPreviewItemSchema).max(12).optional(),
     })
     .strip();
 
@@ -213,6 +229,11 @@ export const projectCurateUpdateSchema = z
         status: projectStatusSchema.optional(),
         featured: z.boolean().optional(),
         skills: z.array(projectSkillSchema).max(30).optional(),
+        websiteUrl: nullableUrlSchema,
+        githubUrl: nullableUrlSchema,
+        isOpenSource: z.boolean().optional(),
+        screenshots: z.array(z.string().url().trim()).max(8).optional(),
+        toolsPreview: z.array(toolPreviewItemSchema).max(12).optional(),
     })
     .refine((data) => Object.keys(data).length > 0, {
         message: "At least one field is required",
@@ -230,6 +251,10 @@ export const projectCreateSchema = z
         duration: optionalNullableTrimmedString(120),
         impact: optionalNullableTrimmedString(500),
         githubUrl: nullableUrlSchema,
+        websiteUrl: nullableUrlSchema,
+        isOpenSource: z.boolean().optional(),
+        screenshots: z.array(z.string().url().trim()).max(8).optional(),
+        toolsPreview: z.array(toolPreviewItemSchema).max(12).optional(),
         featuredImage: nullableUrlSchema,
         organizationId: idSchema.optional().nullable(),
         customSlug: slugSchema.optional().nullable(),
@@ -248,6 +273,10 @@ export const projectUpdateSchema = z
         duration: optionalNullableTrimmedString(120),
         impact: optionalNullableTrimmedString(500),
         githubUrl: nullableUrlSchema,
+        websiteUrl: nullableUrlSchema,
+        isOpenSource: z.boolean().optional(),
+        screenshots: z.array(z.string().url().trim()).max(8).optional(),
+        toolsPreview: z.array(toolPreviewItemSchema).max(12).optional(),
         featuredImage: nullableUrlSchema,
         organizationId: idSchema.optional().nullable(),
         slug: slugSchema.optional(),

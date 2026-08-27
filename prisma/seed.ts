@@ -742,6 +742,7 @@ async function main() {
   console.log(`✅ تم إضافة ${projectsData.length} مشروع`);
 
   // ===================== مشاريع خارجية منتقاة (يضيفها المدير بالنيابة عن أصحاب غير مسجلين) =====================
+  // Includes the Islamic Digital Toolkit as the first generic showcase consumer
   const curatedProjectsData = [
     {
       slug: "haramblur",
@@ -754,10 +755,12 @@ async function main() {
       status: "OPEN" as const,
       source: "EXTERNAL" as const,
       externalUrl: "https://haramblur.com/",
+      websiteUrl: "https://haramblur.com/",
       externalOwnerName: "فريق حرم بلر",
       externalOwnerContact: "https://haramblur.com/",
       curatorNotes: "أداة مفيدة جدًا لحماية المحتوى المرئي. لا يوجد مالك مسجل على المنصة، تتم الإدارة عبر الموقع الأصلي.",
       addedByAdminId: admin.id,
+      isOpenSource: false,
       skills: [
         { name: "Next.js", required: true },
         { name: "Python", required: true },
@@ -776,14 +779,57 @@ async function main() {
       status: "OPEN" as const,
       source: "EXTERNAL" as const,
       externalUrl: "https://haram-mute.com/",
+      websiteUrl: "https://haram-mute.com/",
       externalOwnerName: "فريق حرم ميوت",
       externalOwnerContact: "https://haram-mute.com/",
       curatorNotes: "إضافة متصفح مبتكرة. تتكامل مع المنصات الرئيسية، مفيدة جدًا للباحثين عن تجربة مشاهدة نظيفة.",
       addedByAdminId: admin.id,
+      isOpenSource: false,
       skills: [
         { name: "JavaScript", required: true },
         { name: "TypeScript", required: true },
         { name: "Machine Learning", required: false },
+      ],
+    },
+    {
+      slug: "islamic-digital-toolkit",
+      title: "Waqf Toolkit",
+      description:
+        "Free, open-source utilities for media, documents, privacy, and everyday digital work — right in your browser, wherever you are.",
+      impact:
+        "Provide reliable, privacy-respecting utilities that any app or website can integrate, and a welcoming on-ramp for open-source contributors worldwide.",
+      category: "TOOLS" as const,
+      language: "BOTH" as const,
+      country: "SA",
+      status: "OPEN" as const,
+      source: "EXTERNAL" as const,
+      // Generic showcase fields — first consumer of the reusable capabilities
+      // Mirrors live deployment at waqf-toolkit.vercel.app (Find the tool. Open and use.)
+      isOpenSource: true,
+      websiteUrl: process.env.TOOLKIT_URL || "https://waqf-toolkit.vercel.app",
+      githubUrl: process.env.TOOLKIT_GITHUB_URL || "https://github.com/waqf-platform/waqf-toolkit",
+      externalUrl: process.env.TOOLKIT_URL || "https://waqf-toolkit.vercel.app",
+      externalOwnerName: "Waqf Community",
+      externalOwnerContact: "https://github.com/waqf-platform/waqf-toolkit",
+      curatorNotes: "Flagship open-source showcase — uses generic Project.websiteUrl / githubUrl / isOpenSource / screenshots / toolsPreview fields. Do not add Toolkit-specific branching elsewhere.",
+      featured: true,
+      featuredUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+      featuredImage: null,
+      screenshots: [],
+      toolsPreview: [
+        { label: "Link Cleaner", labelAr: "منظف الروابط" },
+        { label: "Video Music Remover", labelAr: "مزيل موسيقى الفيديو" },
+        { label: "Subtitle Cleaner", labelAr: "منظف الترجمة" },
+        { label: "Image Compressor", labelAr: "ضاغط الصور" },
+        { label: "PDF Tools", labelAr: "أدوات PDF" },
+        { label: "File Converter", labelAr: "محول الملفات" },
+      ],
+      addedByAdminId: admin.id,
+      skills: [
+        { name: "Next.js", required: true },
+        { name: "TypeScript", required: true },
+        { name: "React", required: true },
+        { name: "Tailwind CSS", required: false },
       ],
     },
   ];
@@ -795,11 +841,19 @@ async function main() {
     })),
     skipDuplicates: true,
   });
+  // Refetch to include curated projects for skill linking (previously bug: used old projectMap)
+  const curatedMap = new Map(
+    (
+      await prisma.project.findMany({
+        where: { slug: { in: curatedProjectsData.map((p) => p.slug) } },
+      })
+    ).map((p) => [p.slug, p])
+  );
   await prisma.projectSkill.createMany({
     data: curatedProjectsData.flatMap(({ skills: projectSkills, slug }) =>
       projectSkills.flatMap((ps) => {
         const skill = skillMap.get(ps.name);
-        const project = projectMap.get(slug);
+        const project = curatedMap.get(slug) ?? projectMap.get(slug);
         return skill && project
           ? [{ projectId: project.id, skillId: skill.id, isRequired: ps.required }]
           : [];

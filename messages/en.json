@@ -552,7 +552,22 @@
         "externalOwnerLabel": "Original owner",
         "visitProject": "Visit project",
         "contactOwner": "Contact owner",
-        "originalOwner": "Original project owner"
+        "originalOwner": "Original project owner",
+        "showcase": {
+            "openSource": "Open Source",
+            "preview": "Preview",
+            "previewNote": "Preview only — utilities run on the project's independent deployment.",
+            "explore": "Explore",
+            "contribute": "Contribute",
+            "liveWebsite": "Live website",
+            "stack": "Stack",
+            "contributionOpportunities": "Contribution opportunities",
+            "openIssues": "open",
+            "viewAllIssues": "View all issues",
+            "viewIssuesOnGithub": "View issues on GitHub",
+            "noOpenIssues": "No open issues right now. Watch the repository for upcoming opportunities.",
+            "goodFirstIssue": "good first issue"
+        }
     },
     "applicationDetail": {
         "back": "Back to applications",

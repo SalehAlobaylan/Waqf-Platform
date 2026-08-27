@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
     Upload, X, Loader2, Link as LinkIcon,
-    Clock, Calendar, Sparkles, AlertTriangle, Save, Send, ArrowLeft, Globe, Mail, User, FileText
+    Clock, Calendar, Sparkles, AlertTriangle, Save, Send, ArrowLeft, Globe, Mail, User, FileText,
+    Image as ImageIcon, Code2, Boxes, Plus
 } from "lucide-react";
 import { SiGithub } from "@icons-pack/react-simple-icons";
 import Link from "next/link";
@@ -26,6 +27,10 @@ interface ProjectFormProps {
         timeCommitment: string | null;
         duration: string | null;
         githubUrl: string | null;
+        websiteUrl?: string | null;
+        isOpenSource?: boolean;
+        screenshots?: string[];
+        toolsPreview?: Array<{ label: string; labelAr?: string | null }>;
         featuredImage: string | null;
         organizationId: string | null;
         status: string;
@@ -67,6 +72,18 @@ export function ProjectForm({ locale, mode, initialData, organizations }: Projec
     const [timeCommitment, setTimeCommitment] = useState(initialData?.timeCommitment || "");
     const [duration, setDuration] = useState(initialData?.duration || "");
     const [githubUrl, setGithubUrl] = useState(initialData?.githubUrl || "");
+    const [websiteUrl, setWebsiteUrl] = useState(initialData?.websiteUrl || initialData?.externalUrl || "");
+    const [isOpenSource, setIsOpenSource] = useState(Boolean(initialData?.isOpenSource || initialData?.githubUrl));
+    const [screenshots, setScreenshots] = useState<string[]>(initialData?.screenshots || []);
+    const [screenshotInput, setScreenshotInput] = useState("");
+    const [toolsPreview, setToolsPreview] = useState<Array<{ label: string; labelAr?: string }>>(
+        (initialData?.toolsPreview as Array<{ label: string; labelAr?: string | null }> | undefined)?.map((t) => ({
+            label: t.label,
+            labelAr: t.labelAr ?? undefined,
+        })) || []
+    );
+    const [toolLabel, setToolLabel] = useState("");
+    const [toolLabelAr, setToolLabelAr] = useState("");
     const [featuredImage, setFeaturedImage] = useState(initialData?.featuredImage || "");
     const [organizationId, setOrganizationId] = useState(initialData?.organizationId || "");
     const [externalUrl, setExternalUrl] = useState(initialData?.externalUrl || "");
@@ -164,7 +181,7 @@ export function ProjectForm({ locale, mode, initialData, organizations }: Projec
         setSaving(true);
         try {
             if (isCurate) {
-                const payload = {
+                const payload: Record<string, unknown> = {
                     title: title.trim(),
                     description: description.trim(),
                     category,
@@ -178,6 +195,11 @@ export function ProjectForm({ locale, mode, initialData, organizations }: Projec
                     externalOwnerContact: externalOwnerContact.trim(),
                     curatorNotes: curatorNotes.trim() || null,
                     skills: selectedSkills.map(s => ({ skillId: s.skillId, isRequired: s.isRequired })),
+                    websiteUrl: websiteUrl.trim() || null,
+                    githubUrl: githubUrl.trim() || null,
+                    isOpenSource,
+                    screenshots: screenshots.length ? screenshots : undefined,
+                    toolsPreview: toolsPreview.length ? toolsPreview : undefined,
                     ...(!initialData
                         ? { customSlug: slug || undefined }
                         : {}),
@@ -186,22 +208,20 @@ export function ProjectForm({ locale, mode, initialData, organizations }: Projec
                         : {}),
                 };
 
-                const res = initialData
-                    ? await apiFetch<{ slug?: string }>(`/api/admin/curated-projects/${initialData.id}`, {
-                        method: "PATCH",
+                await apiFetch<{ slug?: string }>(
+                    initialData ? `/api/admin/curated-projects/${initialData.id}` : "/api/admin/curated-projects",
+                    {
+                        method: initialData ? "PATCH" : "POST",
                         body: payload,
-                    })
-                    : await apiFetch<{ slug?: string }>("/api/admin/curated-projects", {
-                        method: "POST",
-                        body: payload,
-                    });
+                    }
+                );
 
                 setSuccess(initialData ? t("projectUpdated") : t("projectCreated"));
                 setTimeout(() => router.push(`/${locale}/admin/projects/curated`), 1200);
                 return;
             }
 
-            const payload = {
+            const payload: Record<string, unknown> = {
                 title: title.trim(),
                 description: description.trim(),
                 category,
@@ -210,6 +230,10 @@ export function ProjectForm({ locale, mode, initialData, organizations }: Projec
                 timeCommitment: timeCommitment.trim() || null,
                 duration: duration.trim() || null,
                 githubUrl: githubUrl.trim() || null,
+                websiteUrl: websiteUrl.trim() || null,
+                isOpenSource,
+                screenshots: screenshots.length ? screenshots : undefined,
+                toolsPreview: toolsPreview.length ? toolsPreview : undefined,
                 featuredImage: featuredImage || null,
                 organizationId: organizationId || null,
                 skills: selectedSkills.map(s => ({ skillId: s.skillId, isRequired: s.isRequired })),
@@ -435,19 +459,165 @@ export function ProjectForm({ locale, mode, initialData, organizations }: Projec
                                     className="w-full px-4 py-3 rounded-xl border border-secondary-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                                 />
                             </div>
-                            {!isCurate && (
-                                <div>
-                                    <label className="block text-sm font-semibold text-secondary-900 mb-2 flex items-center gap-1.5">
-                                        <SiGithub className="w-4 h-4 text-secondary-400" />
-                                        {t("githubUrl")}
-                                    </label>
-                                    <input
-                                        type="url"
-                                        value={githubUrl}
-                                        onChange={e => setGithubUrl(e.target.value)}
-                                        placeholder={t("githubUrlPlaceholder")}
-                                        className="w-full px-4 py-3 rounded-xl border border-secondary-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                                    />
+                            <div>
+                                <label className="block text-sm font-semibold text-secondary-900 mb-2 flex items-center gap-1.5">
+                                    <SiGithub className="w-4 h-4 text-secondary-400" />
+                                    {t("githubUrl")}
+                                </label>
+                                <input
+                                    type="url"
+                                    value={githubUrl}
+                                    onChange={e => setGithubUrl(e.target.value)}
+                                    placeholder={t("githubUrlPlaceholder")}
+                                    className="w-full px-4 py-3 rounded-xl border border-secondary-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Showcase & Open Source — generic, reusable for any project (Toolkit is first consumer) */}
+                    <div className="bg-white rounded-2xl border border-waqf-border p-6 space-y-5">
+                        <div className="flex items-center gap-2">
+                            <Code2 className="w-5 h-5 text-primary-600" />
+                            <h2 className="text-base font-bold text-secondary-900">
+                                {locale === "ar" ? "العرض والمصدر المفتوح" : "Showcase & Open Source"}
+                            </h2>
+                            <span className="ms-2 text-xs text-secondary-500">
+                                {locale === "ar" ? "اختياري — يظهر كقسم مخصص للمشروع" : "Optional — renders as dedicated project section"}
+                            </span>
+                        </div>
+
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={isOpenSource}
+                                onChange={(e) => setIsOpenSource(e.target.checked)}
+                                className="w-4 h-4 rounded border-secondary-300 text-primary-600 focus:ring-primary-500"
+                            />
+                            <span className="text-sm font-medium text-secondary-900">
+                                {locale === "ar" ? "مشروع مفتوح المصدر" : "Open source project"}
+                            </span>
+                            <span className="text-xs text-secondary-500">
+                                {locale === "ar" ? "يظهر شارة ويجلب بيانات GitHub تلقائياً" : "Shows badge and fetches GitHub data automatically"}
+                            </span>
+                        </label>
+
+                        <div>
+                            <label className="block text-sm font-semibold text-secondary-900 mb-2 flex items-center gap-1.5">
+                                <LinkIcon className="w-4 h-4 text-secondary-400" />
+                                {locale === "ar" ? "رابط الموقع المباشر (التطبيق المستقل)" : "Live website URL (independent app)"}
+                            </label>
+                            <input
+                                type="url"
+                                value={websiteUrl}
+                                onChange={e => setWebsiteUrl(e.target.value)}
+                                placeholder="https://toolkit.example.com"
+                                className="w-full px-4 py-3 rounded-xl border border-secondary-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                            />
+                            <p className="text-xs text-secondary-500 mt-1">
+                                {locale === "ar"
+                                    ? "يُستخدم لزر \"استكشاف\". لا يتم استيراد كود المشروع."
+                                    : "Used for the “Explore” CTA. No toolkit code is imported."}
+                            </p>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold text-secondary-900 mb-2 flex items-center gap-1.5">
+                                <ImageIcon className="w-4 h-4 text-secondary-400" />
+                                {locale === "ar" ? "صور المعاينة (روابط)" : "Preview screenshots (URLs)"}
+                            </label>
+                            <div className="flex gap-2">
+                                <input
+                                    type="url"
+                                    value={screenshotInput}
+                                    onChange={e => setScreenshotInput(e.target.value)}
+                                    placeholder="https://.../screenshot.png"
+                                    className="flex-1 px-4 py-3 rounded-xl border border-secondary-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (screenshotInput.trim() && screenshots.length < 8) {
+                                            setScreenshots([...screenshots, screenshotInput.trim()]);
+                                            setScreenshotInput("");
+                                        }
+                                    }}
+                                    className="px-4 py-3 bg-primary-50 text-primary-700 border border-primary-200 rounded-xl text-sm font-medium hover:bg-primary-100"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                </button>
+                            </div>
+                            {screenshots.length > 0 && (
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                    {screenshots.map((url, idx) => (
+                                        <span key={url + idx} className="inline-flex items-center gap-2 rounded-lg border border-waqf-border bg-secondary-50 px-3 py-1.5 text-xs">
+                                            <span className="truncate max-w-[180px]">{url}</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => setScreenshots(screenshots.filter((_, i) => i !== idx))}
+                                                className="text-secondary-500 hover:text-red-500"
+                                            >
+                                                <X className="w-3.5 h-3.5" />
+                                            </button>
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold text-secondary-900 mb-2 flex items-center gap-1.5">
+                                <Boxes className="w-4 h-4 text-secondary-400" />
+                                {locale === "ar" ? "معاينة الأدوات (اختياري)" : "Tools preview (optional)"}
+                            </label>
+                            <p className="text-xs text-secondary-500 mb-2">
+                                {locale === "ar"
+                                    ? "مثال: أوقات الصلاة، القبلة، التقويم الهجري — تُعرض كشرائح في قسم المعاينة."
+                                    : "E.g., Prayer Times, Qibla, Hijri Calendar — shown as chips in the preview."}
+                            </p>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                <input
+                                    type="text"
+                                    value={toolLabel}
+                                    onChange={e => setToolLabel(e.target.value)}
+                                    placeholder={locale === "ar" ? "الاسم (EN)" : "Label (EN)"}
+                                    className="px-4 py-3 rounded-xl border border-secondary-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                />
+                                <input
+                                    type="text"
+                                    value={toolLabelAr}
+                                    onChange={e => setToolLabelAr(e.target.value)}
+                                    placeholder={locale === "ar" ? "الاسم (AR)" : "Label (AR)"}
+                                    className="px-4 py-3 rounded-xl border border-secondary-200 focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (toolLabel.trim() && toolsPreview.length < 12) {
+                                            setToolsPreview([...toolsPreview, { label: toolLabel.trim(), labelAr: toolLabelAr.trim() || undefined }]);
+                                            setToolLabel("");
+                                            setToolLabelAr("");
+                                        }
+                                    }}
+                                    className="px-4 py-3 bg-primary-50 text-primary-700 border border-primary-200 rounded-xl text-sm font-medium hover:bg-primary-100"
+                                >
+                                    {locale === "ar" ? "إضافة" : "Add"}
+                                </button>
+                            </div>
+                            {toolsPreview.length > 0 && (
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                    {toolsPreview.map((t, idx) => (
+                                        <span key={t.label + idx} className="inline-flex items-center gap-2 rounded-full border border-waqf-border bg-white px-3 py-1.5 text-xs font-medium">
+                                            {locale === "ar" ? t.labelAr || t.label : t.label}
+                                            <button
+                                                type="button"
+                                                onClick={() => setToolsPreview(toolsPreview.filter((_, i) => i !== idx))}
+                                                className="text-secondary-400 hover:text-red-500"
+                                            >
+                                                <X className="w-3 h-3" />
+                                            </button>
+                                        </span>
+                                    ))}
                                 </div>
                             )}
                         </div>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { ArrowRight, SquareArrowOutUpRight } from "lucide-react";
+import { ArrowRight, SquareArrowOutUpRight, Code2 } from "lucide-react";
 import { getCategoryLabel, getCategoryTint } from "@/lib/categories";
 import { cn } from "@/lib/utils";
 import { StatusBadge } from "@/components/ui/Badge";
@@ -19,6 +19,9 @@ interface ProjectCardProps {
         tags?: string[];
         timeCommitment?: string | null;
         featured?: boolean;
+        isOpenSource?: boolean;
+        githubUrl?: string | null;
+        websiteUrl?: string | null;
         _count?: { applications: number };
         skills: Array<{ skill: { name: string; nameAr: string | null }; isRequired: boolean }>;
         owner: { name: string; image: string | null } | null;
@@ -36,6 +39,7 @@ export function ProjectCard({ project, locale }: ProjectCardProps) {
         .slice(0, 3)
         .map((s) => (locale === "ar" ? s.skill.nameAr || s.skill.name : s.skill.name));
     const isExternal = project.source === "EXTERNAL";
+    const isOpenSource = Boolean(project.isOpenSource || project.githubUrl);
 
     return (
         <Link
@@ -49,15 +53,26 @@ export function ProjectCard({ project, locale }: ProjectCardProps) {
 
             <div className="flex items-center justify-between gap-3">
                 <StatusBadge status={project.status} locale={locale} />
-                {isExternal && (
-                    <span
-                        className="inline-flex items-center gap-1 text-xs font-medium text-secondary-500"
-                        title={t("curatedExternalProject")}
-                    >
-                        <SquareArrowOutUpRight className="w-3.5 h-3.5" />
-                        {t("external")}
-                    </span>
-                )}
+                <span className="flex items-center gap-2">
+                    {isOpenSource && (
+                        <span
+                            className="inline-flex items-center gap-1 rounded-full border border-primary-200 bg-primary-50 px-2 py-0.5 text-[11px] font-semibold text-primary-700"
+                            title={locale === "ar" ? "مفتوح المصدر" : "Open Source"}
+                        >
+                            <Code2 className="h-3 w-3" />
+                            {locale === "ar" ? "مفتوح المصدر" : "Open Source"}
+                        </span>
+                    )}
+                    {isExternal && (
+                        <span
+                            className="inline-flex items-center gap-1 text-xs font-medium text-secondary-500"
+                            title={t("curatedExternalProject")}
+                        >
+                            <SquareArrowOutUpRight className="w-3.5 h-3.5" />
+                            {t("external")}
+                        </span>
+                    )}
+                </span>
             </div>
 
             <div className="mt-4 flex items-center gap-2 text-xs">

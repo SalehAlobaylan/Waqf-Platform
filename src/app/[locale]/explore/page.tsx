@@ -32,6 +32,11 @@ export default async function ExplorePage() {
             timeCommitment: true,
             featured: true,
             featuredImage: true,
+            websiteUrl: true,
+            githubUrl: true,
+            isOpenSource: true,
+            screenshots: true,
+            toolsPreview: true,
             createdAt: true,
             skills: {
                 include: {
