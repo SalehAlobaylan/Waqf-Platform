@@ -249,21 +249,6 @@ export function FlagshipShowcase({ project, locale }: FlagshipShowcaseProps) {
                                     </div>
                                 </div>
 
-                                {/* Center headline */}
-                                <div className="relative text-center pt-2 pb-6">
-                                    <h3 className="text-3xl md:text-4xl font-bold tracking-tight text-secondary-900">
-                                        {isAr ? "اعثر على الأداة." : "Find the tool."}
-                                    </h3>
-                                    <p className="text-3xl md:text-4xl font-bold tracking-tight text-accent-700 mt-1">
-                                        {isAr ? "افتحها واستخدمها." : "Open and use."}
-                                    </p>
-                                    <p className="mt-4 max-w-md mx-auto text-sm leading-relaxed text-secondary-500">
-                                        {isAr
-                                            ? "أدوات مجانية مفتوحة المصدر للوسائط والمستندات والخصوصية — تعمل مباشرة في متصفحك."
-                                            : "Free, open-source utilities for media, documents, privacy, and everyday digital work — right in your browser, wherever you are."}
-                                    </p>
-                                </div>
-
                                 {/* Search mock */}
                                 <div className="relative max-w-[420px] mx-auto">
                                     <div className="flex items-center gap-3 rounded-full bg-white border border-waqf-border shadow-sm px-4 h-11">
