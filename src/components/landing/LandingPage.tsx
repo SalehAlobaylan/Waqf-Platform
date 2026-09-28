@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { CountUp } from "./CountUp";
 import { StatusBadge } from "@/components/ui/Badge";
 import { FlagshipShowcase } from "./FlagshipShowcase";
+import { Logo } from "@/components/brand/Logo";
 
 interface LandingPageProps {
     locale: string;
@@ -108,14 +109,13 @@ export async function LandingPage({ locale }: LandingPageProps) {
                     }}
                 />
                 <div className="relative max-w-[1280px] mx-auto px-4 pt-20 pb-16 md:pt-28 md:pb-24">
-                    <div className="rise flex items-center gap-5 mb-8">
-                        <p
-                            className="text-accent-400 font-arabic text-6xl md:text-8xl leading-none"
-                            lang="ar"
-                        >
-                            وقف
-                        </p>
-                        <span aria-hidden className="h-px w-16 md:w-28 bg-accent-500/60" />
+                    <div className="rise mb-8">
+                        <Logo
+                            variant="mark"
+                            tone="dark"
+                            className="h-20 w-20 md:h-24 md:w-24"
+                            priority
+                        />
                     </div>
                     <h1 className="rise max-w-3xl text-4xl md:text-6xl font-bold leading-[1.08] tracking-tight text-balance">
                         {isAr ? (

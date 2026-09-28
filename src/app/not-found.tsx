@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { Logo } from "@/components/brand/Logo";
 
 export default function NotFound() {
     const pathname = usePathname();
@@ -13,6 +14,7 @@ export default function NotFound() {
         <html lang={locale} dir={dir}>
             <body style={{ margin: 0, background: "#f8faf9", color: "#101917", fontFamily: "system-ui, sans-serif" }}>
                 <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "1rem", textAlign: "center" }}>
+                    <Logo variant="stacked" style={{ height: "6rem", marginBottom: "2rem" }} priority />
                     <div style={{ fontSize: "6rem", fontWeight: 900, opacity: 0.15, marginBottom: "1.5rem", userSelect: "none" }}>404</div>
                     <h1 style={{ fontSize: "1.75rem", marginBottom: "1rem" }}>
                         {isAr ? "الصفحة غير موجودة" : "Page not found"}

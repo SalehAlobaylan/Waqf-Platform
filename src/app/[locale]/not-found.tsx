@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
+import { Logo } from "@/components/brand/Logo";
 
 export default async function NotFound() {
     const locale = await getLocale();
@@ -7,6 +8,7 @@ export default async function NotFound() {
 
     return (
         <div className="min-h-[60vh] flex flex-col items-center justify-center px-4 text-center">
+            <Logo variant="stacked" className="h-24 mb-8" priority />
             <div className="text-8xl font-black text-primary-600/20 mb-6 select-none">404</div>
             <h1 className="text-3xl md:text-4xl font-bold text-secondary-900 mb-4">
                 {t("title")}

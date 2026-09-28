@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname } from "next/navigation";
 import { Heart } from "lucide-react";
+import { Logo } from "@/components/brand/Logo";
 
 const STAR_LATTICE_LIGHT =
     "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.55' stroke-width='1'%3E%3Crect x='18' y='18' width='36' height='36'/%3E%3Crect x='18' y='18' width='36' height='36' transform='rotate(45 36 36)'/%3E%3C/g%3E%3C/svg%3E\")";
@@ -57,18 +58,8 @@ export function Footer() {
                 <div className="grid grid-cols-2 md:grid-cols-[2fr_1fr_1fr_1fr] gap-x-6 gap-y-12 mb-16">
                     {/* Brand */}
                     <div className="col-span-2 md:col-span-1">
-                        <Link href={`/${locale}`} className="flex items-center gap-3">
-                            <div className="w-9 h-9 text-accent-400 bg-white/5 rounded-lg flex items-center justify-center">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                                    <path d="M12 2L4 7v6.5c0 4.97 3.5 9.04 8 10.5 4.5-1.46 8-5.53 8-10.5V7l-8-5zm0 2.18l6 3.75v5.57c0 4.13-2.88 7.68-6 8.82-3.12-1.14-6-4.69-6-8.82V7.93l6-3.75z" />
-                                </svg>
-                            </div>
-                            <span
-                                className="text-accent-400 font-arabic text-3xl leading-none"
-                                lang="ar"
-                            >
-                                وقف
-                            </span>
+                        <Link href={`/${locale}`} className="inline-flex">
+                            <Logo variant="horizontal" tone="dark" className="h-8" />
                         </Link>
                         <p className="mt-5 text-sm leading-relaxed text-primary-100/80 max-w-xs">
                             {isAr

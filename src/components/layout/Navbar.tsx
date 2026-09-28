@@ -8,6 +8,7 @@ import { useEffect, useState } from "react";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { UserMenu } from "./UserMenu";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { Logo } from "@/components/brand/Logo";
 
 export function Navbar() {
     const t = useTranslations("nav");
@@ -36,17 +37,8 @@ export function Navbar() {
     ];
 
     const logo = (
-        <Link href={`/${locale}`} className="flex items-center gap-3">
-            <div className="w-8 h-8 text-primary-600 bg-primary-600/10 rounded-lg flex items-center justify-center">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2L4 7v6.5c0 4.97 3.5 9.04 8 10.5 4.5-1.46 8-5.53 8-10.5V7l-8-5zm0 2.18l6 3.75v5.57c0 4.13-2.88 7.68-6 8.82-3.12-1.14-6-4.69-6-8.82V7.93l6-3.75z" />
-                </svg>
-            </div>
-            <div className="flex flex-col">
-                <span className="text-secondary-900 text-xl font-bold leading-none tracking-[-0.015em]">
-                    {locale === "ar" ? "وقف" : "Waqf"}
-                </span>
-            </div>
+        <Link href={`/${locale}`} className="flex items-center">
+            <Logo variant="horizontal" className="h-7 md:h-8" priority />
         </Link>
     );
 

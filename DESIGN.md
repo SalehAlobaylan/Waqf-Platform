@@ -40,12 +40,12 @@ Waqf is a contribution platform for developers. Developers and project owners me
 | | |
 |---|---|
 | **Primary** | `#1f705d` — Waqf Green. Calm, deep teal-green. Links, accents, trust surfaces. The deepest step `primary-950 #082520` is the **hero plane** — edge-to-edge, not a card. |
-| **Accent**  | `#d4a056` — Accent Gold. Reward-coded: the brand mark, the enduring-work phrase, featured/reward badges, ratings. On the dark hero plane only, it is also the single solid CTA — one accent surface per viewport. |
+| **Accent**  | `#d4a056` — Accent Gold. Reward-coded: the enduring-work phrase, featured/reward badges, ratings. On the dark hero plane only, it is also the single solid CTA — one accent surface per viewport. |
 | **Surface** | `#f9fbfb` app background on `#e9f1ef` mint-tinted borders. Subtle, paper-like. |
 | **Type**    | Inter (LTR) + Noto Sans Arabic (RTL). Headlines run `font-bold` with tight `tracking-tight`. Expressiveness comes from scale contrast (giant wordmark vs. body) and ghost numerals, not heavier weights. |
 | **Shape**   | Restrained radii — controls and cards are `rounded-md` / `rounded-lg`. The brand reads precise, not bubbly. |
 | **Texture** | Eight-point star (**khatam**) lattice — inline SVG data-URI, white strokes at 5–6% opacity on deep-green planes. The brand's only repeating texture. |
-| **Logo**    | Material shield silhouette (protection / guardianship metaphor) in a 10% green tile. The wordmark is `Waqf` / `وقف` only — no eyebrow. |
+| **Logo**    | Khatam rosette in a rounded-square tile, paired with the `Waqf` wordmark. Three lockups (`horizontal` · `stacked` · `mark`) in two tones (`light` for pale surfaces, reversed `dark` for deep-green planes). Rendered only through the `<Logo>` component. No eyebrow. See [Brand assets](#brand-assets). |
 
 ---
 
@@ -58,12 +58,35 @@ All design tokens live in `src/app/globals.css` as Tailwind v4 `@theme` CSS vari
 
 ### Accent (Gold)
 `accent-50` `#fdf8ef` → `accent-950` `#3d2a13` · brand step is `accent-500` `#d4a056` · used **only** for:
-- The `وقف` wordmark and the accent phrase inside the hero headline (+ its drawn underline)
+- The accent phrase inside the hero headline (+ its drawn underline)
 - The hero's primary CTA (solid gold button — the one accent surface on the dark plane)
 - Featured badges (`Reward`) and star ratings
 - Small tick marks above stat numerals and the CTA-band divider
 
 On light backgrounds gold is always a detail (tick, badge, text). It becomes a filled surface only once per page, on the dark hero plane.
+
+### Brand assets
+
+The logo is artwork, not type — it is never re-set in text. Every placement goes
+through `<Logo>` (`src/components/brand/Logo.tsx`), which owns the asset paths and
+intrinsic dimensions.
+
+| `variant` | `tone="light"` | `tone="dark"` | Used for |
+|---|---|---|---|
+| `horizontal` | ✓ | ✓ | Navbar, auth mobile bar · Footer, auth brand panel |
+| `stacked` | ✓ | — | 404 pages — centred, where a wide lockup would not fit |
+| `mark` | ✓ | ✓ | Admin header · Landing hero |
+
+- **Tone follows the surface.** `light` for pale surfaces (`waqf-bg`, white, `secondary-50`); the reversed `dark` cut for the deep-green planes (`primary-950`, `primary-900`). A reversed mark on a pale surface is invisible; a standard mark on a deep plane disappears.
+- **Size with height, not width.** `className="h-7 md:h-8"` — `w-auto` is already applied, and the intrinsic width/height reserve the box before load.
+- **`priority`** on above-the-fold logos only (navbar, auth, hero, admin header) so they are not lazy-loaded.
+- **Alt text** defaults to `Waqf`, matching the wordmark in the artwork. In the `mark` variant the wordmark is absent, so pass the context (`alt="Waqf"` is still correct — the name is the link's accessible label).
+- `stacked` ships light-only; a `dark` tone falls back to `light`.
+
+The source artwork lives in `docs/logos/` and is **not** served. The cut, transparent
+PNGs live in `public/brand/`. App icons are file conventions in `src/app/`
+(`favicon.ico`, `icon.png`, `apple-icon.png`) and the share card is
+`opengraph-image.png` — all cut from the same mark.
 
 ### Secondary (Slate)
 Tailwind's slate scale, 50 → 950. Used for body text, borders, neutrals.
@@ -80,7 +103,7 @@ Quran & Sunnah uses primary; Charity & Zakat uses accent; Education Tech uses bl
 
 ## Typography
 
-- **Brand mark (hero)**: the Arabic word `وقف`, `text-6xl md:text-8xl`, gold, `Noto Sans Arabic`, paired with a thin gold hairline. This is the dominant visual anchor of the first viewport.
+- **Brand mark (hero)**: `<Logo variant="mark" tone="dark" className="h-20 w-20 md:h-24 md:w-24" />` — the reversed khatam rosette on the deep plane. This is the dominant visual anchor of the first viewport. The logo is artwork, not type, so it is never re-set in Inter or Noto Sans Arabic; scale contrast between it and the body carries the expressiveness.
 - **Hero headline**: `text-4xl md:text-6xl`, `font-bold`, `tracking-tight`, `leading-[1.08]`, `text-balance`. One accent phrase in gold with an SVG underline that draws itself in.
 - **Section heads**: `text-3xl`/`text-4xl`, `font-bold`, `tracking-tight`.
 - **Stat numbers**: `text-4xl md:text-5xl`, `font-bold`, `tracking-tight`, `tabular-nums`, near-black ink. Animated with `CountUp`; each column carries a small gold tick above.
@@ -173,7 +196,6 @@ Everything else on the landing page is typographic: hairline-ruled lists and ope
 ### Key icons in use
 | Icon | Where |
 |---|---|
-| `Shield` | Logo mark |
 | `ArrowRight` | List-row and card affordances (flipped in RTL) |
 | `Search` | Search bars |
 | `BookOpen`, `HandHeart`, `GraduationCap`, `PiggyBank` | Explore-page category markers |
@@ -190,7 +212,7 @@ Everything else on the landing page is typographic: hairline-ruled lists and ope
 
 The landing page in `src/components/landing/LandingPage.tsx` is composed of these sections, in order:
 
-1. **Hero** — full-bleed `primary-950` plane (lattice + vignette): giant gold `وقف` mark with hairline, one bilingual headline with a self-drawing gold underline, one supporting sentence, two CTAs (gold solid / ghost). Staggered `rise` load-in. Nothing else in the first viewport.
+1. **Hero** — full-bleed `primary-950` plane (lattice + vignette): the reversed khatam mark at `h-20 md:h-24`, one bilingual headline with a self-drawing gold underline, one supporting sentence, two CTAs (gold solid / ghost). Staggered `rise` load-in. Nothing else in the first viewport.
 2. **Stats** — quiet white strip: four columns (Active Projects · Contributors · Contributions · Zero Platform Fees). Big tabular numerals with `CountUp`, gold ticks above, hairline dividers. No icons.
 3. **Domains (Explore Domains)** — editorial index: hairline-ruled full-width rows (numbered 01–04), title + description + arrow. Hover tint, edge bar, sliding title. Not cards.
 4. **How It Works** — three open columns opened by a green top rule, ghost numerals behind, small green step number. Discover → Contribute → Lasting impact.
@@ -227,7 +249,7 @@ Formal, neutral, and direct. The product is bilingual at its core — every stri
 - Arabic: "أوقف خبرتك التقنية — عمل يبقى" *(peer translation, not transliteration)*
 
 ### Arabic copy
-- The platform name `وقف` is kept untranslated in Arabic copy.
+- The platform name `وقف` is kept untranslated in Arabic copy. The logo is the exception: it is a fixed Latin artwork in every locale, so the same `Waqf` lockup appears in the Arabic UI. Do not pair it with a separate `وقف` wordmark — that is a second brand mark.
 - Arabic strings are **peer translations** of the English meaning, not transliterations of the English words. If a phrase only works in English, write the Arabic peer that fits the new positioning.
 - Domain vocabulary (Quran, Prayer, Charity, Education, etc.) is allowed in **user-supplied project content** (project titles, descriptions, skills). It is **not** allowed in platform marketing copy.
 - Never mix Latin headlines with Arabic body text in the same run — stack them as distinct elements, each in their native font.
@@ -239,8 +261,8 @@ For the full positioning rules, see `PRODUCT.md`.
 ## Don'ts
 
 - ❌ **Don't introduce new emoji** as iconography. Stick to Lucide. The only emoji in the brand is ❤️ in the footer signoff.
-- ❌ **Don't use gold (`#d4a056`) as everyday structure.** It's reward-coded and reserved for the brand mark, the enduring-work phrase, ticks/badges/ratings — and exactly one filled surface per page (the hero CTA on the dark plane).
-- ❌ **Don't draw new logo marks.** Use the inline shield path in `Navbar.tsx`.
+- ❌ **Don't use gold (`#d4a056`) as everyday structure.** It's reward-coded and reserved for the enduring-work phrase, ticks/badges/ratings — and exactly one filled surface per page (the hero CTA on the dark plane).
+- ❌ **Don't draw, re-set, or recolour the logo.** There is no shield path, no gold wordmark, no text-substitute version. Use `<Logo>` and pick the tone that matches the surface.
 - ❌ **Don't balloon the radii.** Buttons are `rounded-md`, cards `rounded-lg`. Full-bleed planes carry no radius. The brand reads precise.
 - ❌ **Don't transliterate English slogans into Arabic.** Translate the meaning, or write an Arabic peer that fits the new positioning.
 - ❌ **Don't add faith-coded language to platform copy.** No "the Ummah", "sadaqah", "hasanat", "Islamic" — these belong in user content, not in the platform's voice. Explaining what a waqf *is* (the Principles section) is fine; preaching is not.
@@ -255,6 +277,7 @@ For the full positioning rules, see `PRODUCT.md`.
 
 - `PRODUCT.md` — formal positioning rules, in/out vocabulary, Arabic conventions
 - `src/app/globals.css` — Tailwind v4 design tokens + motion keyframes
+- `src/components/brand/Logo.tsx` — the only way to render the brand mark
 - `src/components/landing/LandingPage.tsx` — production landing page
 - `src/components/landing/CountUp.tsx` — stat numeral animation
 - `src/components/layout/Navbar.tsx` — header
